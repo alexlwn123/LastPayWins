@@ -8,7 +8,11 @@ const client = new Pusher({
   useTLS: true,
 });
 
-let lastPayer: { lnAddress, timestamp, jackpot } = { lnAddress: null, timestamp: null, jackpot: 0 };
+let lastPayer: { lnAddress; timestamp; jackpot } = {
+  lnAddress: 'alex@getalby.com',
+  timestamp: Date.now(),
+  jackpot: 100000,
+};
 export const updateLastPayer = async (lnAddress, timestamp) => {
   const amount = process.env.INVOICE_AMOUNT || 100;
   const newJackpot = lastPayer.jackpot + amount;

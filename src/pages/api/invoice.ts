@@ -47,7 +47,7 @@ const checkInvoice = async (rHash, lnAddress) => {
   const rawResult = await data.json() as { settled: string, state: string };
   if (rawResult?.settled) {
     // Reset timer
-    pusher.trigger("timer", "reset", {});
+    await pusher.trigger("timer", "reset", {});
     await updateLastPayer(lnAddress, Date.now());
   }
   return {
