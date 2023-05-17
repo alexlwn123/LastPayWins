@@ -15,8 +15,8 @@ let lastPayer: { lnAddress; timestamp; jackpot } = {
   jackpot: 100000,
 };
 export const updateLastPayer = async (lnAddress, timestamp) => {
-  const amount = process.env.INVOICE_AMOUNT || 100;
-  const newJackpot = lastPayer.jackpot + amount;
+  const amount = parseInt(process.env.INVOICE_AMOUNT ?? '0') || 100;
+  const newJackpot = parseInt(lastPayer.jackpot ?? '0') + amount;
   const currentState = await client.get({ path: "/channels/cache-last-payer" });
   const state = await currentState.json();
   console.log('lib', state);

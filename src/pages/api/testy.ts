@@ -9,7 +9,7 @@ export default async (req, res) => {
       const lastPlayer = await getLastPayer();
       res.status(200).json({ message: 'ok', data: lastPlayer });
     } else if (req.method === 'POST') {
-      jackpot += 1000;
+      jackpot = parseInt(jackpot) + 1000;
       const rawState = await pusher.get({path: '/channels/cache-last-payer'});
       const state = await rawState.json();
       await pusher.trigger('cache-last-payer', 'update', {lnAddress: 'test', timestamp: Date.now(), jackpot: jackpot});
