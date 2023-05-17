@@ -18,6 +18,8 @@ const usePusher = () => {
 
   useEffect(() => {
     if (pusher.current) return;
+
+    // Pusher.log((message) => {console.log('-- PUSHER --> ', message)})
     pusher.current = new Pusher(appKey, {
       cluster: cluster,
     });

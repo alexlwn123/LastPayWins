@@ -1,5 +1,12 @@
 import Pusher from "pusher";
 // import 'server-only';
+console.log('config',{
+  appId: process.env.PUSHER_APP_ID!,
+  key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY!,
+  secret: process.env.PUSHER_APP_SECRET!,
+  cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!,
+  useTLS: true,
+} )
 
 const client = new Pusher({
   appId: process.env.PUSHER_APP_ID!,
@@ -10,16 +17,16 @@ const client = new Pusher({
 });
 
 let lastPayer: { lnAddress; timestamp; jackpot } = {
-  lnAddress: 'alex@getalby.com',
+  lnAddress: 'Bidding is open!',
   timestamp: Date.now(),
-  jackpot: 100000,
+  jackpot: 0,
 };
 export const updateLastPayer = async (lnAddress, timestamp) => {
   const amount = parseInt(process.env.INVOICE_AMOUNT ?? '0') || 100;
   const newJackpot = parseInt(lastPayer.jackpot ?? '0') + amount;
-  const currentState = await client.get({ path: "/channels/cache-last-payer" });
-  const state = await currentState.json();
-  console.log('lib', state);
+  // const currentState = await client.get({ path: "/channels/cache-last-player" });
+  // const state = await currentState.json();
+  // console.log('lib', state.body);
 
   client.trigger("cache-last-payer", "update", {
     lnAddress,
@@ -29,10 +36,8 @@ export const updateLastPayer = async (lnAddress, timestamp) => {
   lastPayer = { lnAddress, timestamp, jackpot: newJackpot };
 }
 export const getLastPayer = async () => {
-  console.log('lib', client);
   const currentState = await client.get({ path: "/channels/cache-last-player" });
   const state = await currentState.json();
-  console.log('lib', state);
   return state;
 };
 
