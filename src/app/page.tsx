@@ -53,14 +53,14 @@ export default function Home() {
       return;
     }
     const interval = setInterval(() => {
-      console.log(hash, lnAddress)
-      fetch(`/api/invoice?hash=${hash}&lnaddr=${lnAddress}`, { method: 'GET' })
+      console.log(hash, userAddress)
+      fetch(`/api/invoice?hash=${hash}&lnaddr=${userAddress}`, { method: 'GET' })
         .then((response) => response.json())
         .then((data) => {
           console.log(data);
           setSettled(data.settled);
           if (data.settled) {
-            localStorage.setItem('lnaddr', lnAddress);
+            localStorage.setItem('lnaddr', userAddress);
           }
         });
     }, 1000);
@@ -100,7 +100,7 @@ export default function Home() {
         <Input
           placeholder={"Lightning Address"}
           onChange={(e) => setUserAddress(e.target.value)}
-          value={lnAddress}
+          value={userAddress}
         />
         {invoice && (
           <div className={styles.payment}>
