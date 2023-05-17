@@ -10,7 +10,7 @@ const client = new Pusher({
 
 let lastPayer: { lnAddress, timestamp, jackpot } = { lnAddress: null, timestamp: null, jackpot: 0 };
 export const updateLastPayer = async (lnAddress, timestamp) => {
-  const amount = process.env.INVOICE_AMOUNT || 1000;
+  const amount = process.env.INVOICE_AMOUNT || 100;
   const newJackpot = lastPayer.jackpot + amount;
   client.trigger("last-payer", "update", {
     lnAddress,
