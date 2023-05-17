@@ -13,7 +13,7 @@ export default async (req, res) => {
       const rawState = await pusher.get({path: '/channels/cache-last-payer'});
       const state = await rawState.json();
       await pusher.trigger('cache-last-payer', 'update', {lnAddress: 'test', timestamp: Date.now(), jackpot: jackpot});
-      updateLastPayer('testy', Date.now(), false);
+      updateLastPayer('alexl@getalby.com', Date.now(), false);
       res.status(200).json({ message: 'ok', data: {lnAddress: 'test', timestamp: Date.now(), jackpot: jackpot}})
     } else {
       res.status(405).json({ error: 'Method not supported' });
