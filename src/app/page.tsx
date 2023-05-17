@@ -7,7 +7,7 @@ import Jackpot from '@/components/Jackpot';
 import Input from '@/components/Input';
 import Pusher from 'pusher-js';
 
-export default function Home(prop: string) {
+export default function Home() {
   const [invoice, setInvoice] = useState(null);
   const [hash, setHash] = useState(null);
   const [settled, setSettled] = useState(false);
