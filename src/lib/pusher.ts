@@ -1,4 +1,5 @@
 import Pusher from "pusher";
+// import 'server-only';
 
 const client = new Pusher({
   appId: process.env.PUSHER_APP_ID!,
@@ -16,7 +17,11 @@ let lastPayer: { lnAddress; timestamp; jackpot } = {
 export const updateLastPayer = async (lnAddress, timestamp) => {
   const amount = process.env.INVOICE_AMOUNT || 100;
   const newJackpot = lastPayer.jackpot + amount;
-  client.trigger("last-payer", "update", {
+  const currentState = await client.get({ path: "/channels/cache-last-payer" });
+  const state = await currentState.json();
+  console.log('lib', state);
+
+  client.trigger("cache-last-payer", "update", {
     lnAddress,
     timestamp: Date.now(),
     jackpot: newJackpot,
@@ -24,7 +29,11 @@ export const updateLastPayer = async (lnAddress, timestamp) => {
   lastPayer = { lnAddress, timestamp, jackpot: newJackpot };
 }
 export const getLastPayer = async () => {
-  return lastPayer;
+  console.log('lib', client);
+  const currentState = await client.get({ path: "/channels/cache-last-player" });
+  const state = await currentState.json();
+  console.log('lib', state);
+  return state;
 };
 
 

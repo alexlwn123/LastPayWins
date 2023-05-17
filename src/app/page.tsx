@@ -1,85 +1,90 @@
 'use client'
 import styles from './page.module.css';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import Qr from '@/components/Qr';
 import Countdown from '@/components/Countdown';
 import Jackpot from '@/components/Jackpot';
 import Input from '@/components/Input';
-import Pusher from 'pusher-js';
 import useWebln from '@/components/useWeblnAvailable';
+import usePusher from '@/hooks/usePusher';
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
   const [hash, setHash] = useState(null);
   const [settled, setSettled] = useState(false);
-  const [lnAddress, setLnAddress] = useState('');
+  const [userAddress, setUserAddress] = useState('');
   const [seconds, setSeconds] = useState(60);
-  const [jackpot, setJackpot] = useState(0);
   const [lastPayer, setLastPayer] = useState('');
   const weblnAvailable = useWebln()
+  const [paid, setPaid] = useState(false);
+
+  const { lnAddress, timestamp, jackpot } = usePusher();
+
+  // useEffect(() => {
+  //   console.log('CHANGE', lastPayer);
+  // }, [lastPayer]);
+
 
   // get lnaddr from local storage
   useEffect(() => {
     const lnaddr = localStorage.getItem('lnaddr');
     if (lnaddr) {
-      setLnAddress(lnAddress);
+      setUserAddress(lnAddress);
     }
    }, []);
    // save lnaddr to local storage
 
   // Get initial state
-  useEffect(() => { 
-    fetch("/api/current-status", { method: "GET" })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('current-status', data)
-        setJackpot(data.jackpot);
-        setLastPayer(data.lastPayer);
-        const timestamp = data.timestamp;
-        const timeLeft = 60 - Math.floor((Date.now() - timestamp) / 1000);
-        setSeconds(timeLeft);
-      });
-  }, []);
+  // useEffect(() => { 
+  //   fetch("/api/current-status", { method: "GET" })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       console.log('current-status', data)
+  //       setJackpot(data.jackpot);
+  //       setLastPayer(data.lastPayer);
+  //       const timestamp = data.timestamp;
+  //       const timeLeft = 60 - Math.floor((Date.now() - timestamp) / 1000);
+  //       setSeconds(timeLeft);
+  //     });
+  // }, []);
 
   // Handle Timer
-  useEffect(() => {
-    const appKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
-    const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!;
-    // Pusher.logToConsole = true;
-    console.log('keys', appKey, cluster);
-    if (!appKey || !cluster) return;
+  // useEffect(() => {
+  //   const appKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
+  //   const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!;
+  //   // Pusher.logToConsole = true;
+  //   console.log('keys', appKey, cluster);
+  //   if (!appKey || !cluster) return;
 
-    const pusher = new Pusher(appKey, {
-      cluster: cluster,
-    });
+  //   const pusher = new Pusher(appKey, {
+  //     cluster: cluster,
+  //   });
 
-    const channel = pusher.subscribe("timer");
-    const lastPayer = pusher.subscribe("last-payer");
+  //   const channel = pusher.subscribe("timer");
+  //   const lastPayer = pusher.subscribe("cache-last-payer");
+  //   console.log('LAST PAYER', lastPayer);
 
-    channel.bind("reset", () => {
-      setSeconds(60);
-    });
+  //   channel.bind("reset", () => {
+  //     setSeconds(60);
+  //   });
 
-    lastPayer.bind("update", (data) => {
-      setJackpot(data.jackpot);
-      setLastPayer(data.lastPayer);
-      const timeLeft = 60 - Math.floor((Date.now() - data.timestamp) / 1000);
-      console.log('time left', timeLeft);
-      setSeconds(timeLeft);
-    });
+    // lastPayer.bind("update", (data) => {
+    //   console.log('LAST PAYER update', lastPayer);
+      // setJackpot(data.jackpot);
+      // setLastPayer(data.lastPayer);
+    //   const timeLeft = 60 - Math.floor((Date.now() - data.timestamp) / 1000);
+    //   console.log('time left', timeLeft);
+    //   setSeconds(timeLeft);
+    // });
 
-    // const interval = setInterval(() => {
-    //   setSeconds((seconds) => (seconds === 0 ? 60 : seconds - 1));
-    // }, 1000);
-
-    return () => {
-      // clearInterval(interval);
-      channel.unbind_all();
-      lastPayer.unbind_all();
-      channel.unsubscribe();
-      lastPayer.unsubscribe();
-    };
-  }, []);
+  //   return () => {
+  //     // clearInterval(interval);
+  //     channel.unbind_all();
+  //     lastPayer.unbind_all();
+  //     channel.unsubscribe();
+  //     lastPayer.unsubscribe();
+  //   };
+  // }, []);
 
   // Get invoice
   useEffect(() => {
@@ -90,11 +95,14 @@ export default function Home() {
         setInvoice(data.invoice)
         setHash(data.rHash)
       });
-  }, []);
+  }, [paid]);
 
   // Check invoice
   useEffect(() => {
-    if (settled) return;
+    if (settled) {
+      setPaid(true);
+      return;
+    }
     const interval = setInterval(() => { 
       console.log(hash, lnAddress)
       fetch(`/api/invoice?hash=${hash}&lnaddr=${lnAddress}`, { method: 'GET' })
@@ -134,14 +142,14 @@ export default function Home() {
           If the timer hits zero before someone else pays, you win the jackpot.
         </h2>
       </div>
-      <Jackpot jackpotSats={jackpot} />
+      {jackpot && <Jackpot jackpotSats={jackpot || 0} />} 
       <div className={styles.center}>
         {/* QR CODE */}
         <Countdown currentTime={seconds} />
         {/* <Timer /> */}
         <Input
           placeholder={"Lightning Address"}
-          onChange={(e) => setLnAddress(e.target.value)}
+          onChange={(e) => setUserAddress(e.target.value)}
           value={lnAddress}
         />
         {invoice && (
@@ -156,7 +164,7 @@ export default function Home() {
             >
               Copy Invoice
             </button>
-            { weblnAvailable && 
+            { weblnAvailable &&
               <button
                 className={styles.copy}
                 onClick={() => handleWeblnPay(invoice)}

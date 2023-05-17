@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -25,6 +25,7 @@
     "react-countdown-circle-timer": "^3.2.1",
     "react-dom": "18.2.0",
     "satcomma": "^1.1.3",
+    "server-only": "^0.0.1",
     "typescript": "5.0.4",
     "utf-8-validate": "^6.0.3",
     "uuid": "^9.0.0",
