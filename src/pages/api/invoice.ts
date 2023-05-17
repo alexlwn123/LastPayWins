@@ -48,7 +48,6 @@ const checkInvoice = async (rHash, lnAddress) => {
   if (rawResult?.settled) {
     // Reset timer
     const currentState = await pusher.get({ path: "/channels/cache-last-payer" });
-    console.log('STATE', currentState);
     await pusher.trigger("cache-timer", "reset", {});
     await pusher.trigger('cache-last-payer', 'update', {lnAddress: 'test', timestamp: Date.now(), jackpot: jackpot});
     await updateLastPayer(lnAddress, Date.now());

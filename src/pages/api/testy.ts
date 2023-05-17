@@ -9,7 +9,6 @@ export default async (req, res) => {
       jackpot += 1000;
       const rawState = await pusher.get({path: '/channels/cache-last-payer'});
       const state = await rawState.json();
-      console.log('STATE', state);
       await pusher.trigger('cache-last-payer', 'update', {lnAddress: 'test', timestamp: Date.now(), jackpot: jackpot});
       updateLastPayer('testy', Date.now());
       res.status(200).json({ message: 'ok', data: {lnAddress: 'test', timestamp: Date.now(), jackpot: jackpot}})

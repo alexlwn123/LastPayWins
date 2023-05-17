@@ -30,62 +30,15 @@ export default function Home() {
   useEffect(() => {
     const lnaddr = localStorage.getItem('lnaddr');
     if (lnaddr) {
-      setUserAddress(lnAddress);
+      setUserAddress(userAddress);
     }
    }, []);
    // save lnaddr to local storage
+  useEffect(() => {
+    if (!userAddress) return;
+    localStorage.setItem('lnaddr', userAddress);
+   }, [userAddress]);
 
-  // Get initial state
-  // useEffect(() => { 
-  //   fetch("/api/current-status", { method: "GET" })
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       console.log('current-status', data)
-  //       setJackpot(data.jackpot);
-  //       setLastPayer(data.lastPayer);
-  //       const timestamp = data.timestamp;
-  //       const timeLeft = 60 - Math.floor((Date.now() - timestamp) / 1000);
-  //       setSeconds(timeLeft);
-  //     });
-  // }, []);
-
-  // Handle Timer
-  // useEffect(() => {
-  //   const appKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
-  //   const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!;
-  //   // Pusher.logToConsole = true;
-  //   console.log('keys', appKey, cluster);
-  //   if (!appKey || !cluster) return;
-
-  //   const pusher = new Pusher(appKey, {
-  //     cluster: cluster,
-  //   });
-
-  //   const channel = pusher.subscribe("timer");
-  //   const lastPayer = pusher.subscribe("cache-last-payer");
-  //   console.log('LAST PAYER', lastPayer);
-
-  //   channel.bind("reset", () => {
-  //     setSeconds(60);
-  //   });
-
-    // lastPayer.bind("update", (data) => {
-    //   console.log('LAST PAYER update', lastPayer);
-      // setJackpot(data.jackpot);
-      // setLastPayer(data.lastPayer);
-    //   const timeLeft = 60 - Math.floor((Date.now() - data.timestamp) / 1000);
-    //   console.log('time left', timeLeft);
-    //   setSeconds(timeLeft);
-    // });
-
-  //   return () => {
-  //     // clearInterval(interval);
-  //     channel.unbind_all();
-  //     lastPayer.unbind_all();
-  //     channel.unsubscribe();
-  //     lastPayer.unsubscribe();
-  //   };
-  // }, []);
 
   // Get invoice
   useEffect(() => {
