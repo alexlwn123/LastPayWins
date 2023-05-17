@@ -73,7 +73,9 @@ export default function Home() {
     return () => {
       // clearInterval(interval);
       channel.unbind_all();
+      lastPayer.unbind_all();
       channel.unsubscribe();
+      lastPayer.unsubscribe();
     };
   }, []);
 
@@ -132,7 +134,7 @@ export default function Home() {
             <button
               className={styles.copy}
               onClick={() =>
-                navigator?.clipboard?.write(invoice) ?? console.error('Failed to copy')
+                navigator?.clipboard?.writeText(invoice) ?? console.error('Failed to copy')
               }
             >
               Copy Invoice
