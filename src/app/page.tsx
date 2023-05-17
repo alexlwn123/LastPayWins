@@ -17,6 +17,7 @@ export default function Home() {
   const [jackpot, setJackpot] = useState(0);
   const [lastPayer, setLastPayer] = useState('');
   const weblnAvailable = useWebln()
+  const [countdownKey, setCountdownKey] = useState<number>(0)
 
   // get lnaddr from local storage
   useEffect(() => {
@@ -135,9 +136,10 @@ export default function Home() {
         </h2>
       </div>
       <Jackpot jackpotSats={jackpot} />
+      {/* <button onClick={() => setCountdownKey(prevKey => prevKey + 1)}>Reset timer</button> */}
       <div className={styles.center}>
         {/* QR CODE */}
-        <Countdown currentTime={seconds} />
+        <Countdown currentTime={seconds} countdownKey={countdownKey} />
         {/* <Timer /> */}
         <Input
           placeholder={"Lightning Address"}
