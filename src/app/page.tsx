@@ -19,7 +19,7 @@ export default function Home() {
   const [paid, setPaid] = useState(false);
   const [countdownKey, setCountdownKey] = useState<number>(0)
 
-  const { lnAddress, timestamp, jackpot } = usePusher();
+  const { lnAddress, timestamp, jackpot, status, timeLeft } = usePusher();
 
 
   // get lnaddr from local storage
