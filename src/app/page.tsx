@@ -53,7 +53,7 @@ export default function Home() {
       });
     setSettled(false);
     setFetching(false);
-  }, [refetch]);
+  }, [refetch, hash]);
 
   // Check invoice
   useEffect(() => {
@@ -68,6 +68,7 @@ export default function Home() {
           if (data.settled) {
             localStorage.setItem('lnaddr', userAddress);
             setCountdownKey(prevKey => prevKey + 1);
+            setHash(null);
           }
         });
     }, 1000);
