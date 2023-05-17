@@ -40,7 +40,7 @@ const usePusher = () => {
       let status: Status = 'LIVE';
       if (jackpot === 0) {
         status = 'WAITING';
-      } else if (timeLeft > 0) {
+      } else if (timeLeft < 0) {
         status = 'EXPIRED';
       }
       setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot, status, timeLeft })

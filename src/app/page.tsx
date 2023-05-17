@@ -1,25 +1,35 @@
 'use client'
 import styles from './page.module.css';
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import Qr from '@/components/Qr';
 import Countdown from '@/components/Countdown';
 import Jackpot from '@/components/Jackpot';
 import Input from '@/components/Input';
 import useWebln from '@/components/useWeblnAvailable';
 import usePusher from '@/hooks/usePusher';
+import { CurrentWinner } from '@/components/CurrentWinner';
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
   const [hash, setHash] = useState<string | null>(null);
   const [settled, setSettled] = useState(false);
   const [userAddress, setUserAddress] = useState('');
-  const [seconds, setSeconds] = useState(60);
   const [lastPayer, setLastPayer] = useState('');
   const weblnAvailable = useWebln()
-  const [paid, setPaid] = useState(false);
+  const [refetch, setRefetch] = useState(false)
   const [countdownKey, setCountdownKey] = useState<number>(0)
+  const [fetching, setFetching] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const interval = useRef(null);
 
   const { lnAddress, timestamp, jackpot, status, timeLeft } = usePusher();
+
+  useEffect(() => {
+    console.log('lnAddress', lnAddress, timestamp, jackpot, status, timeLeft);
+    if (status === 'LOADING') {
+      setRefetch(true);
+    }
+  }, [status, jackpot])
 
 
   // get lnaddr from local storage
@@ -33,36 +43,36 @@ export default function Home() {
 
   // Get invoice
   useEffect(() => {
+    if (fetching) return;
+    setFetching(true);
     fetch('/api/invoice', { method: 'POST' })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data)
         setInvoice(data.invoice)
         setHash(data.rHash)
       });
-  }, [paid]);
+    setSettled(false);
+    setFetching(false);
+  }, [refetch]);
 
   // Check invoice
   useEffect(() => {
-    if (settled) {
-      setPaid(true);
-      return;
-    }
+    if (settled || checking || !hash || status === 'LOADING') return;
     const interval = setInterval(() => {
-      console.log(hash, userAddress)
-      const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}`
+      const isNew = status !== 'LIVE'
+      const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}&isNew=${isNew}`
       fetch(url, { method: 'GET' })
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
-          setSettled(data.settled);
+          setSettled(data.settled && true);
           if (data.settled) {
             localStorage.setItem('lnaddr', userAddress);
+            setCountdownKey(prevKey => prevKey + 1);
           }
         });
     }, 1000);
     return () => clearInterval(interval);
-  }, [hash, settled])
+  }, [hash])
 
   const handleWeblnPay = async (invoice: string) => {
     try {
@@ -88,17 +98,22 @@ export default function Home() {
           If the timer hits zero before someone else pays, you win the jackpot.
         </h2>
       </div>
-      {/* <button onClick={() => setCountdownKey(prevKey => prevKey + 1)}>Reset timer</button> */}
       <Jackpot jackpotSats={jackpot || 0} />
-      <div className={styles.center}>
+      {/* <button onClick={() => setCountdownKey(prevKey => prevKey + 1)}>Reset timer</button> */}
+        <div className={styles.center}>
         {/* QR CODE */}
-        <Countdown currentTime={seconds} countdownKey={countdownKey} />
-        {/* <Timer /> */}
-        <Input
-          placeholder={"Lightning Address"}
-          onChange={(e) => setUserAddress(e.target.value)}
-          value={userAddress}
-        />
+        <div className={styles.stack}>
+          <Countdown currentTime={timeLeft} countdownKey={countdownKey} />
+
+          { status !== 'LOADING' &&
+            <CurrentWinner currentWinner={lnAddress ?? 'Anon'} isActive={status === 'LIVE'} jackpot={jackpot} />
+          }
+          <Input
+            placeholder={"Lightning Address"}
+            onChange={(e) => setUserAddress(e.target.value)}
+            value={userAddress}
+            />
+        </div>
         {invoice && (
           <div className={styles.payment}>
             <Qr invoice={invoice} />

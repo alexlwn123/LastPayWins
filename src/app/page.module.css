@@ -101,7 +101,15 @@
   align-items: center;
   position: relative;
   padding: 2rem 0;
-  gap: 5rem;
+  gap: 2rem;
+  max-width: var(--max-width);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .center::before {
@@ -163,6 +171,7 @@
   }
   .jackpot {
     font-size: 2.1rem;
+    text-align: center;
   }
 
   .grid {
@@ -266,12 +275,24 @@
 .timerWrapper {
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
 }
 
-.timer {
+.timer p {
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-size: 1px;
+  text-align: center;
+  margin: 0;
+  max-width: 150px;
+  padding: 100px;
+}
+.subtext {
+  color: #aaa;
 }
 
 .text {

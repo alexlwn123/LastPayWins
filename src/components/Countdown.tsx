@@ -3,14 +3,14 @@ import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import styles from '../app/page.module.css';
 
 const Countdown = ({currentTime, countdownKey}: {currentTime: number, countdownKey: number}) => {
-  const duration = 60;
+  const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60');
   useEffect(() => {
 
   }, [currentTime]);
 
   const renderTime = ({ remainingTime, color }) => {
     if (remainingTime === 0) {
-      return <div className="timer">Too late...</div>;
+      return <p className={styles.timer}>Too late...</p>;
     }
   
     return (
@@ -38,6 +38,7 @@ const Countdown = ({currentTime, countdownKey}: {currentTime: number, countdownK
       >
         {renderTime}
       </CountdownCircleTimer>
+      <p className={styles.subtext}>Pay the invoice to reset the Timer.</p>
     </div>
   );
 };

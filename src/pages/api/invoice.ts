@@ -31,7 +31,7 @@ const getInvoice = async () => {
   }
 }
 
-const checkInvoice = async (rHash, lnAddress) => {
+const checkInvoice = async (rHash, lnAddress, isNew) => {
   const hash = Buffer.from(rHash.toString(), 'base64').toString('hex');
   const url = `${process.env.LND_HOST}/v1/invoice/${hash}`
   const data = await fetch(url, {
@@ -46,12 +46,11 @@ const checkInvoice = async (rHash, lnAddress) => {
   });
   const rawResult = await data.json() as { settled: string, state: string };
   if (rawResult?.settled) {
-    // Reset timer
-    const currentState = await pusher.get({ path: "/channels/cache-last-payer" });
-    console.log('currentState', currentState);
-    // await pusher.trigger("cache-timer", "reset", {});
-    // await pusher.trigger('cache-last-payer', 'update', {lnAddress: 'test', timestamp: Date.now(), jackpot: jackpot});
-    await updateLastPayer(lnAddress, Date.now());
+    // Reset timer 
+    // BROKEN FUHHHHk
+    // const currentState = await pusher.get({ path: "/channels/cache-last-payer" });
+    // console.log('currentState', currentState);
+    await updateLastPayer(lnAddress, Date.now(), isNew);
   }
   return {
     settled: rawResult.settled,
@@ -67,7 +66,8 @@ export default async (req, res) => {
     } else if (req.method === 'GET') {
       const rHash = decodeURIComponent(req.query.hash);
       const lnAddress = req.query.lnaddr;
-      const data = await checkInvoice(rHash, lnAddress);
+      const isNew = req.query.isNew;
+      const data = await checkInvoice(rHash, lnAddress, isNew);
       res.status(200).json(data);
     } else {
       res.status(405).json({ error: 'Method not supported' });
