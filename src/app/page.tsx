@@ -6,6 +6,7 @@ import Countdown from '@/components/Countdown';
 import Jackpot from '@/components/Jackpot';
 import Input from '@/components/Input';
 import Pusher from 'pusher-js';
+import useWebln from '@/components/useWeblnAvailable';
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
@@ -15,6 +16,7 @@ export default function Home() {
   const [seconds, setSeconds] = useState(60);
   const [jackpot, setJackpot] = useState(0);
   const [lastPayer, setLastPayer] = useState('');
+  const weblnAvailable = useWebln()
 
   // get lnaddr from local storage
   useEffect(() => {
@@ -108,6 +110,21 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [hash, settled])
 
+  const handleWeblnPay = async (invoice: string) => {
+    try {
+      await window.webln.enable()
+    } catch(e) {
+      console.error('Failed to enable webln')
+      return
+    }
+
+    try {
+      await window.webln.sendPayment(invoice)
+    } catch(e) {
+      console.error('Failed to pay with webln', e)
+    }
+  }
+
   return (
     <main className={styles.main}>
       <div className={styles.description}>
@@ -139,6 +156,14 @@ export default function Home() {
             >
               Copy Invoice
             </button>
+            { weblnAvailable && 
+              <button
+                className={styles.copy}
+                onClick={() => handleWeblnPay(invoice)}
+              >
+                Pay with WebLN
+              </button>
+            }
           </div>
         )}
       </div>

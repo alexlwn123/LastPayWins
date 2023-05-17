@@ -27,6 +27,7 @@
     "satcomma": "^1.1.3",
     "typescript": "5.0.4",
     "utf-8-validate": "^6.0.3",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "webln": "^0.3.2"
   }
 }
