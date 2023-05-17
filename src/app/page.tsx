@@ -10,7 +10,7 @@ import usePusher from '@/hooks/usePusher';
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
-  const [hash, setHash] = useState(null);
+  const [hash, setHash] = useState<string | null>(null);
   const [settled, setSettled] = useState(false);
   const [userAddress, setUserAddress] = useState('');
   const [seconds, setSeconds] = useState(60);
@@ -50,7 +50,8 @@ export default function Home() {
     }
     const interval = setInterval(() => {
       console.log(hash, userAddress)
-      fetch(`/api/invoice?hash=${hash}&lnaddr=${userAddress}`, { method: 'GET' })
+      const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}`
+      fetch(url, { method: 'GET' })
         .then((response) => response.json())
         .then((data) => {
           console.log(data);
