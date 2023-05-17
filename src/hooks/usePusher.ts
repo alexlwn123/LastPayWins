@@ -1,5 +1,5 @@
 'use client'
-import { Payer } from "@/types/payer";
+import { Payer, Status } from "@/types/payer";
 import Pusher, { Channel } from "pusher-js";
 import { useEffect, useRef, useState } from "react";
 
@@ -14,6 +14,8 @@ const usePusher = () => {
     lnAddress: '',
     timestamp: 0,
     jackpot: 0,
+    timeLeft: 0,
+    status: 'LOADING'
   });
 
   useEffect(() => {
@@ -35,7 +37,13 @@ const usePusher = () => {
       const jackpot = parseInt(data.jackpot);
       const lnAddress = data.lnAddress;
       const timeLeft = parseInt(process.env.CLOCK_DURATION ?? '60') - Math.floor((Date.now() - data.timestamp) / 1000);
-      setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot })
+      let status: Status = 'LIVE';
+      if (jackpot === 0) {
+        status = 'WAITING';
+      } else if (timeLeft > 0) {
+        status = 'EXPIRED';
+      }
+      setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot, status, timeLeft })
     });
 
     lastPayerChannel.current.bind("pusher:cache_miss", (data) => {
