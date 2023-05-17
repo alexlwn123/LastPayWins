@@ -33,11 +33,6 @@ export default function Home() {
       setUserAddress(userAddress);
     }
    }, []);
-   // save lnaddr to local storage
-  useEffect(() => {
-    if (!userAddress) return;
-    localStorage.setItem('lnaddr', userAddress);
-   }, [userAddress]);
 
 
   // Get invoice
@@ -57,7 +52,7 @@ export default function Home() {
       setPaid(true);
       return;
     }
-    const interval = setInterval(() => { 
+    const interval = setInterval(() => {
       console.log(hash, lnAddress)
       fetch(`/api/invoice?hash=${hash}&lnaddr=${lnAddress}`, { method: 'GET' })
         .then((response) => response.json())
@@ -97,7 +92,7 @@ export default function Home() {
         </h2>
       </div>
       {/* <button onClick={() => setCountdownKey(prevKey => prevKey + 1)}>Reset timer</button> */}
-      {jackpot && <Jackpot jackpotSats={jackpot || 0} />} 
+      <Jackpot jackpotSats={jackpot || 0} />
       <div className={styles.center}>
         {/* QR CODE */}
         <Countdown currentTime={seconds} countdownKey={countdownKey} />

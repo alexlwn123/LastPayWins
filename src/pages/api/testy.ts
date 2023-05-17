@@ -2,7 +2,10 @@ import pusher, { getLastPayer, updateLastPayer } from '../../lib/pusher';
 let jackpot = 0;
 export default async (req, res) => {
   try {
-    if (req.method === 'GET') {
+    if (req.method === 'PATCH') {
+      await pusher.trigger('cache-last-payer', 'update', {lnAddress: 'None!', timestamp: Date.now(), jackpot: 0});
+      res.status(200).json({ message: 'ok' });
+    } else if (req.method === 'GET') {
       const lastPlayer = await getLastPayer();
       res.status(200).json({ message: 'ok', data: lastPlayer });
     } else if (req.method === 'POST') {
