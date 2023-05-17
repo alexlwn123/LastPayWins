@@ -32,7 +32,7 @@ const usePusher = () => {
       console.log('LAST PAYER update', data);
       const jackpot = parseInt(data.jackpot);
       const lnAddress = data.lnAddress;
-      const timeLeft = 60 - Math.floor((Date.now() - data.timestamp) / 1000);
+      const timeLeft = parseInt(process.env.CLOCK_DURATION ?? '60') - Math.floor((Date.now() - data.timestamp) / 1000);
       setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot })
     });
 

@@ -21,10 +21,6 @@ export default function Home() {
 
   const { lnAddress, timestamp, jackpot } = usePusher();
 
-  // useEffect(() => {
-  //   console.log('CHANGE', lastPayer);
-  // }, [lastPayer]);
-
 
   // get lnaddr from local storage
   useEffect(() => {
