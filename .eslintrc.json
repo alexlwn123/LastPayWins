@@ -1,0 +1,7 @@
+{
+  "extends": "next",
+  "quotes": [2, "double", { "avoidEscape": true }],
+  "semi": [2, "always"],
+  "plugins": ["prettier", "react", "next"],
+  "parser": "@typescript-eslint/parser"
+}

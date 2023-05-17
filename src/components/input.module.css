@@ -1,0 +1,31 @@
+.container {
+  background-color: #222;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.input {
+  position: relative;
+  margin: 20px;
+}
+
+.input input {
+  font-size: 16px;
+  padding: 10px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  color: #fff;
+  background-color: #333;
+  border: none;
+  border-radius: 50px;
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.input input::placeholder {
+  color: #888;
+}
+
+.input input:focus {
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.1);
+}
