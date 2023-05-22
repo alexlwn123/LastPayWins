@@ -36,7 +36,7 @@ const usePusher = () => {
       console.log('LAST PAYER update', data);
       const jackpot = parseInt(data.jackpot);
       const lnAddress = data.lnAddress;
-      const timeLeft = parseInt(process.env.CLOCK_DURATION ?? '60') - Math.floor((Date.now() - data.timestamp) / 1000);
+      const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - data.timestamp) / 1000);
       let status: Status = 'LIVE';
       if (jackpot === 0) {
         status = 'WAITING';
@@ -48,6 +48,7 @@ const usePusher = () => {
 
     lastPayerChannel.current.bind("pusher:cache_miss", (data) => {
       console.log('MISSED CACHE', data);
+      setLastPayer({ lnAddress: 'none', timestamp: Date.now(), jackpot: 0, status: 'WAITING', timeLeft: parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') })
     });
 
     pusher.current.bind_global((eventName, data) => {

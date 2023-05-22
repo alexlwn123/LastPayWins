@@ -19,13 +19,11 @@ export default function Home() {
   const [refetch, setRefetch] = useState(false)
   const [countdownKey, setCountdownKey] = useState<number>(0)
   const [fetching, setFetching] = useState(false);
-  const [checking, setChecking] = useState(false);
-  const interval = useRef(null);
 
   const { lnAddress, timestamp, jackpot, status, timeLeft } = usePusher();
 
   useEffect(() => {
-    console.log('lnAddress', lnAddress, timestamp, jackpot, status, timeLeft);
+    console.log('lnAddress', lnAddress, timestamp, jackpot, 'status-', status, 'timeleft-', timeLeft);
     if (status === 'LOADING') {
       setRefetch(true);
     }
@@ -50,14 +48,15 @@ export default function Home() {
       .then((data) => {
         setInvoice(data.invoice)
         setHash(data.rHash)
+        setSettled(false);
+        setFetching(false);
       });
-    setSettled(false);
-    setFetching(false);
-  }, [refetch, hash]);
+  }, [refetch]);
 
   // Check invoice
   useEffect(() => {
-    if (settled || checking || !hash || status === 'LOADING') return;
+    console.log(settled, hash, status)
+    if (settled || !hash || status === 'LOADING') return;
     const interval = setInterval(() => {
       const isNew = status !== 'LIVE'
       const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}&isNew=${isNew}`
@@ -73,7 +72,7 @@ export default function Home() {
         });
     }, 1000);
     return () => clearInterval(interval);
-  }, [hash])
+  }, [hash, fetching])
 
   const handleWeblnPay = async (invoice: string) => {
     try {
@@ -94,7 +93,7 @@ export default function Home() {
     <main className={styles.main}>
       <div className={styles.description}>
         <h1>Last Pay Wins</h1>
-        <h2>Pay the invoice to reset the timer. </h2>
+        <h2>Pay the invoice to {status === 'WAITING' ? 'start' : 'reset'} the timer. </h2>
         <h2>
           If the timer hits zero before someone else pays, you win the jackpot.
         </h2>
@@ -104,7 +103,7 @@ export default function Home() {
         <div className={styles.center}>
         {/* QR CODE */}
         <div className={styles.stack}>
-          <Countdown currentTime={timeLeft} countdownKey={countdownKey} />
+          <Countdown currentTime={timeLeft} countdownKey={countdownKey} status={status} />
 
           { status !== 'LOADING' &&
             <CurrentWinner currentWinner={lnAddress ?? 'Anon'} isActive={status === 'LIVE'} jackpot={jackpot} />

@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import styles from '../app/page.module.css';
+import { Status } from "@/types/payer";
 
-const Countdown = ({currentTime, countdownKey}: {currentTime: number, countdownKey: number}) => {
+const Countdown = ({currentTime, countdownKey, status}: {currentTime: number, countdownKey: number, status: Status }) => {
   const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60');
   useEffect(() => {
-
+    // console.log('currentTime', currentTime, typeof currentTime)
+    // console.log('duration', duration)
   }, [currentTime]);
 
   const renderTime = ({ remainingTime, color }) => {
+    console.log('renderTime', remainingTime, color, currentTime)
+    console.log('initialRemaining', status === 'WAITING' ? duration : currentTime)
     if (remainingTime === 0) {
       return <p className={styles.timer}>Too late...</p>;
     }
@@ -29,7 +33,7 @@ const Countdown = ({currentTime, countdownKey}: {currentTime: number, countdownK
   return (
     <div className={styles.timerWrapper}>
       <CountdownCircleTimer
-        isPlaying
+        isPlaying={status === 'LIVE'}
         key={countdownKey}
         duration={duration}
         initialRemainingTime={currentTime}
@@ -38,7 +42,7 @@ const Countdown = ({currentTime, countdownKey}: {currentTime: number, countdownK
       >
         {renderTime}
       </CountdownCircleTimer>
-      <p className={styles.subtext}>Pay the invoice to reset the Timer.</p>
+      <p className={styles.subtext}>Pay the invoice to { status === 'WAITING' ? 'start': 'reset' } the Timer.</p>
     </div>
   );
 };
