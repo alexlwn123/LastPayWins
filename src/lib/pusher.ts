@@ -26,6 +26,7 @@ export const updateLastPayer = async (lnAddress, timestamp, isNew) => {
     jackpot: newJackpot,
   });
   lastPayer = { lnAddress, timestamp, jackpot: newJackpot };
+  return lastPayer;
 }
 export const getLastPayer = async () => {
   const currentState = await client.get({ path: "/channels/cache-last-player" });

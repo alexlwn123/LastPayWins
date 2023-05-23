@@ -3,7 +3,7 @@ import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import styles from '../app/page.module.css';
 import { Status } from "@/types/payer";
 
-const Countdown = ({currentTime, countdownKey, status}: {currentTime: number, countdownKey: number, status: Status }) => {
+const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime: number, countdownKey: number, status: Status, setStatus }) => {
   const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60');
   useEffect(() => {
     // console.log('currentTime', currentTime, typeof currentTime)
@@ -11,8 +11,6 @@ const Countdown = ({currentTime, countdownKey, status}: {currentTime: number, co
   }, [currentTime]);
 
   const renderTime = ({ remainingTime, color }) => {
-    console.log('renderTime', remainingTime, color, currentTime)
-    console.log('initialRemaining', status === 'WAITING' ? duration : currentTime)
     if (remainingTime === 0) {
       return <p className={styles.timer}>Too late...</p>;
     }
@@ -39,6 +37,12 @@ const Countdown = ({currentTime, countdownKey, status}: {currentTime: number, co
         initialRemainingTime={currentTime}
         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
         colorsTime={[60, 30, 15, 0]}
+        onComplete={() => {
+          setStatus('EXPIRED');
+          return {
+            shouldRepeat: true
+          }
+        }}
       >
         {renderTime}
       </CountdownCircleTimer>

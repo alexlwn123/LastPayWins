@@ -14,16 +14,17 @@ export default function Home() {
   const [hash, setHash] = useState<string | null>(null);
   const [settled, setSettled] = useState(false);
   const [userAddress, setUserAddress] = useState('');
-  const [lastPayer, setLastPayer] = useState('');
+  // const [lastPayer, setLastPayer] = useState('');
   const weblnAvailable = useWebln()
   const [refetch, setRefetch] = useState(false)
   const [countdownKey, setCountdownKey] = useState<number>(0)
   const [fetching, setFetching] = useState(false);
 
-  const { lnAddress, timestamp, jackpot, status, timeLeft } = usePusher();
+  const { lnAddress, timestamp, jackpot, status, timeLeft, setStatus } = usePusher();
 
   useEffect(() => {
     console.log('lnAddress', lnAddress, timestamp, jackpot, 'status-', status, 'timeleft-', timeLeft);
+    setCountdownKey(prevKey => prevKey + 1);
     if (status === 'LOADING') {
       setRefetch(true);
     }
@@ -41,7 +42,7 @@ export default function Home() {
 
   // Get invoice
   useEffect(() => {
-    if (fetching) return;
+    if (fetching || hash) return;
     setFetching(true);
     fetch('/api/invoice', { method: 'POST' })
       .then((response) => response.json())
@@ -51,7 +52,7 @@ export default function Home() {
         setSettled(false);
         setFetching(false);
       });
-  }, [refetch]);
+  }, [refetch, hash]);
 
   // Check invoice
   useEffect(() => {
@@ -103,11 +104,13 @@ export default function Home() {
         <div className={styles.center}>
         {/* QR CODE */}
         <div className={styles.stack}>
-          <Countdown currentTime={timeLeft} countdownKey={countdownKey} status={status} />
-
-          { status !== 'LOADING' &&
-            <CurrentWinner currentWinner={lnAddress ?? 'Anon'} isActive={status === 'LIVE'} jackpot={jackpot} />
+          {status !== 'LOADING' &&
+            <>
+              <Countdown currentTime={timeLeft} countdownKey={countdownKey} status={status} setStatus={setStatus}/>
+              <CurrentWinner currentWinner={lnAddress ?? 'Anon'} isActive={status === 'LIVE'} jackpot={jackpot} status={status} />
+            </>
           }
+
           <Input
             placeholder={"Lightning Address"}
             onChange={(e) => setUserAddress(e.target.value)}

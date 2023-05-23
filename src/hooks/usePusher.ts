@@ -18,6 +18,15 @@ const usePusher = () => {
     status: 'LOADING'
   });
 
+  const setStatus = (status: Status) => {
+    setLastPayer((lastPayer) => ({ ...lastPayer, status }));
+  }
+
+  useEffect(() => {
+    // if (lastPlayer.status === 'LOADING') return;
+
+  }, [])
+
   useEffect(() => {
     if (pusher.current) return;
 
@@ -34,7 +43,7 @@ const usePusher = () => {
 
     lastPayerChannel.current.bind("update", (data) => {
       console.log('LAST PAYER update', data);
-      const jackpot = parseInt(data.jackpot);
+      let jackpot = parseInt(data.jackpot);
       const lnAddress = data.lnAddress;
       const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - data.timestamp) / 1000);
       let status: Status = 'LIVE';
@@ -42,6 +51,7 @@ const usePusher = () => {
         status = 'WAITING';
       } else if (timeLeft < 0) {
         status = 'EXPIRED';
+        jackpot = 0;
       }
       setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot, status, timeLeft })
     });
@@ -61,6 +71,6 @@ const usePusher = () => {
 
   }, []);
 
-  return lastPayer;
+  return { ...lastPayer, setStatus };
 };
 export default usePusher;
