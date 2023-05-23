@@ -107,8 +107,8 @@ export default function Home() {
     try {
       await window.webln.sendPayment(invoice)
     } catch(e) {
-      console.error('Failed to pay with webln', e)
-      toast("Failed to enable webln", { type: 'error' });
+      console.error('Webln canceled', e)
+      toast("Webln canceled", { type: 'error' });
     }
     setWebln(false);
   }
