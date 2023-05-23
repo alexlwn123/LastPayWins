@@ -12,4 +12,4 @@ const CurrentWinner = ({currentWinner, isActive, jackpot, status}) => {
     </div>
   );
 };
-export { CurrentWinner };
+export default CurrentWinner;

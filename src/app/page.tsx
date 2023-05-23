@@ -1,23 +1,22 @@
 'use client'
 import styles from './page.module.css';
-import { use, useEffect, useRef, useState } from 'react';
-import Qr from '@/components/Qr';
-import Countdown from '@/components/Countdown';
-import Jackpot from '@/components/Jackpot';
-import Input from '@/components/Input';
-import { useWeblnAvailable, handleWeblnPay } from '@/hooks/useWeblnAvailable';
+import { useEffect, useRef, useState } from "react";
+import {
+  Header,
+  CurrentWinner,
+  Footer,
+  Countdown,
+  Jackpot,
+  Invoice,
+  Loading,
+  Input,
+} from "@/components";
 import usePusher from '@/hooks/usePusher';
-import { CurrentWinner } from '@/components/CurrentWinner';
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
 import { fromSats } from 'satcomma';
-import { Triangle, Audio } from 'react-loader-spinner';
-import { Analytics } from '@vercel/analytics/react';
 import va from "@vercel/analytics";
-import Footer from '@/components/Footer';
-import Loading from '@/components/Loading';
-import Invoice from '@/components/Invoice';
-import Header from '@/components/Header';
+import { Analytics } from '@vercel/analytics/react';
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
