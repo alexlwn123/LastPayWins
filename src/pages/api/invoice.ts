@@ -5,7 +5,7 @@ import pusher, { updateLastPayer } from '../../lib/pusher';
 const getInvoice = async () => { 
   const amount = process.env.INVOICE_AMOUNT || 1000;
   const expiry = 3600;
-  const memo = "Pay me for the thing";
+  const memo = "Bid - Last Pay Wins";
   const url = `${process.env.LND_HOST}/v1/invoices`
   const data = await fetch(url, {
     method: 'POST',

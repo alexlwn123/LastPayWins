@@ -12,6 +12,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { fromSats } from 'satcomma';
 import { Triangle } from 'react-loader-spinner';
+import Link from 'next/link';
+import Github from '@/components/icons/Github';
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
@@ -183,6 +185,16 @@ export default function Home() {
           </div>
         )}
       </div>
+      <footer className={styles.footer}>
+        {/* Made with ❤️ by {""} */}
+        FOSS
+        <Link href="https://github.com/alexlwn123/lastpaywins" target='_blank' rel='noreferrer'>
+          <Github />
+        </Link>
+          <Link href='https://twitter.com/_alexlewin' target='_blank' rel='noreferrer'>
+            @_alexlewin
+          </Link>
+      </footer>
     </main>
   );
 }

@@ -3,8 +3,9 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 6rem;
+  padding: 4rem;
   min-height: 100vh;
+  padding-bottom: 2rem;
 }
 
 .description {
@@ -297,4 +298,15 @@
 
 .value {
   font-size: 4rem;
+}
+
+.footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  color:#aaa;
+  font-size: 1rem;
 }

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { requestProvider } from 'webln'
 
 declare global {
   interface Window {
