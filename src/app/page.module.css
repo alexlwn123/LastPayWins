@@ -282,14 +282,9 @@
 }
 
 .timer p {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   font-size: 1px;
   text-align: center;
-  margin: 0;
   max-width: 150px;
-  padding: 100px;
 }
 .subtext {
   color: #aaa;
@@ -297,6 +292,7 @@
 
 .text {
   color: #aaa;
+  text-align: center;
 }
 
 .value {

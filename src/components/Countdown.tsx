@@ -9,17 +9,17 @@ const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime:
   const renderTime = ({ remainingTime, color }) => {
     if (remainingTime === 0) {
       return <p className={styles.timer}>Too late...</p>;
-    }
+    p}
 
     return (
       <div className={styles.timer}>
-        <div className={styles.text}>seconds</div>
+        <div className={styles.text}>Seconds</div>
         <div style={{ color }}>
           <div className={styles.value}>
             {remainingTime}
           </div>
           </div>
-        <div className={styles.text}>remaining</div>
+        <div className={styles.text}>Remaining</div>
       </div>
     );
   };
@@ -42,7 +42,7 @@ const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime:
       >
         {renderTime}
       </CountdownCircleTimer>
-      <p className={styles.subtext}>Pay the invoice to { status === 'WAITING' ? 'start': 'reset' } the Timer.</p>
+      <p className={styles.subtext}>Pay the invoice to { status === 'LIVE' ? 'reset': 'start' } the Timer.</p>
     </div>
   );
 };

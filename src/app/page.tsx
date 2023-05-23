@@ -117,7 +117,7 @@ export default function Home() {
       <div className={styles.description}>
         <h1>Last Pay Wins</h1>
         <h2>
-          Pay the invoice to {status === "WAITING" ? "start" : "reset"} the
+          Pay the invoice to {status === "LIVE" ? "reset" : "start"} the
           timer.{" "}
         </h2>
         <h2>
