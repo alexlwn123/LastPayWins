@@ -34,7 +34,7 @@ const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime:
         isPlaying={status === 'LIVE'}
         key={countdownKey}
         duration={duration}
-        initialRemainingTime={currentTime}
+        initialRemainingTime={status !== 'LIVE' ? duration : currentTime}
         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
         colorsTime={[60, 30, 15, 0]}
         onComplete={() => {

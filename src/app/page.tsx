@@ -34,8 +34,9 @@ export default function Home() {
   // get lnaddr from local storage
   useEffect(() => {
     const lnaddr = localStorage.getItem('lnaddr');
+    console.log('lnaddr', lnaddr);
     if (lnaddr) {
-      setUserAddress(userAddress);
+      setUserAddress(lnaddr);
     }
    }, []);
 
@@ -60,7 +61,7 @@ export default function Home() {
     if (settled || !hash || status === 'LOADING') return;
     const interval = setInterval(() => {
       const isNew = status !== 'LIVE'
-      const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}&isNew=${isNew}`
+      const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}&new=${isNew}`
       fetch(url, { method: 'GET' })
         .then((response) => response.json())
         .then((data) => {
@@ -73,7 +74,7 @@ export default function Home() {
         });
     }, 1000);
     return () => clearInterval(interval);
-  }, [hash, fetching])
+  }, [hash, fetching, status, userAddress]);
 
   const handleWeblnPay = async (invoice: string) => {
     try {

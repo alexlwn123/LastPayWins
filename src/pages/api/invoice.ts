@@ -66,7 +66,7 @@ export default async (req, res) => {
     } else if (req.method === 'GET') {
       const rHash = decodeURIComponent(req.query.hash);
       const lnAddress = req.query.lnaddr;
-      const isNew = req.query.isNew;
+      const isNew = req.query.new;
       const data = await checkInvoice(rHash, lnAddress, isNew);
       res.status(200).json(data);
     } else {
