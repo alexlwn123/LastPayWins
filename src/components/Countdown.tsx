@@ -14,7 +14,7 @@ const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime:
     if (remainingTime === 0) {
       return <p className={styles.timer}>Too late...</p>;
     }
-  
+
     return (
       <div className={styles.timer}>
         <div className={styles.text}>seconds</div>
@@ -34,7 +34,7 @@ const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime:
         isPlaying={status === 'LIVE'}
         key={countdownKey}
         duration={duration}
-        initialRemainingTime={status !== 'LIVE' ? duration : currentTime}
+        initialRemainingTime={status !== 'WAITING' ? duration : currentTime}
         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
         colorsTime={[60, 30, 15, 0]}
         onComplete={() => {

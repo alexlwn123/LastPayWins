@@ -8,6 +8,8 @@ import Input from '@/components/Input';
 import useWebln from '@/components/useWeblnAvailable';
 import usePusher from '@/hooks/usePusher';
 import { CurrentWinner } from '@/components/CurrentWinner';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
@@ -24,6 +26,7 @@ export default function Home() {
 
   useEffect(() => {
     console.log('lnAddress', lnAddress, timestamp, jackpot, 'status-', status, 'timeleft-', timeLeft);
+    if (lnAddress !== userAddress) toast(`New Bid Received!\nCurrent Winner: ${lnAddress}`, { type: 'info' });
     setCountdownKey(prevKey => prevKey + 1);
     if (status === 'LOADING') {
       setRefetch(true);
@@ -70,6 +73,7 @@ export default function Home() {
             localStorage.setItem('lnaddr', userAddress);
             setCountdownKey(prevKey => prevKey + 1);
             setHash(null);
+            toast("Bid Received! You're in the lead!", { type: 'success' });
           }
         });
     }, 1000);
@@ -93,6 +97,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      <ToastContainer />
       <div className={styles.description}>
         <h1>Last Pay Wins</h1>
         <h2>Pay the invoice to {status === 'WAITING' ? 'start' : 'reset'} the timer. </h2>
@@ -121,7 +126,6 @@ export default function Home() {
         {invoice && (
           <div className={styles.payment}>
             <Qr invoice={invoice} />
-            {settled && <h1>PAID</h1>}
             <button
               className={styles.copy}
               onClick={() =>

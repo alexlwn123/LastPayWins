@@ -34,12 +34,7 @@ const usePusher = () => {
     pusher.current = new Pusher(appKey, {
       cluster: cluster,
     });
-    timerChannel.current = pusher.current.subscribe("cache-timer");
-    lastPayerChannel.current = pusher.current.subscribe("cache-last-payer");
-
-    timerChannel.current.bind("reset", () => {
-      console.log('RESET');
-    });
+    lastPayerChannel.current = pusher.current.subscribe(process.env.NEXT_PUBLIC_PUSHER_CHANNEL!);
 
     lastPayerChannel.current.bind("update", (data) => {
       console.log('LAST PAYER update', data);
