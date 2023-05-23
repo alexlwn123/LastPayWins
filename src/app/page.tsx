@@ -122,7 +122,7 @@ export default function Home() {
               status={status}
             />
             <Input
-              placeholder={"Lightning Address"}
+              placeholder={"example@lightningaddress.com"}
               onChange={(e) => setUserAddress(e.target.value)}
               value={userAddress}
             />
