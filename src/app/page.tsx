@@ -160,7 +160,7 @@ export default function Home() {
             </>
           )}
         </div>
-        {status !== "LOADING" && (
+        {status !== "LOADING" && invoice && (
           <div className={styles.payment}>
             <Qr invoice={invoice} />
             <button
