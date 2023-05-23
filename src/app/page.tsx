@@ -5,7 +5,7 @@ import Qr from '@/components/Qr';
 import Countdown from '@/components/Countdown';
 import Jackpot from '@/components/Jackpot';
 import Input from '@/components/Input';
-import useWebln from '@/components/useWeblnAvailable';
+import useWebln from '@/hooks/useWeblnAvailable';
 import usePusher from '@/hooks/usePusher';
 import { CurrentWinner } from '@/components/CurrentWinner';
 import { ToastContainer, toast } from "react-toastify";
