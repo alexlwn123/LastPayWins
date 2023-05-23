@@ -10,6 +10,7 @@ import usePusher from '@/hooks/usePusher';
 import { CurrentWinner } from '@/components/CurrentWinner';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { fromSats } from 'satcomma';
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
@@ -26,7 +27,11 @@ export default function Home() {
 
   useEffect(() => {
     console.log('lnAddress', lnAddress, timestamp, jackpot, 'status-', status, 'timeleft-', timeLeft);
-    if (lnAddress !== userAddress) toast(`New Bid Received!\nCurrent Winner: ${lnAddress}`, { type: 'info' });
+    if (status === 'LIVE' && lnAddress !== userAddress) {
+      toast(`New Bid Received!\nCurrent Winner: ${lnAddress}`, { type: 'info' });
+    } else if (status === 'EXPIRED' && lnAddress !== userAddress) {
+      toast(`Timer Expired! ${lnAddress} wins ₿ ${fromSats(jackpot)}!`, { type: 'info' });
+    }
     setCountdownKey(prevKey => prevKey + 1);
     if (status === 'LOADING') {
       setRefetch(true);
@@ -97,7 +102,13 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <ToastContainer />
+      <ToastContainer
+        hideProgressBar={true}
+        autoClose={3000}
+        pauseOnFocusLoss={false}
+        theme='dark'
+        closeButton={false}
+      />
       <div className={styles.description}>
         <h1>Last Pay Wins</h1>
         <h2>Pay the invoice to {status === 'WAITING' ? 'start' : 'reset'} the timer. </h2>
