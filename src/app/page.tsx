@@ -11,7 +11,7 @@ import { CurrentWinner } from '@/components/CurrentWinner';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { fromSats } from 'satcomma';
-import { Triangle } from 'react-loader-spinner';
+import { Triangle, Audio } from 'react-loader-spinner';
 import Link from 'next/link';
 import Github from '@/components/icons/Github';
 
@@ -26,6 +26,7 @@ export default function Home() {
   const [countdownKey, setCountdownKey] = useState<number>(0)
   const [fetching, setFetching] = useState(false);
   const initialRender = useRef(true);
+  const [webLn, setWebln] = useState(false);
 
   const { lnAddress, timestamp, jackpot, status, timeLeft, setStatus } = usePusher();
 
@@ -93,18 +94,22 @@ export default function Home() {
   }, [hash, fetching, status, userAddress]);
 
   const handleWeblnPay = async (invoice: string) => {
+    setWebln(true);
     try {
-      await window.webln.enable()
+      await window.webln.enable();
     } catch(e) {
       console.error('Failed to enable webln')
-      return
+      toast("Failed to enable webln", { type: 'error' });
+      return;
     }
 
     try {
       await window.webln.sendPayment(invoice)
     } catch(e) {
       console.error('Failed to pay with webln', e)
+      toast("Failed to enable webln", { type: 'error' });
     }
+    setWebln(false);
   }
 
   return (
@@ -119,14 +124,15 @@ export default function Home() {
       <div className={styles.description}>
         <h1>Last Pay Wins</h1>
         <h2>
-          Pay the invoice to {status === "LIVE" ? "reset" : "start"} the
-          timer.{" "}
+          Pay the invoice to {status === "LIVE" ? "reset" : "start"} the timer.{" "}
         </h2>
         <h2>
           If the timer hits zero before someone else pays, you win the jackpot.
         </h2>
       </div>
-      {status !== "LOADING" ? ( <Jackpot jackpotSats={jackpot || 0} />) : (
+      {status !== "LOADING" ? (
+        <Jackpot jackpotSats={jackpot || 0} />
+      ) : (
         <Triangle
           height="80"
           width="80"
@@ -175,12 +181,22 @@ export default function Home() {
               Copy Invoice
             </button>
             {weblnAvailable && (
-              <button
-                className={styles.copy}
-                onClick={() => handleWeblnPay(invoice)}
-              >
-                Pay with WebLN
-              </button>
+              <div className={styles.buttonRow}>
+                <button
+                  className={styles.copy}
+                  onClick={() => handleWeblnPay(invoice)}
+                >
+                  Pay with WebLN
+                </button>
+                <Audio
+                  height="20"
+                  width="20"
+                  color="orange"
+                  ariaLabel="loading-webln"
+                  visible={webLn}
+                  wrapperClass={`audio`}
+                />
+              </div>
             )}
           </div>
         )}
@@ -188,12 +204,20 @@ export default function Home() {
       <footer className={styles.footer}>
         {/* Made with ❤️ by {""} */}
         FOSS
-        <Link href="https://github.com/alexlwn123/lastpaywins" target='_blank' rel='noreferrer'>
+        <Link
+          href="https://github.com/alexlwn123/lastpaywins"
+          target="_blank"
+          rel="noreferrer"
+        >
           <Github />
         </Link>
-          <Link href='https://twitter.com/_alexlewin' target='_blank' rel='noreferrer'>
-            @_alexlewin
-          </Link>
+        <Link
+          href="https://twitter.com/_alexlewin"
+          target="_blank"
+          rel="noreferrer"
+        >
+          @_alexlewin
+        </Link>
       </footer>
     </main>
   );

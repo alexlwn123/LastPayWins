@@ -43,6 +43,22 @@
 .copy {
   width: 10rem;
   height: 2rem;
+  /* position: relative;
+  justify-self: center; */
+}
+.buttonRow {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items:flex-end;
+  gap: 0.5rem;
+}
+.audio {
+  position: absolute;
+  left: 100px;
+}
+.hidden {
+  visibility: hidden;
 }
 
 .description a {
