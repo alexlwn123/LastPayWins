@@ -15,6 +15,7 @@
   font-weight: 600;
   margin-bottom: 0.5rem;
   text-align: left;
+  /* filter: drop-shadow(0 0 0.3rem #ffffff70); */
 }
 .description h2 {
   font-size: 1rem;
