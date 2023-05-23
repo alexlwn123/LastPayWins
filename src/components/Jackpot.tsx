@@ -2,7 +2,9 @@ import styles from './Jackpot.module.css';
 import { fromSats } from 'satcomma';
 const Jackpot = ({ jackpotSats = 0 }) => {
   return (
-    <h1 className={styles.jackpot}>₿ {fromSats(jackpotSats)}</h1>
+    <div className={styles.jackpot}>
+      <h1>₿ {fromSats(jackpotSats)}</h1>
+    </div>
   )
 };
 
