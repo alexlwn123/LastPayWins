@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Github from "./icons/Github";
-import styles from './footer.module.css';
+import styles from './Footer.module.css';
 
 const Footer = () => (
   <div className={styles.footerContainer}>
