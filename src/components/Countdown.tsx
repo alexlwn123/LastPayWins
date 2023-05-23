@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import styles from '../app/page.module.css';
+import styles from './Countdown.module.css';
 import { Status } from "@/types/payer";
 
 const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime: number, countdownKey: number, status: Status, setStatus }) => {

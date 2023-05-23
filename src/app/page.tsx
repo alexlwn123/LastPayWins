@@ -12,8 +12,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { fromSats } from 'satcomma';
 import { Triangle, Audio } from 'react-loader-spinner';
-import Link from 'next/link';
-import Github from '@/components/icons/Github';
 import { Analytics } from '@vercel/analytics/react';
 import va from "@vercel/analytics";
 import Footer from '@/components/Footer';
@@ -23,7 +21,6 @@ export default function Home() {
   const [hash, setHash] = useState<string | null>(null);
   const [settled, setSettled] = useState(false);
   const [userAddress, setUserAddress] = useState('');
-  // const [lastPayer, setLastPayer] = useState('');
   const weblnAvailable = useWebln()
   const [refetch, setRefetch] = useState(false)
   const [countdownKey, setCountdownKey] = useState<number>(0)
@@ -34,7 +31,7 @@ export default function Home() {
   const { lnAddress, timestamp, jackpot, status, timeLeft, setStatus } = usePusher();
 
   useEffect(() => {
-    console.log('lnAddress', lnAddress, timestamp, jackpot, 'status-', status, 'timeleft-', timeLeft);
+    console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft);
     if (initialRender.current) {
       initialRender.current = false;
       return;
@@ -55,7 +52,6 @@ export default function Home() {
   // get lnaddr from local storage
   useEffect(() => {
     const lnaddr = localStorage.getItem('lnaddr');
-    console.log('lnaddr', lnaddr);
     if (lnaddr) {
       setUserAddress(lnaddr);
     }
@@ -79,7 +75,7 @@ export default function Home() {
   // Check invoice
   useEffect(() => {
     if (settled || !hash || status === 'LOADING') return;
-    console.log(settled, hash, status)
+    console.log('invoice', settled, hash, status)
     const interval = setInterval(() => {
       const isNew = status !== 'LIVE'
       const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}&new=${isNew}`
@@ -126,7 +122,7 @@ export default function Home() {
         theme="dark"
         closeButton={false}
       />
-      <div className={styles.description}>
+      <header className={styles.description}>
         <h1>Last Pay Wins</h1>
         <h2>
           Pay the invoice to {status === "LIVE" ? "reset" : "start"} the timer.{" "}
@@ -134,7 +130,7 @@ export default function Home() {
         <h2>
           If the timer hits zero before someone else pays, you win the jackpot.
         </h2>
-      </div>
+      </header>
       {status !== "LOADING" ? (
         <Jackpot jackpotSats={jackpot || 0} />
       ) : (

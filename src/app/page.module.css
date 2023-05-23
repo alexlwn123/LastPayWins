@@ -31,20 +31,9 @@
   font-weight: 200;
   text-align: center;
 }
-
-.jackpot {
-  font-size: 5rem;
-  text-align: center;
-  color: orange;
-  padding: 1rem 0 0 0;
-  white-space: nowrap;
-}
-
 .copy {
   width: 10rem;
   height: 2rem;
-  /* position: relative;
-  justify-self: center; */
 }
 .buttonRow {
   position: relative;
@@ -188,10 +177,6 @@
   .content {
     padding: 4rem;
   }
-  .jackpot {
-    font-size: 2.1rem;
-    text-align: center;
-  }
 
   .grid {
     grid-template-columns: 1fr;
@@ -289,31 +274,4 @@
   to {
     transform: rotate(0deg);
   }
-}
-
-.timerWrapper {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.timer p {
-  font-size: 1px;
-  text-align: center;
-  max-width: 150px;
-}
-.subtext {
-  color: #aaa;
-}
-
-.text {
-  color: #aaa;
-  text-align: center;
-}
-
-.value {
-  font-size: 4rem;
 }

@@ -1,4 +1,4 @@
-import styles from './input.module.css'
+import styles from './CurrentWinner.module.css'
 import { fromSats } from 'satcomma';
 const CurrentWinner = ({currentWinner, isActive, jackpot, status}) => {
   return (
