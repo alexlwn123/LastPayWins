@@ -1,0 +1,23 @@
+.description {
+  display: flex;
+  flex-direction: column;
+  justify-content: inherit;
+  align-items: center;
+  font-size: 0.85rem;
+  max-width: var(--max-width);
+  width: 100%;
+  z-index: 2;
+  font-family: var(--font-mono);
+  gap: 0.5rem;
+}
+.description h1 {
+  font-size: 3rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+.description h2 {
+  font-size: 1rem;
+  font-weight: 200;
+  text-align: center;
+}

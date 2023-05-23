@@ -8,7 +8,6 @@ const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!;
 
 const usePusher = () => {
   const pusher = useRef<Pusher>();
-  const timerChannel = useRef<Channel>();
   const lastPayerChannel = useRef<Channel>();
   const [lastPayer, setLastPayer] = useState<Payer>({
     lnAddress: '',
@@ -21,11 +20,6 @@ const usePusher = () => {
   const setStatus = (status: Status) => {
     setLastPayer((lastPayer) => ({ ...lastPayer, status }));
   }
-
-  useEffect(() => {
-    // if (lastPlayer.status === 'LOADING') return;
-
-  }, [])
 
   useEffect(() => {
     if (pusher.current) return;
@@ -52,13 +46,13 @@ const usePusher = () => {
     });
 
     lastPayerChannel.current.bind("pusher:cache_miss", (data) => {
-      console.log('MISSED CACHE', data);
+      // console.log('MISSED CACHE', data);
       setLastPayer({ lnAddress: 'none', timestamp: Date.now(), jackpot: 0, status: 'WAITING', timeLeft: parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') })
     });
 
-    pusher.current.bind_global((eventName, data) => {
-      console.log('GLOBAL', eventName, data);
-    })
+    // pusher.current.bind_global((eventName, data) => {
+    //   console.log('GLOBAL', eventName, data);
+    // })
 
     return () => {
       pusher.current?.unbind_all();
