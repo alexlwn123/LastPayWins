@@ -32,6 +32,7 @@ export default function Home() {
 
   useEffect(() => {
     console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft);
+    console.log(initialRender.current);
     if (initialRender.current) {
       initialRender.current = false;
       return;
