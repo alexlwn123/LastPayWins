@@ -14,6 +14,7 @@ import { fromSats } from 'satcomma';
 import { Triangle, Audio } from 'react-loader-spinner';
 import Link from 'next/link';
 import Github from '@/components/icons/Github';
+import { Analytics } from '@vercel/analytics/react';
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
@@ -238,6 +239,7 @@ export default function Home() {
           </Link>
         </p>
         </div>
+        <Analytics />
     </main>
   );
 }
