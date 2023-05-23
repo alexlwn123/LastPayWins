@@ -201,6 +201,7 @@ export default function Home() {
           </div>
         )}
       </div>
+      <div className={styles.footerContainer}>
       <footer className={styles.footer}>
         {/* Made with ❤️ by {""} */}
         FOSS
@@ -226,6 +227,17 @@ export default function Home() {
           @chdwlch
         </Link>
       </footer>
+        <p>
+          If it bugs out and you don't get paid, DM{" "}
+          <Link
+            href="https://twitter.com/_alexlewin"
+            target="_blank"
+            rel="noreferrer"
+          >
+            @_alexlewin
+          </Link>
+        </p>
+        </div>
     </main>
   );
 }
