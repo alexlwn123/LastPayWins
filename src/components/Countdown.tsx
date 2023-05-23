@@ -9,7 +9,7 @@ const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime:
   const renderTime = ({ remainingTime, color }) => {
     if (remainingTime === 0) {
       return <p className={styles.timer}>Too late...</p>;
-    p}
+    }
 
     return (
       <div className={styles.timer}>
