@@ -5,10 +5,6 @@ import { Status } from "@/types/payer";
 
 const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime: number, countdownKey: number, status: Status, setStatus }) => {
   const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60');
-  useEffect(() => {
-    // console.log('currentTime', currentTime, typeof currentTime)
-    // console.log('duration', duration)
-  }, [currentTime]);
 
   const renderTime = ({ remainingTime, color }) => {
     if (remainingTime === 0) {
@@ -34,7 +30,7 @@ const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime:
         isPlaying={status === 'LIVE'}
         key={countdownKey}
         duration={duration}
-        initialRemainingTime={status !== 'WAITING' ? duration : currentTime}
+        initialRemainingTime={status === 'LIVE' ? currentTime : duration}
         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
         colorsTime={[60, 30, 15, 0]}
         onComplete={() => {
