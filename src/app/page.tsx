@@ -15,6 +15,8 @@ import { Triangle, Audio } from 'react-loader-spinner';
 import Link from 'next/link';
 import Github from '@/components/icons/Github';
 import { Analytics } from '@vercel/analytics/react';
+import va from "@vercel/analytics";
+import Footer from '@/components/Footer';
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
@@ -38,8 +40,10 @@ export default function Home() {
       return;
     } else if (status === 'LIVE' && lnAddress !== userAddress) {
       toast(`Bid Received! - ${lnAddress}`, { type: 'info' });
+      va.track('Bid', { user: lnAddress, jackpot, timestamp });
     } else if (status === 'EXPIRED' && lnAddress !== userAddress) {
       toast(`Timer Expired! ${lnAddress} wins ₿ ${fromSats(jackpot)}!`, { type: 'info', pauseOnFocusLoss: true });
+      va.track('Expired', { user: lnAddress, jackpot, timestamp });
     }
     setCountdownKey(prevKey => prevKey + 1);
     if (status === 'LOADING') {
@@ -202,44 +206,8 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className={styles.footerContainer}>
-      <footer className={styles.footer}>
-        {/* Made with ❤️ by {""} */}
-        FOSS
-        <Link
-          href="https://github.com/alexlwn123/lastpaywins"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <Github />
-        </Link>
-        <Link
-          href="https://twitter.com/_alexlewin"
-          target="_blank"
-          rel="noreferrer"
-        >
-          @_alexlewin
-        </Link>
-        <Link
-          href="https://twitter.com/chdwlch"
-          target="_blank"
-          rel="noreferrer"
-        >
-          @chdwlch
-        </Link>
-      </footer>
-        <p>
-          If it bugs out and you don't get paid, DM{" "}
-          <Link
-            href="https://twitter.com/_alexlewin"
-            target="_blank"
-            rel="noreferrer"
-          >
-            @_alexlewin
-          </Link>
-        </p>
-        </div>
-        <Analytics />
+      <Footer />
+      <Analytics />
     </main>
   );
 }
