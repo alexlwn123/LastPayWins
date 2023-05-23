@@ -38,7 +38,7 @@ export default function Home() {
     } else if (status === 'LIVE' && lnAddress !== userAddress) {
       toast(`Bid Received! - ${lnAddress}`, { type: 'info' });
     } else if (status === 'EXPIRED' && lnAddress !== userAddress) {
-      toast(`Timer Expired! ${lnAddress} wins ₿ ${fromSats(jackpot)}!`, { type: 'info' });
+      toast(`Timer Expired! ${lnAddress} wins ₿ ${fromSats(jackpot)}!`, { type: 'info', pauseOnFocusLoss: true });
     }
     setCountdownKey(prevKey => prevKey + 1);
     if (status === 'LOADING') {
@@ -217,6 +217,13 @@ export default function Home() {
           rel="noreferrer"
         >
           @_alexlewin
+        </Link>
+        <Link
+          href="https://twitter.com/chdwlch"
+          target="_blank"
+          rel="noreferrer"
+        >
+          @chdwlch
         </Link>
       </footer>
     </main>
