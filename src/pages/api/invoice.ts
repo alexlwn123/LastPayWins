@@ -46,8 +46,6 @@ const checkInvoice = async (rHash, lnAddress, isNew) => {
   });
   const rawResult = await data.json() as { settled: string, state: string };
   if (rawResult?.settled) {
-    // Reset timer 
-    // BROKEN FUHHHHk
     // const currentState = await pusher.get({ path: "/channels/cache-last-payer" });
     // console.log('currentState', currentState);
     await updateLastPayer(lnAddress, Date.now(), isNew);
