@@ -1,6 +1,6 @@
 # Last Pay Wins
 
-**THIS IS A WIP - YOU WON'T GET PAID** If you'd like your money back, DM [@_alexlewin](https://twitter.com/_alexlewin) on Twitter.
+**THIS IS A WIP - YOU MIGHT NOT GET PAID** If you'd like your money back, DM [@_alexlewin](https://twitter.com/_alexlewin) on Twitter.
 
 This was created for the Pleb.fi Miami 2023 Hackathon. (Won 2nd Place)
 
