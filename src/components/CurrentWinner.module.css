@@ -5,6 +5,7 @@
   justify-self: center;
   align-items: center;
   gap: 2rem;
+  z-index: 5;
 }
 
 .block p {
@@ -12,4 +13,8 @@
   color: #AAA;
   text-align: center;
   padding: 1rem 0 0 0;
+}
+.winner {
+  cursor: pointer;
+  user-select: text;
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Github from "./icons/Github";
 import styles from './Footer.module.css';
+import Telegram from "./icons/Telegram";
 
 const Footer = () => (
   <div className={styles.footerContainer}>
@@ -12,6 +13,13 @@ const Footer = () => (
         rel="noreferrer"
       >
         <Github />
+      </Link>
+      <Link
+        href="https://t.me/+ebguDutaWqE1ZmE5"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <Telegram />
       </Link>
       <Link
         href="https://twitter.com/_alexlewin"

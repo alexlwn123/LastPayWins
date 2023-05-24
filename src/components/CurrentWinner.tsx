@@ -5,7 +5,7 @@ const CurrentWinner = ({currentWinner, isActive, jackpot, status}) => {
     <div className={styles.block}>
       <p>
         <b>
-          {isActive ? "Current " : "Previous "} Winner: {currentWinner}
+          {isActive ? "Current " : "Previous "} Winner: <span className={styles.winner}>{currentWinner}</span>
         </b>
       </p>
       {!isActive && <p>₿ {fromSats(jackpot)}</p>}
