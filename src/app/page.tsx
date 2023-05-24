@@ -42,6 +42,8 @@ export default function Home() {
     } else if (status === 'EXPIRED' && lnAddress !== userAddress) {
       toast(`Timer Expired! ${lnAddress} wins ₿ ${fromSats(jackpot)}!`, { type: 'info', pauseOnFocusLoss: true });
       va.track('Expired', { user: lnAddress, jackpot, timestamp });
+    } else if (status === 'EXPIRED') {
+      toast(`CONGRATULATIONS! You've won ₿ ${fromSats(jackpot)}!`, { type: 'success', pauseOnFocusLoss: true });
     }
     setCountdownKey(prevKey => prevKey + 1);
     if (status === 'LOADING') {
@@ -107,7 +109,7 @@ export default function Home() {
 
       <Header status={status} />
       <Loading isLoading={status === "LOADING" || !invoice}>
-        <Jackpot jackpotSats={jackpot || 0} />
+        <Jackpot jackpotSats={status === 'LIVE' ? jackpot : 0} />
         <div className={styles.center}>
           <div className={styles.stack}>
             <Countdown

@@ -13,7 +13,7 @@ export default async (req, res) => {
       const rawState = await pusher.get({path: '/channels/cache-last-payer'});
       const state = await rawState.json();
       console.log('testy - cached state', state);
-      const newPayer = updateLastPayer('alexl@getalby.com', Date.now(), false);
+      const newPayer = updateLastPayer('alexl@getalby.com');
       res.status(200).json({ message: 'ok', data: newPayer})
     } else {
       res.status(405).json({ error: 'Method not supported' });

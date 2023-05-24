@@ -28,20 +28,19 @@ const usePusher = () => {
     pusher.current = new Pusher(appKey, {
       cluster: cluster,
     });
-    lastPayerChannel.current = pusher.current.subscribe(process.env.NEXT_PUBLIC_PUSHER_CHANNEL!);
+    const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
+    lastPayerChannel.current = pusher.current.subscribe(channel);
 
     lastPayerChannel.current.bind("update", (data) => {
       console.log('LAST PAYER update', data);
       let jackpot = parseInt(data.jackpot);
       const lnAddress = data.lnAddress;
       const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - data.timestamp) / 1000);
-      console.log('timeleftaaaa', timeLeft);
       let status: Status = 'LIVE';
       if (jackpot === 0) {
         status = 'WAITING';
       } else if (timeLeft < 0) {
         status = 'EXPIRED';
-        jackpot = 0;
       }
       setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot, status, timeLeft })
     });

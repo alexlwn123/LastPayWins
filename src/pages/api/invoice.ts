@@ -31,7 +31,7 @@ const getInvoice = async () => {
   }
 }
 
-const checkInvoice = async (rHash, lnAddress, isNew) => {
+const checkInvoice = async (rHash, lnAddress) => {
   const hash = Buffer.from(rHash.toString(), 'base64').toString('hex');
   const url = `${process.env.LND_HOST}/v1/invoice/${hash}`
   const data = await fetch(url, {
@@ -46,9 +46,7 @@ const checkInvoice = async (rHash, lnAddress, isNew) => {
   });
   const rawResult = await data.json() as { settled: string, state: string };
   if (rawResult?.settled) {
-    // const currentState = await pusher.get({ path: "/channels/cache-last-payer" });
-    // console.log('currentState', currentState);
-    await updateLastPayer(lnAddress, Date.now(), isNew);
+    await updateLastPayer(lnAddress);
   }
   return {
     settled: rawResult.settled,
@@ -64,8 +62,7 @@ export default async (req, res) => {
     } else if (req.method === 'GET') {
       const rHash = decodeURIComponent(req.query.hash);
       const lnAddress = req.query.lnaddr;
-      const isNew = req.query.new;
-      const data = await checkInvoice(rHash, lnAddress, isNew);
+      const data = await checkInvoice(rHash, lnAddress);
       res.status(200).json(data);
     } else {
       res.status(405).json({ error: 'Method not supported' });
