@@ -30,7 +30,6 @@ export const getLastPayer = async (): Promise<{ lnAddress: string, jackpot: numb
   const lastPayer = state?.cache?.data
   if (!lastPayer) return {jackpot: 0, lnAddress: 'none', timestamp: 0};
   const lastPayerJson = JSON.parse(lastPayer) as {lnAddress: string, timestamp: number, jackpot: number};
-  console.log(lastPayerJson);
   return lastPayerJson;
 };
 

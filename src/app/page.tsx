@@ -26,26 +26,33 @@ export default function Home() {
   const [refetch, setRefetch] = useState(false)
   const [countdownKey, setCountdownKey] = useState<number>(0)
   const [fetching, setFetching] = useState(false);
+  const [checking, setChecking] = useState(false);
   const initialRender = useRef(true);
 
   const { lnAddress, timestamp, jackpot, status, timeLeft, setStatus } = usePusher();
 
   useEffect(() => {
     console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft);
-    console.log(initialRender.current);
     if (initialRender.current) {
       initialRender.current = false;
       return;
     } else if (status === 'LIVE' && lnAddress !== userAddress) {
-      toast(`Bid Received! - ${lnAddress}`, { type: 'info' });
       va.track('Bid', { user: lnAddress, jackpot, timestamp });
+      toast(`Bid Received! - ${lnAddress}`, { type: 'info' });
     } else if (status === 'EXPIRED' && lnAddress !== userAddress) {
       toast(`Timer Expired! ${lnAddress} wins ₿ ${fromSats(jackpot)}!`, { type: 'info', pauseOnFocusLoss: true });
-      va.track('Expired', { user: lnAddress, jackpot, timestamp });
-    } else if (status === 'EXPIRED') {
+    } else if (status === 'WINNER') {
+      va.track('Winner', { user: lnAddress, jackpot, timestamp });
       toast(`CONGRATULATIONS! You've won ₿ ${fromSats(jackpot)}!`, { type: 'success', pauseOnFocusLoss: true });
+    } else if (status === 'PAYMENT_SUCCESS') {
+      va.track('Winner Payment Success', { user: lnAddress, jackpot, timestamp });
+      toast(`Payment Settled! Enjoy your Sats!`, { type: 'success', pauseOnFocusLoss: true });
+    } else if (status === 'PAYMENT_FAILED') {
+      va.track('Winner Payment Failed', { user: lnAddress, jackpot, timestamp });
+      toast(`Payment Failed - DM @_alexlewin on Twitter to get paid.`, { type: 'error', pauseOnFocusLoss: true });
     }
     setCountdownKey(prevKey => prevKey + 1);
+
     if (status === 'LOADING') {
       setRefetch(true);
     }
@@ -77,25 +84,26 @@ export default function Home() {
 
   // Check invoice
   useEffect(() => {
-    if (settled || !hash || status === 'LOADING') return;
-    console.log('invoice', settled, hash, status)
+    if (settled || !hash || status === 'LOADING' || checking) return;
     const interval = setInterval(() => {
-      const isNew = status !== 'LIVE'
-      const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}&new=${isNew}`
+      if (checking) return;
+      setChecking(true);
+      const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}`
       fetch(url, { method: 'GET' })
         .then((response) => response.json())
         .then((data) => {
-          setSettled(data.settled && true);
           if (data.settled) {
+            setSettled(data.settled && true);
             localStorage.setItem('lnaddr', userAddress);
             setCountdownKey(prevKey => prevKey + 1);
             setHash(null);
             toast("Bid Received! You're in the lead!", { type: 'success' });
           }
-        });
+          setChecking(false);
+        }).catch(_ => setChecking(false));
     }, 1000);
     return () => clearInterval(interval);
-  }, [hash, fetching, status, userAddress]);
+  }, [hash, fetching, status, userAddress, settled, checking]);
 
   return (
     <main className={styles.main}>
@@ -117,6 +125,8 @@ export default function Home() {
               countdownKey={countdownKey}
               status={status}
               setStatus={setStatus}
+              isWinning={lnAddress === userAddress}
+              toast={toast}
             />
             <CurrentWinner
               currentWinner={lnAddress ?? "Anon"}

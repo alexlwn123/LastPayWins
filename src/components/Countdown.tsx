@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import styles from './Countdown.module.css';
 import { Status } from "@/types/payer";
 
-const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime: number, countdownKey: number, status: Status, setStatus }) => {
+const Countdown = ({currentTime, countdownKey, status, setStatus, isWinning, toast}: {currentTime: number, countdownKey: number, status: Status, setStatus, isWinning: boolean, toast }) => {
   const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60');
 
   const renderTime = ({ remainingTime, color }) => {
@@ -34,7 +33,7 @@ const Countdown = ({currentTime, countdownKey, status, setStatus}: {currentTime:
         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
         colorsTime={[60, 30, 15, 0]}
         onComplete={() => {
-          setStatus('EXPIRED');
+          setStatus(isWinning ? 'WINNER' : 'EXPIRED', toast);
           return {
             shouldRepeat: true
           }

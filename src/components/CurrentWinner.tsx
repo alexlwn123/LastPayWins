@@ -8,7 +8,7 @@ const CurrentWinner = ({currentWinner, isActive, jackpot, status}) => {
           {isActive ? "Current " : "Previous "} Winner: {currentWinner}
         </b>
       </p>
-      <p>₿ {fromSats(jackpot)}</p>
+      {!isActive && <p>₿ {fromSats(jackpot)}</p>}
     </div>
   );
 };

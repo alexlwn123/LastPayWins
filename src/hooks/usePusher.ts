@@ -2,6 +2,7 @@
 import { Payer, Status } from "@/types/payer";
 import Pusher, { Channel } from "pusher-js";
 import { useEffect, useRef, useState } from "react";
+import va from "@vercel/analytics";
 
 const appKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
 const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!;
@@ -16,8 +17,31 @@ const usePusher = () => {
     timeLeft: 0,
     status: 'LOADING'
   });
+  const winner = useRef<Payer>({
+    lnAddress: '',
+    timestamp: 0,
+    jackpot: 0,
+    timeLeft: 0,
+    status: 'LOADING'
+  });
 
-  const setStatus = (status: Status) => {
+  const setStatus = async (status: Status) => {
+    if (status === 'WINNER' && winner.current.status !== 'WINNER' && winner.current.timestamp !== lastPayer.timestamp) {
+      setLastPayer((lastPayer) => ({ ...lastPayer, status }));
+      winner.current = lastPayer;
+      const rawResult = await fetch('/api/payments', { method: 'POST' })
+      if (rawResult.status !== 200) {
+        console.error('payment failed', rawResult)
+        return;
+      }
+      const data = await rawResult.json()
+
+      if (data.status === 'failed') {
+        status = 'PAYMENT_FAILED'
+      } else {
+        status = 'PAYMENT_SUCCESS'
+      }
+    }
     setLastPayer((lastPayer) => ({ ...lastPayer, status }));
   }
 
