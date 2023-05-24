@@ -4,7 +4,8 @@ import { Status } from "@/types/payer";
 
 const Countdown = ({currentTime, countdownKey, status, setStatus, isWinning, toast}: {currentTime: number, countdownKey: number, status: Status, setStatus, isWinning: boolean, toast }) => {
   const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60');
-
+  const percentages = [1, .5, .25, 0];
+  let colorsTime = percentages.map(p => Math.floor(p * duration));
   const renderTime = ({ remainingTime, color }) => {
     if (remainingTime === 0) {
       return <p className={styles.timer}>Too late...</p>;
@@ -31,7 +32,8 @@ const Countdown = ({currentTime, countdownKey, status, setStatus, isWinning, toa
         duration={duration}
         initialRemainingTime={status === 'LIVE' ? currentTime : duration}
         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
-        colorsTime={[60, 30, 15, 0]}
+        colorsTime={[duration, Math.floor(duration * 0.5), Math.floor(duration * 0.25), 0]}
+        // 100, 50, 25, 0
         onComplete={() => {
           setStatus(isWinning ? 'WINNER' : 'EXPIRED', toast);
           return {
