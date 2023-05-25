@@ -1,4 +1,3 @@
-import { readLnurl } from '@/lib/lnbits';
 import pusher, { getLastPayer, updateLastPayer } from '../../lib/pusher';
 let jackpot = 0;
 export default async (req, res) => {
@@ -18,11 +17,11 @@ export default async (req, res) => {
       const newPayer = updateLastPayer('alexl@getalby.com');
       res.status(200).json({ message: 'ok', data: newPayer})
     } else if (req.method === 'PATCH') {
-      // const body = req.body.lnurl;
-      // console.log('body', body);
-      // const data = await readLnurl(body);
-      // console.log('lnurl', data);
-      res.status(200).json({})
+      const body = req.body;
+      await pusher.trigger(channel, 'update', {lnAddress: body.lnAddress, timestamp: Date.now(), jackpot: body.jackpot});
+      const rawState = await pusher.get({path: `/channels/${channel}`, params: {info: ['cache']}});
+      const state = await rawState.json();
+      res.status(200).json(state)
     } else {
       res.status(405).json({ error: 'Method not supported' });
     }
