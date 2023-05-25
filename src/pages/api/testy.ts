@@ -1,3 +1,4 @@
+import { checkLnbitsInvoice } from '@/lib/lnbits';
 import pusher, { getLastPayer, updateLastPayer } from '../../lib/pusher';
 let jackpot = 0;
 export default async (req, res) => {
@@ -7,8 +8,10 @@ export default async (req, res) => {
       await pusher.trigger(channel, 'update', {lnAddress: 'None!', timestamp: Date.now(), jackpot: 0});
       res.status(200).json({ message: 'ok' });
     } else if (req.method === 'GET') {
-      const lastPlayer = await getLastPayer();
-      res.status(200).json({ message: 'ok', data: lastPlayer });
+      const hash = req.query.hash;
+      const data = await checkLnbitsInvoice(hash);
+      // const lastPlayer = await getLastPayer();
+      res.status(200).json({ message: 'ok', data });
     } else if (req.method === 'POST') {
       jackpot = jackpot + parseInt(process.env.INVOICE_AMOUNT ?? '0');
       const rawState = await pusher.get({path: `/channels/${channel}`, params: {info: ['cache']}});

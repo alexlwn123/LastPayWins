@@ -25,13 +25,14 @@ export const readLnurl = async (lnurl: string): Promise<ScanResult> => {
   const rawResult = await data.json() as ScanResult;
   return rawResult;
 };
+
 export const payLnurl = async () => {
   const winner = await getLastPayer();
   const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - winner.timestamp) / 1000);
   if (timeLeft > 0) {
     return { status: 'failed', error: 'Illegal Payment', code: 0 };
   }
-  if (timeLeft < -10) {
+  if (timeLeft < -30) {
     return { status: 'failed', error: 'Illegal Payment', code: 1 };
   }
   const url = `${process.env.LNBITS_URL!}/api/v1/payments/lnurl`;
@@ -61,5 +62,41 @@ export const payLnurl = async () => {
   }
   const rawResult = await data.json();
   return rawResult;
-
 }
+
+export const checkLnbitsInvoice = async (paymentHash: string) => {
+  const url = `${process.env.LNBITS_URL!}/api/v1/payments/${paymentHash}`;
+  const rawData = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.LNBITS_API_KEY_ADMIN!,
+    }
+  });
+  const data = await rawData.json();
+  return data;
+
+};
+
+export const getLnbitsInvoice = async () => {
+  const amount = process.env.INVOICE_AMOUNT || 1000;
+  const url = `${process.env.LNBITS_URL!}/api/v1/payments`;
+  const body = {
+    out: false,
+    amount: amount, // Sats
+    memo: 'Last Pay Wins',
+    expiry: 3600,
+    unit: 'sat',
+  };
+
+  const rawData = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.LNBITS_API_KEY_ADMIN!,
+    },
+    body: JSON.stringify(body)
+  });
+  const data = await rawData.json();
+  return data;
+};

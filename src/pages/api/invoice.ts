@@ -1,6 +1,7 @@
 import { Agent } from "https";
 import fetch from 'node-fetch';
-import pusher, { updateLastPayer } from '../../lib/pusher';
+import { updateLastPayer } from '../../lib/pusher';
+import { checkLnbitsInvoice, getLnbitsInvoice } from "@/lib/lnbits";
 
 const getInvoice = async () => { 
   const amount = process.env.INVOICE_AMOUNT || 1000;
@@ -31,39 +32,42 @@ const getInvoice = async () => {
   }
 }
 
-const checkInvoice = async (rHash, lnAddress) => {
-  const hash = Buffer.from(rHash.toString(), 'base64').toString('hex');
+const checkInvoice = async (hash, lnAddress) => {
+  // const hash = Buffer.from(rHash.toString(), 'base64').toString('hex');
   const url = `${process.env.LND_HOST}/v1/invoice/${hash}`
-  const data = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Grpc-Metadata-macaroon': process.env.MACAROON!,
-      'Content-Type': 'application/json',
-    },
-    agent: new Agent({
-      rejectUnauthorized: false,
-    }),
-  });
-  const rawResult = await data.json() as { settled: string, state: string };
-  if (rawResult?.settled) {
+  const data = await checkLnbitsInvoice(hash) as {paid: boolean};
+  // const data = await fetch(url, {
+  //   method: 'GET',
+  //   headers: {
+  //     'Grpc-Metadata-macaroon': process.env.MACAROON!,
+  //     'Content-Type': 'application/json',
+  //   },
+  //   agent: new Agent({
+  //     rejectUnauthorized: false,
+  //   }),
+  // });
+  // const rawResult = await data.json() as { settled: string, state: string };
+  if (data.paid) {
     await updateLastPayer(lnAddress);
   }
   return {
-    settled: rawResult.settled,
-    state: rawResult.state
+    settled: data.paid,
   }
 };
 
 export default async (req, res) => {
   try {
     if (req.method === 'POST') {
-      const data = await getInvoice();
+      const data = await getLnbitsInvoice();
       res.status(200).json(data);
     } else if (req.method === 'GET') {
       const rHash = decodeURIComponent(req.query.hash);
       const lnAddress = req.query.lnaddr;
       const data = await checkInvoice(rHash, lnAddress);
       res.status(200).json(data);
+    // } else if (req.method === 'PATCH'){ 
+    //   const data = await getLnbitsInvoice();
+    //   res.status(200).json(data);
     } else {
       res.status(405).json({ error: 'Method not supported' });
     }

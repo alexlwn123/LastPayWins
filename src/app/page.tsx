@@ -75,8 +75,8 @@ export default function Home() {
     fetch('/api/invoice', { method: 'POST' })
       .then((response) => response.json())
       .then((data) => {
-        setInvoice(data.invoice)
-        setHash(data.rHash)
+        setInvoice(data.payment_request)
+        setHash(data.payment_hash)
         setSettled(false);
         setFetching(false);
       });
