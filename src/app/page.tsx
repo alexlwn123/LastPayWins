@@ -14,9 +14,9 @@ import {
 import usePusher from '@/hooks/usePusher';
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
-import { fromSats } from 'satcomma';
 import va from "@vercel/analytics";
 import { Analytics } from '@vercel/analytics/react';
+import { checkInvoiceStatus, handleStatusUpdate, validateLnurl } from './utils';
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
@@ -27,36 +27,35 @@ export default function Home() {
   const [countdownKey, setCountdownKey] = useState<number>(0)
   const [fetching, setFetching] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [isValidAddress, setIsValidAddress] = useState(false);
   const initialRender = useRef(true);
 
   const { lnAddress, timestamp, jackpot, status, timeLeft, setStatus } = usePusher();
 
+  // validate user input
+  useEffect(() => {
+    setIsValidAddress(false);
+    const delayedValidate = setTimeout(async () => {
+      const res = await validateLnurl(userAddress);
+      setIsValidAddress(res.valid);
+    }, 1000);
+    return () => clearTimeout(delayedValidate);
+  }, [userAddress]);
+
+  // handle status update
   useEffect(() => {
     console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft);
     if (initialRender.current) {
       initialRender.current = false;
       return;
-    } else if (status === 'LIVE' && lnAddress !== userAddress) {
-      va.track('Bid', { user: lnAddress, jackpot, timestamp });
-      toast(`Bid Received! - ${lnAddress}`, { type: 'info' });
-    } else if (status === 'EXPIRED' && lnAddress !== userAddress) {
-      toast(`Timer Expired! ${lnAddress} wins ₿ ${fromSats(jackpot)}!`, { type: 'info', pauseOnFocusLoss: true });
-    } else if (status === 'WINNER') {
-      va.track('Winner', { user: lnAddress, jackpot, timestamp });
-      toast(`CONGRATULATIONS! You've won ₿ ${fromSats(jackpot)}!`, { type: 'success', pauseOnFocusLoss: true });
-    } else if (status === 'PAYMENT_SUCCESS') {
-      va.track('Winner Payment Success', { user: lnAddress, jackpot, timestamp });
-      toast(`Payment Settled! Enjoy your Sats!`, { type: 'success', pauseOnFocusLoss: true });
-    } else if (status === 'PAYMENT_FAILED') {
-      va.track('Winner Payment Failed', { user: lnAddress, jackpot, timestamp });
-      toast(`Payment Failed - DM @_alexlewin on Twitter to get paid.`, { type: 'error', pauseOnFocusLoss: true });
     }
+    handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp, va, toast);
     setCountdownKey(prevKey => prevKey + 1);
 
     if (status === 'LOADING') {
       setRefetch(true);
     }
-  }, [status, jackpot])
+  }, [status, jackpot]);
 
 
   // get lnaddr from local storage
@@ -87,20 +86,7 @@ export default function Home() {
     if (settled || !hash || status === 'LOADING' || checking) return;
     const interval = setInterval(() => {
       if (checking) return;
-      setChecking(true);
-      const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}`
-      fetch(url, { method: 'GET' })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.settled) {
-            setSettled(data.settled && true);
-            localStorage.setItem('lnaddr', userAddress);
-            setCountdownKey(prevKey => prevKey + 1);
-            setHash(null);
-            toast("Bid Received! You're in the lead!", { type: 'success' });
-          }
-          setChecking(false);
-        }).catch(_ => setChecking(false));
+      checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey);
     }, 1000);
     return () => clearInterval(interval);
   }, [hash, fetching, status, userAddress, settled, checking]);

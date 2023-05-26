@@ -75,7 +75,6 @@ export const checkLnbitsInvoice = async (paymentHash: string) => {
   });
   const data = await rawData.json();
   return data;
-
 };
 
 export const getLnbitsInvoice = async () => {

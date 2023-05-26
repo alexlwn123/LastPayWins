@@ -33,26 +33,11 @@ const getInvoice = async () => {
 }
 
 const checkInvoice = async (hash, lnAddress) => {
-  // const hash = Buffer.from(rHash.toString(), 'base64').toString('hex');
-  const url = `${process.env.LND_HOST}/v1/invoice/${hash}`
   const data = await checkLnbitsInvoice(hash) as {paid: boolean};
-  // const data = await fetch(url, {
-  //   method: 'GET',
-  //   headers: {
-  //     'Grpc-Metadata-macaroon': process.env.MACAROON!,
-  //     'Content-Type': 'application/json',
-  //   },
-  //   agent: new Agent({
-  //     rejectUnauthorized: false,
-  //   }),
-  // });
-  // const rawResult = await data.json() as { settled: string, state: string };
   if (data.paid) {
     await updateLastPayer(lnAddress);
   }
-  return {
-    settled: data.paid,
-  }
+  return { settled: data.paid }
 };
 
 export default async (req, res) => {
