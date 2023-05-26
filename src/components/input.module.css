@@ -18,8 +18,18 @@
   color: #fff;
   /* background-color: 444; */
   border: none;
+  outline: none;
   border-radius: 50px;
   transition: box-shadow 0.3s ease-in-out;
+  z-index: 5;
+}
+.icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 12px;
+  color: #888;
+  height: 20px;
 }
 
 .input input::placeholder {

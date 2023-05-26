@@ -28,17 +28,20 @@ export default function Home() {
   const [fetching, setFetching] = useState(false);
   const [checking, setChecking] = useState(false);
   const [isValidAddress, setIsValidAddress] = useState(false);
+  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const initialRender = useRef(true);
 
   const { lnAddress, timestamp, jackpot, status, timeLeft, setStatus } = usePusher();
 
   // validate user input
   useEffect(() => {
-    setIsValidAddress(false);
     const delayedValidate = setTimeout(async () => {
+      setIsValidatingAddress(true)
       const res = await validateLnurl(userAddress);
+      setIsValidatingAddress(false);
+      console.log(res);
       setIsValidAddress(res.valid);
-    }, 1000);
+    }, 300);
     return () => clearTimeout(delayedValidate);
   }, [userAddress]);
 
@@ -124,9 +127,11 @@ export default function Home() {
               placeholder={"example@lightningaddress.com"}
               onChange={(e) => setUserAddress(e.target.value)}
               value={userAddress}
+              isValidAddress={isValidAddress}
+              isValidating={isValidatingAddress}
             />
           </div>
-          <Invoice invoice={invoice} toast={toast} />
+          {userAddress && isValidAddress && <Invoice invoice={invoice} toast={toast} /> }
         </div>
       </Loading>
       <Footer />
