@@ -16,11 +16,12 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import va from "@vercel/analytics";
 import { Analytics } from '@vercel/analytics/react';
-import { checkInvoiceStatus, handleStatusUpdate, validateLnurl } from './utils';
+import { generatePrivateKey } from 'nostr-tools'
+import { checkInvoiceStatus, handleStatusUpdate, validateLnurl, getZapInvoice } from './utils';
 
 export default function Home() {
-  const [invoice, setInvoice] = useState(null);
-  const [hash, setHash] = useState<string | null>(null);
+  const [invoice, setInvoice] = useState<string | null | undefined>(null);
+  const [hash, setHash] = useState<string | null | undefined>(null);
   const [settled, setSettled] = useState(false);
   const [userAddress, setUserAddress] = useState('');
   const [refetch, setRefetch] = useState(false)
@@ -29,6 +30,7 @@ export default function Home() {
   const [checking, setChecking] = useState(false);
   const [isValidAddress, setIsValidAddress] = useState(false);
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+  const [nostrPrivKey, setNostrPrivKey] = useState<string | null>(null)
   const initialRender = useRef(true);
 
   const { lnAddress, timestamp, jackpot, status, timeLeft, setStatus } = usePusher();
@@ -61,28 +63,35 @@ export default function Home() {
   }, [status, jackpot]);
 
 
-  // get lnaddr from local storage
   useEffect(() => {
+    // get lnaddr from local storage
     const lnaddr = localStorage.getItem('lnaddr');
     if (lnaddr) {
       setUserAddress(lnaddr);
     }
-   }, []);
 
+    // get nostr hex private key from storage or generate one
+    let privKey = localStorage.getItem('privKey');
+    if (privKey) {
+      setNostrPrivKey(privKey)
+    } else {
+      privKey = generatePrivateKey()
+      localStorage.setItem('privKey', privKey)
+    }
+   }, []);
 
   // Get invoice
   useEffect(() => {
-    if (fetching || hash) return;
+    if (fetching || hash || !nostrPrivKey) return;
     setFetching(true);
-    fetch('/api/invoice', { method: 'POST' })
-      .then((response) => response.json())
+    getZapInvoice(nostrPrivKey)
       .then((data) => {
-        setInvoice(data.payment_request)
-        setHash(data.payment_hash)
+        setInvoice(data?.invoice)
+        setHash(data?.paymentHash)
         setSettled(false);
         setFetching(false);
-      });
-  }, [refetch, hash]);
+      })
+  }, [refetch, hash, nostrPrivKey]);
 
   // Check invoice
   useEffect(() => {
