@@ -4,7 +4,7 @@ export const validateLnurl = async (lnurl: string) => {
   const url = `/api/validate?lnurl=${encodeURIComponent(lnurl)}`;
   const res = await fetch(url, { method: 'GET', });
   const data = await res.json();
-  if (res.status === 200 && data.status === 'OK') {
+  if (res.status === 200 && data.domain) {
     return { valid: true, domain: data.domain };
   } else {
     return { valid: false };
