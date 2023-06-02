@@ -29,18 +29,6 @@ const usePusher = () => {
     if (status === 'WINNER' && winner.current.status !== 'WINNER' && winner.current.timestamp !== lastPayer.timestamp) {
       setLastPayer((lastPayer) => ({ ...lastPayer, status }));
       winner.current = lastPayer;
-      const rawResult = await fetch('/api/payments', { method: 'POST' })
-      if (rawResult.status !== 200) {
-        console.error('payment failed', rawResult)
-        return;
-      }
-      const data = await rawResult.json()
-
-      if (data.status === 'failed') {
-        status = 'PAYMENT_FAILED'
-      } else {
-        status = 'PAYMENT_SUCCESS'
-      }
     }
     setLastPayer((lastPayer) => ({ ...lastPayer, status }));
   }
@@ -54,7 +42,6 @@ const usePusher = () => {
     });
     const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
     lastPayerChannel.current = pusher.current.subscribe(channel);
-
     lastPayerChannel.current.bind("update", (data) => {
       console.log('LAST PAYER update', data);
       let jackpot = parseInt(data.jackpot);
@@ -80,6 +67,7 @@ const usePusher = () => {
 
     return () => {
       pusher.current?.unbind_all();
+      pusher.current?.unsubscribe(channel)
     }
 
   }, []);

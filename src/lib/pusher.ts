@@ -1,3 +1,4 @@
+import { inngest } from "@/pages/api/inngest";
 import Pusher from "pusher";
 
 const client = new Pusher({
@@ -7,7 +8,13 @@ const client = new Pusher({
   cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!,
   useTLS: true,
 });
-const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
+const channelName = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
+
+type Payer = {
+  lnAddress: string, 
+  jackpot: number, 
+  timestamp: number 
+}
 
 export const updateLastPayer = async (lnAddress) => {
   const amount = parseInt(process.env.INVOICE_AMOUNT ?? '0') || 100;
@@ -15,23 +22,33 @@ export const updateLastPayer = async (lnAddress) => {
   const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - previousPayer.timestamp) / 1000);
   const previousJackpot = timeLeft > 0 ? previousPayer.jackpot : 0;
 
-  const payer = {
+  const payer: Payer = {
     lnAddress,
     timestamp: Date.now(),
     jackpot: previousJackpot + amount, 
   };
-  client.trigger(channel, "update", payer);
+  client.trigger(channelName, "update", payer);
+  await inngest.send({
+    id: `bid-${payer.lnAddress}-${payer.timestamp}-${payer.jackpot}}`,
+    name: 'bid',
+    data: payer,
+
+  })
   return payer;
 }
-export const getLastPayer = async (): Promise<{ lnAddress: string, jackpot: number, timestamp: number }> => {
+
+export const getLastPayer = async (): Promise<Payer> => {
   const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
   const currentState = await client.get({ path: `/channels/${channel}`, params: {info: ['cache']} });
   const state = await currentState.json() as {cache?: {data: string}};
   const lastPayer = state?.cache?.data
   if (!lastPayer) return {jackpot: 0, lnAddress: 'none', timestamp: 0};
-  const lastPayerJson = JSON.parse(lastPayer) as {lnAddress: string, timestamp: number, jackpot: number};
-  return lastPayerJson;
+  try {
+    const lastPayerJson = JSON.parse(lastPayer) as Payer;
+    return lastPayerJson;
+  } catch(e) {
+    return {jackpot: 0, lnAddress: 'none', timestamp: 0};
+  }
 };
-
 
 export default client;

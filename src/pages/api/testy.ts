@@ -2,6 +2,8 @@ import { checkLnbitsInvoice } from '@/lib/lnbits';
 import pusher, { getLastPayer, updateLastPayer } from '../../lib/pusher';
 let jackpot = 0;
 export default async (req, res) => {
+  // console.log('HEEER', res.socket);
+  // console.log('HEEER', typeof res.socket);
   const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
   try {
     if (req.method === 'DELETE') {

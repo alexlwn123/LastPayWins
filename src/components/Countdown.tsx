@@ -2,7 +2,7 @@ import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import styles from './Countdown.module.css';
 import { Status } from "@/types/payer";
 
-const Countdown = ({currentTime, countdownKey, status, setStatus, isWinning, toast}: {currentTime: number, countdownKey: number, status: Status, setStatus, isWinning: boolean, toast }) => {
+const Countdown = ({currentTime, countdownKey, status, setStatus, isWinning, toast, displayingInvoice}: {currentTime: number, countdownKey: number, status: Status, setStatus, isWinning: boolean, toast, displayingInvoice: boolean }) => {
   const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60');
   const percentages = [1, .5, .25, 0];
   let colorsTime = percentages.map(p => Math.floor(p * duration));
@@ -43,7 +43,11 @@ const Countdown = ({currentTime, countdownKey, status, setStatus, isWinning, toa
       >
         {renderTime}
       </CountdownCircleTimer>
-      <p className={styles.subtext}>Pay the invoice to { status === 'LIVE' ? 'reset': 'start' } the Timer.</p>
+      {
+        displayingInvoice ? 
+          <p className={styles.subtext}>Pay the invoice to {status === 'LIVE' ? 'reset' : 'start'} the Timer.</p>
+          : <p className={styles.subtext}>Input your Lightning Address below.</p>
+      }
     </div>
   );
 };

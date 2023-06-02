@@ -116,6 +116,7 @@ export default function Home() {
               setStatus={setStatus}
               isWinning={lnAddress === userAddress}
               toast={toast}
+              displayingInvoice={isValidAddress}
             />
             <CurrentWinner
               currentWinner={lnAddress ?? "Anon"}
