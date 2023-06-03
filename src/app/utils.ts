@@ -1,5 +1,5 @@
 import { fromSats } from 'satcomma';
-import { Event, UnsignedEvent, getEventHash, getPublicKey, getSignature, nip57, validateEvent, verifySignature } from 'nostr-tools';
+import { finishEvent, nip57, validateEvent, verifySignature } from 'nostr-tools';
 import { decode as invoiceDecode } from 'light-bolt11-decoder'
 
 export const validateLnurl = async (lnurl: string) => {
@@ -48,27 +48,52 @@ export const checkInvoiceStatus = (setChecking, hash, setHash, setSettled, toast
     }).catch(_ => setChecking(false));
 }
 
-export const getZapInvoice = async (privateKey: string): Promise<{invoice: string, paymentHash: string} | undefined> => {
+export async function getZapEndpoint(
+  lud16: string | null,
+): Promise<null | { callback: string; minSendable: number; maxSendable: number; nostrPubkey: string; lnurl: string }> {
+  try {
+    let lnurl: string = ''
+    if (lud16) {
+      let [name, domain] = lud16.split('@')
+      lnurl = `https://${domain}/.well-known/lnurlp/${name}`
+    } else {
+      return null
+    }
+
+    let res = await fetch(lnurl)
+    let body = await res.json()
+
+    if (body.allowsNostr && body.nostrPubkey) {
+      return {
+        callback: body.callback,
+        minSendable: body.minSendable,
+        maxSendable: body.maxSendable,
+        nostrPubkey: body.nostrPubkey,
+        lnurl: lnurl,
+      }
+    }
+  } catch (err) {
+    /*-*/
+  }
+
+  return null
+}
+
+
+export const getZapInvoice = async (privateKey: string, nostrZapCallback: string): Promise<{invoice: string, paymentHash: string} | undefined> => {
   const zapRequestArgs = {
-    profile: process.env.NEXT_PUBLIC_NOSTR_ZAP_HEX_PUBLIC_KEY!,
+    // TODO: Profile will be LPW nostr pubkey
+    profile: "44965ed7ec11633bc9aa05ec70c16535667c1a7b3559d0a3af8ab6ad0524a9ef", // test lpw account
     // TODO: set to round specific LPW kind 1 announcement
-    event: null,
+    event: "51cc2a2d9f4b548da6ebf34e45be8a6ed54e999a464143674f5f3910c2c45cc8", // test lpw kind 1
     amount: 10000,
-    comment: '',
-    relays: ['wss://brb.io','wss://relay.damus.io','wss://nostr.fmt.wiz.biz','wss://nostr.oxtr.dev','wss://arc1.arcadelabs.co','wss://relay.nostr.ch','wss://eden.nostr.land','wss://nos.lol','wss://relay.snort.social','wss://relay.current.fyi']
+    comment: 'Bidding on lastpaywins.com',
+    // NOTE: lnbits lnurlp 0.3 will break if it tries to publish to non public relays I think
+    relays: ["wss://relay.damus.io"]
   }
 
   try {
-    const zapRequestEvent: UnsignedEvent = {
-      ...nip57.makeZapRequest(zapRequestArgs),
-      pubkey: getPublicKey(privateKey)
-    }
-
-    const signedZapRequestEvent: Event = {
-      ...zapRequestEvent,
-      id: getEventHash(zapRequestEvent),
-      sig: getSignature(zapRequestEvent, privateKey)
-    }
+    const signedZapRequestEvent = finishEvent(nip57.makeZapRequest(zapRequestArgs), privateKey)
 
     let ok = validateEvent(signedZapRequestEvent)
     if (!ok) throw new Error('Invalid event')
@@ -78,7 +103,8 @@ export const getZapInvoice = async (privateKey: string): Promise<{invoice: strin
     if (!veryOk) throw new Error('Invalid signature')
 
     const encodedZapRequest = encodeURI(JSON.stringify(signedZapRequestEvent))
-    const zapRequestHttp = `${process.env.NEXT_PUBLIC_NOSTR_ZAP_CALLBACK!}?amount=10000&nostr=${encodedZapRequest}&lnurl=${process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS!}`
+    console.debug('VALIDATE', nip57.validateZapRequest(JSON.stringify(signedZapRequestEvent)))
+    const zapRequestHttp = `${nostrZapCallback}?amount=10000&nostr=${encodedZapRequest}&lnurl=${process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS}`
     console.debug('zapRequestHttp', zapRequestHttp)
 
     const resObj = await fetch(zapRequestHttp).then((res) => res.json())
