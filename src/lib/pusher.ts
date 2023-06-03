@@ -10,7 +10,7 @@ const client = new Pusher({
 const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
 
 export const updateLastPayer = async (lnAddress) => {
-  const amount = parseInt(process.env.INVOICE_AMOUNT ?? '0') || 100;
+  const amount = parseInt(process.env.NEXT_PUBLIC_INVOICE_AMOUNT ?? '0') || 100;
   const previousPayer = await getLastPayer();
   const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - previousPayer.timestamp) / 1000);
   const previousJackpot = timeLeft > 0 ? previousPayer.jackpot : 0;

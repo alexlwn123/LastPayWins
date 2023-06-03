@@ -13,7 +13,7 @@ export default async (req, res) => {
       // const lastPlayer = await getLastPayer();
       res.status(200).json({ message: 'ok', data });
     } else if (req.method === 'POST') {
-      jackpot = jackpot + parseInt(process.env.INVOICE_AMOUNT ?? '0');
+      jackpot = jackpot + parseInt(process.env.NEXT_PUBLIC_INVOICE_AMOUNT ?? '0');
       const rawState = await pusher.get({path: `/channels/${channel}`, params: {info: ['cache']}});
       const state = await rawState.json();
       console.log('testy - cached state', state);

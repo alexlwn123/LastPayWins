@@ -79,15 +79,16 @@ export async function getZapEndpoint(
   return null
 }
 
-
 export const getZapInvoice = async (privateKey: string, nostrZapCallback: string): Promise<{invoice: string, paymentHash: string} | undefined> => {
+  const amountMillisats = parseInt(process.env.NEXT_PUBLIC_INVOICE_AMOUNT || "1000") * 1000
+
   const zapRequestArgs = {
     // TODO: Profile will be LPW nostr pubkey
     profile: "44965ed7ec11633bc9aa05ec70c16535667c1a7b3559d0a3af8ab6ad0524a9ef", // test lpw account
     // TODO: set to round specific LPW kind 1 announcement
     event: "51cc2a2d9f4b548da6ebf34e45be8a6ed54e999a464143674f5f3910c2c45cc8", // test lpw kind 1
-    amount: 10000,
-    comment: 'Bidding on lastpaywins.com',
+    amount: amountMillisats,
+    comment: 'Bid on lastpaywins.com',
     // NOTE: lnbits lnurlp 0.3 will break if it tries to publish to non public relays I think
     relays: ["wss://relay.damus.io"]
   }
@@ -98,24 +99,18 @@ export const getZapInvoice = async (privateKey: string, nostrZapCallback: string
     let ok = validateEvent(signedZapRequestEvent)
     if (!ok) throw new Error('Invalid event')
 
-    console.debug('signedZapRequestEvent', signedZapRequestEvent)
     let veryOk = verifySignature(signedZapRequestEvent)
     if (!veryOk) throw new Error('Invalid signature')
 
     const encodedZapRequest = encodeURI(JSON.stringify(signedZapRequestEvent))
-    console.debug('VALIDATE', nip57.validateZapRequest(JSON.stringify(signedZapRequestEvent)))
-    const zapRequestHttp = `${nostrZapCallback}?amount=10000&nostr=${encodedZapRequest}&lnurl=${process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS}`
-    console.debug('zapRequestHttp', zapRequestHttp)
+    const zapRequestHttp = `${nostrZapCallback}?amount=${amountMillisats.toString()}&nostr=${encodedZapRequest}&lnurl=${process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS}`
 
     const resObj = await fetch(zapRequestHttp).then((res) => res.json())
-    console.debug('resObj', resObj)
     if (resObj.status === 'ERROR') throw new Error(resObj.reason)
 
     const { pr: invoice } = resObj
-    console.log('Success! Invoice: ', invoice)
     const decodedInvoice = decodeInvoice(invoice)
     if (!decodedInvoice?.paymentHash) throw new Error('Missing payment hash')
-    console.debug('decodedInvoice', decodedInvoice)
 
     return { invoice, paymentHash: decodedInvoice.paymentHash } 
   } catch(e) {
@@ -139,17 +134,12 @@ const decodeInvoice = (pr: string): InvoiceDetails | undefined => {
 
     const amountSection = parsed.sections.find((a) => a.name === 'amount')
     const amount = amountSection ? Number(amountSection.value as number | string) : undefined
-
     const timestampSection = parsed.sections.find((a) => a.name === 'timestamp')
     const timestamp = timestampSection ? Number(timestampSection.value as number | string) : undefined
-
     const expirySection = parsed.sections.find((a) => a.name === 'expiry')
     const expire = expirySection ? Number(expirySection.value as number | string) : undefined
-
     const descriptionSection = parsed.sections.find((a) => a.name === 'description')?.value
-
     const descriptionHashSection = parsed.sections.find((a) => a.name === 'description_hash')?.value
-
     const paymentHashSection = parsed.sections.find((a) => a.name === 'payment_hash')?.value
 
     const ret = {

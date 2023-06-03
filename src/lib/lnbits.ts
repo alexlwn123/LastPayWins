@@ -78,7 +78,7 @@ export const checkLnbitsInvoice = async (paymentHash: string) => {
 };
 
 export const getLnbitsInvoice = async () => {
-  const amount = process.env.INVOICE_AMOUNT || 1000;
+  const amount = process.env.NEXT_PUBLIC_INVOICE_AMOUNT || 1000;
   const url = `${process.env.LNBITS_URL!}/api/v1/payments`;
   const body = {
     out: false,

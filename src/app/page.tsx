@@ -76,7 +76,7 @@ export default function Home() {
     if (!zapChecked || fetching || hash) return;
     setFetching(true);
     if (nostrPrivKey && nostrZapCallback) {
-      console.debug('getting zap invoice')
+      console.debug('fetching zap invoice')
       getZapInvoice(nostrPrivKey, nostrZapCallback)
         .then((data) => {
           setInvoice(data?.invoice)
@@ -85,6 +85,7 @@ export default function Home() {
           setFetching(false);
         })
     } else {
+      console.debug('fetching non zap invoice')
       fetch('/api/invoice', { method: 'POST' })
         .then((response) => response.json())
         .then((data) => {

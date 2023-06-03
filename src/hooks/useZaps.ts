@@ -14,7 +14,7 @@ export const useZaps = (lightningAddress: string | null)  => {
       setNostrPrivKey(privKey)
     } else {
       privKey = generatePrivateKey()
-      // setNostrPrivKey(privKey)
+      setNostrPrivKey(privKey)
       localStorage.setItem('privKey', privKey)
     }
   }, [])
@@ -23,12 +23,19 @@ export const useZaps = (lightningAddress: string | null)  => {
     getZapEndpoint(lightningAddress)
       .then((data) => {
         if (data) {
-          console.debug(data)
-          // TODO: Check min/max sendable against invoice amount env
-          // if (process.env.NEXT_PUBLIC_INVOICE_AMOUNT > data.maxSendable)
+          if (process.env.NEXT_PUBLIC_INVOICE_AMOUNT  && parseInt(process.env.NEXT_PUBLIC_INVOICE_AMOUNT)*1000 > data.maxSendable) {
+            console.warn('Desired invoice amount larger than lnurl maxSendable')
+            setZapChecked(true)
+            return 
+          }
+          if (process.env.NEXT_PUBLIC_INVOICE_AMOUNT  && parseInt(process.env.NEXT_PUBLIC_INVOICE_AMOUNT)*1000 < data.minSendable) {
+            console.warn('Desired invoice amount lower than lnurl minSendable')
+            setZapChecked(true)
+            return 
+          }
           setNostrZapCallback(data.callback)
         }
-        else console.debug("No zap enabled lightning address found")
+        else console.warn("No zap enabled lightning address found")
         setZapChecked(true)
       })
   }, [])

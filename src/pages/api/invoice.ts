@@ -4,7 +4,7 @@ import { updateLastPayer } from '../../lib/pusher';
 import { checkLnbitsInvoice, getLnbitsInvoice } from "@/lib/lnbits";
 
 const getInvoice = async () => { 
-  const amount = process.env.INVOICE_AMOUNT || 1000;
+  const amount = process.env.NEXT_PUBLIC_INVOICE_AMOUNT || 1000;
   const expiry = 3600;
   const memo = "Bid - Last Pay Wins";
   const url = `${process.env.LND_HOST}/v1/invoices`
