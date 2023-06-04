@@ -54,12 +54,14 @@ export default function Home() {
     console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft, 'eventId', eventId);
     if (initialRender.current) {
       initialRender.current = false;
+      console.debug('initial render')
       return;
     }
     handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp, va, toast);
     setCountdownKey(prevKey => prevKey + 1);
 
     if (status === 'LOADING') {
+      console.debug('status LOADING... refetch(true)')
       setRefetch(true);
     }
   }, [status, jackpot]);
@@ -75,11 +77,16 @@ export default function Home() {
 
   // Get invoice
   useEffect(() => {
-    if (!zapChecked || fetching || hash) return;
+    if (!zapChecked || fetching || hash || status === "LOADING") return;
+    // if (!zapChecked || fetching || status === "LOADING") return;
     setFetching(true);
     if (nostrPrivKey && nostrZapCallback) {
-      if (status !== "LIVE" || eventId === '') {
+      // if (status === "WAITING" || status === "EXPIRED") {
+      if (status !== "LIVE") {
+        // this will run first two payments...
+        // status updates after this effect fires
         console.debug('creating new post and fetching zap invoice')
+        console.debug('STATUS', status)
         getNewNostrPost()
           .then((data) => {
             setNewNote(data.event)
@@ -112,7 +119,8 @@ export default function Home() {
           setFetching(false);
         });
     }
-  }, [refetch, hash, zapChecked, nostrPrivKey, nostrZapCallback, eventId]);
+  // }, [refetch, hash, zapChecked, nostrPrivKey, nostrZapCallback, eventId]);
+  }, [refetch, zapChecked, nostrPrivKey, nostrZapCallback, status]);
 
   // Check invoice
   useEffect(() => {

@@ -15,29 +15,33 @@ export const updateLastPayer = async (lnAddress, event: NostrEvent | null) => {
   const previousPayer = await getLastPayer();
   const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - previousPayer.timestamp) / 1000);
   const previousJackpot = timeLeft > 0 ? previousPayer.jackpot : 0;
-  if (event) {
+  let eventId = previousPayer.eventId
+  if (previousPayer.jackpot === 0) {
     console.log('UPDATE LAST PLAYER event', event)
-    // TODO: Publish event
+    // TODO: Publish event. Need to make sure we can't double post event
+    // await publishEvent(event)
+    if (event) eventId = event.id
+    else console.error("Should be a nostr event attached")
   }
 
   const payer = {
     lnAddress,
     timestamp: Date.now(),
     jackpot: previousJackpot + amount, 
-    eventId: event?.id
+    eventId: eventId
   };
   console.log('triggering update', payer)
   client.trigger(channel, "update", payer);
   return payer;
 }
-export const getLastPayer = async (): Promise<{ lnAddress: string, jackpot: number, timestamp: number, eventId: string | null }> => {
+export const getLastPayer = async (): Promise<{ lnAddress: string, jackpot: number, timestamp: number, eventId: string }> => {
   const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
   const currentState = await client.get({ path: `/channels/${channel}`, params: {info: ['cache']} });
   const state = await currentState.json() as {cache?: {data: string}};
   console.debug('getLastPayer state', state)
   const lastPayer = state?.cache?.data
-  if (!lastPayer) return {jackpot: 0, lnAddress: 'none', timestamp: 0, eventId: null};
-  const lastPayerJson = JSON.parse(lastPayer) as {lnAddress: string, timestamp: number, jackpot: number, eventId: string | null};
+  if (!lastPayer) return {jackpot: 0, lnAddress: 'none', timestamp: 0, eventId: ''};
+  const lastPayerJson = JSON.parse(lastPayer) as {lnAddress: string, timestamp: number, jackpot: number, eventId: string};
   return lastPayerJson;
 };
 

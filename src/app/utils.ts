@@ -33,7 +33,6 @@ export const handleStatusUpdate = (status, lnAddress, userAddress, jackpot, time
 
 export const checkInvoiceStatus = (setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote: NostrEvent | null, status) => {
   setChecking(true);
-  console.log('newNote', newNote, 'status', status)
   let nostr: string | null = null
   if (newNote && status !== "LIVE") {
     // tell server to post this specific "Round Started" kind 1
