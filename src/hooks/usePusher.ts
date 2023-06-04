@@ -1,5 +1,5 @@
 'use client'
-import { Payer, Status } from "@/types/payer";
+import { Payer, Status, channelData } from "@/types/payer";
 import Pusher, { Channel } from "pusher-js";
 import { useEffect, useRef, useState } from "react";
 import va from "@vercel/analytics";
@@ -15,6 +15,7 @@ const usePusher = () => {
     timestamp: 0,
     jackpot: 0,
     timeLeft: 0,
+    eventId: '',
     status: 'LOADING'
   });
   const winner = useRef<Payer>({
@@ -22,6 +23,7 @@ const usePusher = () => {
     timestamp: 0,
     jackpot: 0,
     timeLeft: 0,
+    eventId: '',
     status: 'LOADING'
   });
 
@@ -55,23 +57,26 @@ const usePusher = () => {
     const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
     lastPayerChannel.current = pusher.current.subscribe(channel);
 
-    lastPayerChannel.current.bind("update", (data) => {
+    lastPayerChannel.current.bind("update", (data: channelData) => {
       console.log('LAST PAYER update', data);
-      let jackpot = parseInt(data.jackpot);
+      let jackpot = data.jackpot;
       const lnAddress = data.lnAddress;
       const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - data.timestamp) / 1000);
+      let eventId = data.eventId
       let status: Status = 'LIVE';
       if (jackpot === 0) {
         status = 'WAITING';
+        eventId = ''
       } else if (timeLeft < 0) {
         status = 'EXPIRED';
+        eventId = ''
       }
-      setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot, status, timeLeft })
+      setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot, status, timeLeft, eventId })
     });
 
     lastPayerChannel.current.bind("pusher:cache_miss", (data) => {
       console.log('MISSED CACHE', data);
-      setLastPayer({ lnAddress: 'none', timestamp: Date.now(), jackpot: 0, status: 'WAITING', timeLeft: parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') })
+      setLastPayer({ lnAddress: 'none', timestamp: Date.now(), jackpot: 0, status: 'WAITING', timeLeft: parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60'), eventId: '' })
     });
 
     pusher.current.bind_global((eventName, data) => {

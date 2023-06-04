@@ -4,5 +4,13 @@ export type Payer = {
   timestamp: number;
   jackpot: number;
   timeLeft: number;
+  eventId: string;
   status: Status;
+}
+
+export type channelData = {
+  lnAddress: string;
+  timestamp: number;
+  jackpot: number;
+  eventId: string;
 }

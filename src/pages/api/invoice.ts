@@ -32,10 +32,12 @@ const getInvoice = async () => {
   }
 }
 
-const checkInvoice = async (hash, lnAddress) => {
+const checkInvoice = async (hash, lnAddress, event) => {
   const data = await checkLnbitsInvoice(hash) as {paid: boolean};
+  console.log('checkInvoice event', event)
   if (data.paid) {
-    await updateLastPayer(lnAddress);
+    console.log('PAID')
+    await updateLastPayer(lnAddress, event);
   }
   return { settled: data.paid }
 };
@@ -48,11 +50,9 @@ export default async (req, res) => {
     } else if (req.method === 'GET') {
       const rHash = decodeURIComponent(req.query.hash);
       const lnAddress = req.query.lnaddr;
-      const data = await checkInvoice(rHash, lnAddress);
+      const nostr = JSON.parse(req.query.nostr);
+      const data = await checkInvoice(rHash, lnAddress, nostr);
       res.status(200).json(data);
-    // } else if (req.method === 'PATCH'){ 
-    //   const data = await getLnbitsInvoice();
-    //   res.status(200).json(data);
     } else {
       res.status(405).json({ error: 'Method not supported' });
     }

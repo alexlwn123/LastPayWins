@@ -1,5 +1,5 @@
 import { fromSats } from 'satcomma';
-import { finishEvent, nip57, validateEvent, verifySignature } from 'nostr-tools';
+import { Event as NostrEvent, finishEvent, nip57, validateEvent, verifySignature } from 'nostr-tools';
 import { decode as invoiceDecode } from 'light-bolt11-decoder'
 
 export const validateLnurl = async (lnurl: string) => {
@@ -31,13 +31,22 @@ export const handleStatusUpdate = (status, lnAddress, userAddress, jackpot, time
     }
 };
 
-export const checkInvoiceStatus = (setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey) => {
+export const checkInvoiceStatus = (setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote: NostrEvent | null, status) => {
   setChecking(true);
-  const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}`
+  console.log('newNote', newNote, 'status', status)
+  let nostr: string | null = null
+  if (newNote && status !== "LIVE") {
+    // tell server to post this specific "Round Started" kind 1
+    console.log("SHOULD PUBLISH KIND 1 newNote", newNote)
+    nostr = encodeURI(JSON.stringify(newNote))
+  }
+  const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}&nostr=${nostr}`
+  console.log('url', url)
   fetch(url, { method: 'GET' })
     .then((response) => response.json())
     .then((data) => {
       if (data.settled) {
+
         setSettled(data.settled && true);
         localStorage.setItem('lnaddr', userAddress);
         setCountdownKey(prevKey => prevKey + 1);
@@ -46,6 +55,14 @@ export const checkInvoiceStatus = (setChecking, hash, setHash, setSettled, toast
       }
       setChecking(false);
     }).catch(_ => setChecking(false));
+}
+
+export async function getNewNostrPost(): Promise<{event: NostrEvent}> {
+  const url = '/api/nostr'
+  const res = await fetch(url, { method: 'POST' })
+  let data = await res.json()
+  console.debug('client getNewNostrPost data', data)
+  return {event: data}
 }
 
 export async function getZapEndpoint(
@@ -79,22 +96,25 @@ export async function getZapEndpoint(
   return null
 }
 
-export const getZapInvoice = async (privateKey: string, nostrZapCallback: string): Promise<{invoice: string, paymentHash: string} | undefined> => {
+export const getZapInvoice = async (privateKey: string, nostrZapCallback: string, eventId: string): Promise<{invoice: string, paymentHash: string} | undefined> => {
   const amountMillisats = parseInt(process.env.NEXT_PUBLIC_INVOICE_AMOUNT || "1000") * 1000
 
   const zapRequestArgs = {
     // TODO: Profile will be LPW nostr pubkey
     profile: "44965ed7ec11633bc9aa05ec70c16535667c1a7b3559d0a3af8ab6ad0524a9ef", // test lpw account
     // TODO: set to round specific LPW kind 1 announcement
-    event: "51cc2a2d9f4b548da6ebf34e45be8a6ed54e999a464143674f5f3910c2c45cc8", // test lpw kind 1
+    // event: "51cc2a2d9f4b548da6ebf34e45be8a6ed54e999a464143674f5f3910c2c45cc8", // test lpw kind 1
+    event: eventId, // test lpw kind 1
     amount: amountMillisats,
     comment: 'Bid on lastpaywins.com',
     // NOTE: lnbits lnurlp 0.3 will break if it tries to publish to non public relays I think
     relays: ["wss://relay.damus.io"]
   }
+  console.debug('zapRequestArgs', zapRequestArgs)
 
   try {
     const signedZapRequestEvent = finishEvent(nip57.makeZapRequest(zapRequestArgs), privateKey)
+    console.debug('signedZapRequestEvent', signedZapRequestEvent)
 
     let ok = validateEvent(signedZapRequestEvent)
     if (!ok) throw new Error('Invalid event')

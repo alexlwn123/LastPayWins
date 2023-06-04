@@ -16,7 +16,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import va from "@vercel/analytics";
 import { Analytics } from '@vercel/analytics/react';
-import { checkInvoiceStatus, handleStatusUpdate, validateLnurl, getZapInvoice } from './utils';
+import { checkInvoiceStatus, handleStatusUpdate, validateLnurl, getZapInvoice, getNewNostrPost } from './utils';
+import { Event as NostrEvent } from 'nostr-tools'
 import useZaps from '@/hooks/useZaps';
 
 export default function Home() {
@@ -31,9 +32,10 @@ export default function Home() {
   const [isValidAddress, setIsValidAddress] = useState(false);
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const initialRender = useRef(true);
+  const [newNote, setNewNote] = useState<NostrEvent | null>(null)
   const { zapChecked, nostrPrivKey, nostrZapCallback } = useZaps(process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS!)
 
-  const { lnAddress, timestamp, jackpot, status, timeLeft, setStatus } = usePusher();
+  const { lnAddress, timestamp, jackpot, status, timeLeft, eventId, setStatus } = usePusher();
 
   // validate user input
   useEffect(() => {
@@ -49,7 +51,7 @@ export default function Home() {
 
   // handle status update
   useEffect(() => {
-    console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft);
+    console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft, 'eventId', eventId);
     if (initialRender.current) {
       initialRender.current = false;
       return;
@@ -76,14 +78,29 @@ export default function Home() {
     if (!zapChecked || fetching || hash) return;
     setFetching(true);
     if (nostrPrivKey && nostrZapCallback) {
-      console.debug('fetching zap invoice')
-      getZapInvoice(nostrPrivKey, nostrZapCallback)
-        .then((data) => {
-          setInvoice(data?.invoice)
-          setHash(data?.paymentHash)
-          setSettled(false);
-          setFetching(false);
-        })
+      if (status !== "LIVE" || eventId === '') {
+        console.debug('creating new post and fetching zap invoice')
+        getNewNostrPost()
+          .then((data) => {
+            setNewNote(data.event)
+            getZapInvoice(nostrPrivKey, nostrZapCallback, data.event.id)
+              .then((data) => {
+                setInvoice(data?.invoice)
+                setHash(data?.paymentHash)
+                setSettled(false);
+                setFetching(false);
+              })
+          })
+      } else {
+        console.debug('fetching zap invoice')
+        getZapInvoice(nostrPrivKey, nostrZapCallback, eventId)
+          .then((data) => {
+            setInvoice(data?.invoice)
+            setHash(data?.paymentHash)
+            setSettled(false);
+            setFetching(false);
+          })
+      }
     } else {
       console.debug('fetching non zap invoice')
       fetch('/api/invoice', { method: 'POST' })
@@ -95,14 +112,14 @@ export default function Home() {
           setFetching(false);
         });
     }
-  }, [refetch, hash, zapChecked, nostrPrivKey, nostrZapCallback]);
+  }, [refetch, hash, zapChecked, nostrPrivKey, nostrZapCallback, eventId]);
 
   // Check invoice
   useEffect(() => {
     if (settled || !hash || status === 'LOADING' || checking) return;
     const interval = setInterval(() => {
       if (checking) return;
-      checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey);
+      checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote, status);
     }, 1000);
     return () => clearInterval(interval);
   }, [hash, fetching, status, userAddress, settled, checking]);
