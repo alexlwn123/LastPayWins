@@ -16,9 +16,8 @@ export const updateLastPayer = async (lnAddress, event: NostrEvent | null) => {
   const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - previousPayer.timestamp) / 1000);
   const previousJackpot = timeLeft > 0 ? previousPayer.jackpot : 0;
   let eventId = previousPayer.eventId
-  if (previousPayer.jackpot === 0) {
-    console.log('UPDATE LAST PLAYER event', event)
-    // TODO: Publish event. Need to make sure we can't double post event
+  if (previousPayer.jackpot === 0 || timeLeft < 0) {
+    // Multiple posts possible if two people start round at same time?
     // await publishEvent(event)
     if (event) eventId = event.id
     else console.error("Should be a nostr event attached")
