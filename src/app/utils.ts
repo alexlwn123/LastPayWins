@@ -98,9 +98,7 @@ export const getZapInvoice = async (privateKey: string, nostrZapCallback: string
   const amountMillisats = parseInt(process.env.NEXT_PUBLIC_INVOICE_AMOUNT || "1000") * 1000
 
   const zapRequestArgs = {
-    // TODO: Profile will be LPW nostr pubkey
-    profile: "44965ed7ec11633bc9aa05ec70c16535667c1a7b3559d0a3af8ab6ad0524a9ef", // test lpw account
-    // TODO: eventID lagging.
+    profile: process.env.NEXT_PUBLIC_NOSTR_HEX_PUBLIC_KEY!,
     event: eventId,
     amount: amountMillisats,
     comment: 'Bid on lastpaywins.com',

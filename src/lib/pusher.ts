@@ -1,5 +1,6 @@
 import Pusher from "pusher";
 import { Event as NostrEvent } from 'nostr-tools'
+import { publishEvent } from "./nostr";
 
 const client = new Pusher({
   appId: process.env.PUSHER_APP_ID!,
@@ -19,7 +20,10 @@ export const updateLastPayer = async (lnAddress, event: NostrEvent | null) => {
   if (previousPayer.jackpot === 0 || timeLeft < 0) {
     // Multiple posts possible if two people start round at same time?
     // await publishEvent(event)
-    if (event) eventId = event.id
+    if (event) {
+      eventId = event.id
+      publishEvent(event)
+    }
     else console.error("Should be a nostr event attached")
   }
 

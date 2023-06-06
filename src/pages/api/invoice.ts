@@ -34,7 +34,6 @@ const getInvoice = async () => {
 
 const checkInvoice = async (hash, lnAddress, event) => {
   const data = await checkLnbitsInvoice(hash) as {paid: boolean};
-  console.log('checkInvoice event', event)
   if (data.paid) {
     console.log('PAID')
     await updateLastPayer(lnAddress, event);
