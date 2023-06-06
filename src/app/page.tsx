@@ -68,7 +68,6 @@ export default function Home() {
     setCountdownKey(prevKey => prevKey + 1);
 
     if (status === 'LOADING') {
-      console.debug('status LOADING... refetch(true)')
       setRefetch(true);
     }
   }, [status, jackpot]);
