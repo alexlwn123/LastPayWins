@@ -31,16 +31,15 @@ export const handleStatusUpdate = (status, lnAddress, userAddress, jackpot, time
     }
 };
 
-export const checkInvoiceStatus = (setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote: NostrEvent | null, status) => {
+export const checkInvoiceStatus = (setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote: NostrEvent | null, matchState) => {
   setChecking(true);
   let nostr: string | null = null
-  if (newNote && status !== "LIVE") {
+  if (newNote && matchState.currentState === "WAITING") {
     // tell server to post this specific "Round Started" kind 1
-    console.log("SHOULD PUBLISH KIND 1 newNote", newNote)
     nostr = encodeURI(JSON.stringify(newNote))
   }
   const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}&nostr=${nostr}`
-  console.log('url', url)
+  console.debug('url', url)
   fetch(url, { method: 'GET' })
     .then((response) => response.json())
     .then((data) => {
@@ -101,9 +100,8 @@ export const getZapInvoice = async (privateKey: string, nostrZapCallback: string
   const zapRequestArgs = {
     // TODO: Profile will be LPW nostr pubkey
     profile: "44965ed7ec11633bc9aa05ec70c16535667c1a7b3559d0a3af8ab6ad0524a9ef", // test lpw account
-    // TODO: set to round specific LPW kind 1 announcement
-    // event: "51cc2a2d9f4b548da6ebf34e45be8a6ed54e999a464143674f5f3910c2c45cc8", // test lpw kind 1
-    event: eventId, // test lpw kind 1
+    // TODO: eventID lagging.
+    event: eventId,
     amount: amountMillisats,
     comment: 'Bid on lastpaywins.com',
     // NOTE: lnbits lnurlp 0.3 will break if it tries to publish to non public relays I think
@@ -113,11 +111,8 @@ export const getZapInvoice = async (privateKey: string, nostrZapCallback: string
 
   try {
     const signedZapRequestEvent = finishEvent(nip57.makeZapRequest(zapRequestArgs), privateKey)
-    console.debug('signedZapRequestEvent', signedZapRequestEvent)
-
     let ok = validateEvent(signedZapRequestEvent)
     if (!ok) throw new Error('Invalid event')
-
     let veryOk = verifySignature(signedZapRequestEvent)
     if (!veryOk) throw new Error('Invalid signature')
 

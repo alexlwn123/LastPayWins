@@ -19,6 +19,12 @@ import { Analytics } from '@vercel/analytics/react';
 import { checkInvoiceStatus, handleStatusUpdate, validateLnurl, getZapInvoice, getNewNostrPost } from './utils';
 import { Event as NostrEvent } from 'nostr-tools'
 import useZaps from '@/hooks/useZaps';
+import { MatchStates } from '@/types/matchStates';
+
+const initialMatchState: MatchStates = {
+  previousState: "LOADING",
+  currentState: "LOADING"
+}
 
 export default function Home() {
   const [invoice, setInvoice] = useState<string | null | undefined>(null);
@@ -34,8 +40,9 @@ export default function Home() {
   const initialRender = useRef(true);
   const [newNote, setNewNote] = useState<NostrEvent | null>(null)
   const { zapChecked, nostrPrivKey, nostrZapCallback } = useZaps(process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS!)
+  const [ matchState, setMatchState ] = useState<MatchStates>(initialMatchState)
 
-  const { lnAddress, timestamp, jackpot, status, timeLeft, eventId, setStatus } = usePusher();
+  const { lnAddress, timestamp, jackpot, status, timeLeft, eventId, setStatus } = usePusher(setMatchState);
 
   // validate user input
   useEffect(() => {
@@ -75,59 +82,44 @@ export default function Home() {
     }
    }, []);
 
+
   // Get invoice
   useEffect(() => {
-    if (!zapChecked || fetching || hash || status === "LOADING") return;
-    // if (!zapChecked || fetching || status === "LOADING") return;
+    console.debug('MATCH STATE', matchState)
+    if (!nostrPrivKey || !nostrZapCallback || fetching || matchState.currentState === "LOADING") return;
     setFetching(true);
-    if (nostrPrivKey && nostrZapCallback) {
-      // if (status === "WAITING" || status === "EXPIRED") {
-      if (status !== "LIVE") {
-        // this will run first two payments...
-        // status updates after this effect fires
-        console.debug('creating new post and fetching zap invoice')
-        console.debug('STATUS', status)
-        getNewNostrPost()
-          .then((data) => {
-            setNewNote(data.event)
-            getZapInvoice(nostrPrivKey, nostrZapCallback, data.event.id)
-              .then((data) => {
-                setInvoice(data?.invoice)
-                setHash(data?.paymentHash)
-                setSettled(false);
-                setFetching(false);
-              })
-          })
-      } else {
-        console.debug('fetching zap invoice')
-        getZapInvoice(nostrPrivKey, nostrZapCallback, eventId)
-          .then((data) => {
-            setInvoice(data?.invoice)
-            setHash(data?.paymentHash)
-            setSettled(false);
-            setFetching(false);
-          })
-      }
-    } else {
-      console.debug('fetching non zap invoice')
-      fetch('/api/invoice', { method: 'POST' })
-        .then((response) => response.json())
+    if (matchState.currentState === "WAITING") {
+      console.debug('creating new post and fetching zap invoice')
+      getNewNostrPost()
         .then((data) => {
-          setInvoice(data.payment_request)
-          setHash(data.payment_hash)
+          setNewNote(data.event)
+          getZapInvoice(nostrPrivKey, nostrZapCallback, data.event.id)
+            .then((data) => {
+              setInvoice(data?.invoice)
+              setHash(data?.paymentHash)
+              setSettled(false);
+              setFetching(false);
+            })
+        })
+    } else if (matchState.previousState !== "LIVE" && matchState.currentState === "LIVE") {
+      console.debug('fetching zap invoice')
+      setNewNote(null)
+      getZapInvoice(nostrPrivKey, nostrZapCallback, eventId)
+        .then((data) => {
+          setInvoice(data?.invoice)
+          setHash(data?.paymentHash)
           setSettled(false);
           setFetching(false);
-        });
+        })
     }
-  // }, [refetch, hash, zapChecked, nostrPrivKey, nostrZapCallback, eventId]);
-  }, [refetch, zapChecked, nostrPrivKey, nostrZapCallback, status]);
+  }, [refetch, zapChecked, nostrPrivKey, nostrZapCallback, matchState]);
 
   // Check invoice
   useEffect(() => {
     if (settled || !hash || status === 'LOADING' || checking) return;
     const interval = setInterval(() => {
       if (checking) return;
-      checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote, status);
+      checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote, matchState);
     }, 1000);
     return () => clearInterval(interval);
   }, [hash, fetching, status, userAddress, settled, checking]);
@@ -152,6 +144,7 @@ export default function Home() {
               countdownKey={countdownKey}
               status={status}
               setStatus={setStatus}
+              setMatchState={setMatchState}
               isWinning={lnAddress === userAddress}
               toast={toast}
             />
