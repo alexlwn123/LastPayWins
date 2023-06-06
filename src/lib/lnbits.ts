@@ -1,6 +1,4 @@
-import { get } from 'http';
 import fetch from 'node-fetch';
-import { getLastPayer } from './pusher';
 type ScanResult = {
   status: string;
   callback: string;
@@ -26,21 +24,14 @@ export const readLnurl = async (lnurl: string): Promise<ScanResult> => {
   return rawResult;
 };
 
-export const payLnurl = async () => {
-  const winner = await getLastPayer();
-  const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - winner.timestamp) / 1000);
-  if (timeLeft > 0) {
-    return { status: 'failed', error: 'Illegal Payment', code: 0 };
-  }
-  if (timeLeft < -30) {
-    return { status: 'failed', error: 'Illegal Payment', code: 1 };
-  }
+// Pays the lnurl and returns the result
+export const pay = async (lnAddress: string, jackpot: number) => {
   const url = `${process.env.LNBITS_URL!}/api/v1/payments/lnurl`;
-  const lnurlData: ScanResult = await readLnurl(winner.lnAddress);
+  const lnurlData: ScanResult = await readLnurl(lnAddress);
   if (lnurlData.status !== 'OK' || 'error' in lnurlData) {
     return { status: 'failed', error: lnurlData.status };
   }
-  const amount = winner.jackpot;
+  const amount = jackpot;
   const body =  {
     amount: amount * 1000, // millisatoshis
     callback: lnurlData.callback,

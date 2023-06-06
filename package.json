@@ -16,6 +16,7 @@
     "eslint": "8.40.0",
     "eslint-config-next": "13.4.1",
     "light-bolt11-decoder": "^3.0.0",
+    "inngest": "^1.9.3",
     "lightning": "^9.3.0",
     "next": "13.4.1",
     "next-qrcode": "^2.4.1",

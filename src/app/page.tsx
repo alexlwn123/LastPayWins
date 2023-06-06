@@ -61,7 +61,6 @@ export default function Home() {
     console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft, 'eventId', eventId);
     if (initialRender.current) {
       initialRender.current = false;
-      console.debug('initial render')
       return;
     }
     handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp, va, toast);
@@ -146,6 +145,7 @@ export default function Home() {
               setMatchState={setMatchState}
               isWinning={lnAddress === userAddress}
               toast={toast}
+              displayingInvoice={isValidAddress}
             />
             <CurrentWinner
               currentWinner={lnAddress ?? "Anon"}

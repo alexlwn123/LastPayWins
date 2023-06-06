@@ -13,8 +13,27 @@
   color: #AAA;
   text-align: center;
   padding: 1rem 0 0 0;
+  line-height: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  gap: 5px;
 }
+
 .winner {
   cursor: pointer;
   user-select: text;
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.line {
+  max-width: 100%;
+  min-width: 150px;
 }
