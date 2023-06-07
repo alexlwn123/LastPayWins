@@ -26,6 +26,7 @@ export const readLnurl = async (lnurl: string): Promise<ScanResult> => {
 
 // Pays the lnurl and returns the result
 export const pay = async (lnAddress: string, jackpot: number) => {
+  if (process.env.ENABLE_LOCAL_PAYOUTS !== 'true') return { status: 'failed', error: 'Local payouts are disabled'};
   const url = `${process.env.LNBITS_URL!}/api/v1/payments/lnurl`;
   const lnurlData: ScanResult = await readLnurl(lnAddress);
   if (lnurlData.status !== 'OK' || 'error' in lnurlData) {
