@@ -20,7 +20,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     nip05.names[req.query.name] = pubkey
 
     const relays = verifiedDB[req.query.name].relays
-    if (relays.length > 0) {
+    if (relays && relays.length > 0) {
       nip05.relays[pubkey] = verifiedDB[req.query.name].relays
     }
   }
