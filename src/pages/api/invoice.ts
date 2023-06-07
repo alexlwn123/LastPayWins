@@ -1,36 +1,5 @@
-import { Agent } from "https";
-import fetch from 'node-fetch';
 import { updateLastPayer } from '../../lib/pusher';
 import { checkLnbitsInvoice, getLnbitsInvoice } from "@/lib/lnbits";
-
-const getInvoice = async () => { 
-  const amount = process.env.INVOICE_AMOUNT || 1000;
-  const expiry = 3600;
-  const memo = "Bid - Last Pay Wins";
-  const url = `${process.env.LND_HOST}/v1/invoices`
-  const data = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Grpc-Metadata-macaroon': process.env.MACAROON!,
-      'Content-Type': 'application/json',
-    },
-    agent: new Agent({
-      rejectUnauthorized: false,
-    }),
-    body: JSON.stringify({
-      memo,
-      value: amount,
-      expiry
-    })
-  });
-  const rawResult = await data.json() as { payment_request: string, r_hash: string };
-  return {
-    rHash: rawResult.r_hash,
-    invoice: rawResult.payment_request,
-    amount: amount,
-    expiry: expiry,
-  }
-}
 
 const checkInvoice = async (hash, lnAddress) => {
   const data = await checkLnbitsInvoice(hash) as {paid: boolean};
