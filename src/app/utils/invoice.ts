@@ -1,6 +1,7 @@
 import { Event as NostrEvent } from 'nostr-tools';
 import { decode as invoiceDecode } from 'light-bolt11-decoder'
-import { MatchStates } from '@/types/matchStates';
+import { MatchState } from '@/types/matchStates';
+import { Dispatch, SetStateAction } from 'react';
 
 export const validateLnurl = async (lnurl: string) => {
   const url = `/api/validate?lnurl=${encodeURIComponent(lnurl)}`;
@@ -13,10 +14,10 @@ export const validateLnurl = async (lnurl: string) => {
   }
 }
 
-export const checkInvoiceStatus = (setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote: NostrEvent | null, matchState: MatchStates) => {
+export const checkInvoiceStatus = (setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote: NostrEvent | null, matchState: MatchState, setRefetch: Dispatch<SetStateAction<boolean>>) => {
   setChecking(true);
   let nostr: string | null = null
-  if (newNote && matchState.currentState === "WAITING") {
+  if (newNote && matchState === "WAITING") {
     // tell server to post this specific "Round Started" kind 1
     nostr = encodeURI(JSON.stringify(newNote))
   }
@@ -26,11 +27,11 @@ export const checkInvoiceStatus = (setChecking, hash, setHash, setSettled, toast
     .then((response) => response.json())
     .then((data) => {
       if (data.settled) {
-
         setSettled(data.settled && true);
         localStorage.setItem('lnaddr', userAddress);
         setCountdownKey(prevKey => prevKey + 1);
         setHash(null);
+        if (matchState === "LIVE") setRefetch(prev => !prev)
         toast("Bid Received! You're in the lead!", { type: 'success' });
       }
       setChecking(false);

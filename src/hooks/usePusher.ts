@@ -3,12 +3,12 @@ import { Payer, Status, channelData } from "@/types/payer";
 import Pusher, { Channel } from "pusher-js";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import va from "@vercel/analytics";
-import { MatchStates } from "@/types/matchStates";
+import { MatchState } from "@/types/matchStates";
 
 const appKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
 const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!;
 
-const usePusher = (setMatchState: Dispatch<SetStateAction<MatchStates>>) => {
+const usePusher = (setMatchState: Dispatch<SetStateAction<MatchState>>) => {
   const pusher = useRef<Pusher>();
   const lastPayerChannel = useRef<Channel>();
   const [lastPayer, setLastPayer] = useState<Payer>({
@@ -61,22 +61,16 @@ const usePusher = (setMatchState: Dispatch<SetStateAction<MatchStates>>) => {
         eventId = ''
       }
       if (jackpot === 0 || timeLeft < 0) {
-        setMatchState((prev) => ({
-          previousState: prev.currentState,
-          currentState: "WAITING"
-        }))
+        setMatchState("WAITING")
       } else {
-        setMatchState((prev) => ({
-          previousState: prev.currentState,
-          currentState: "LIVE"
-        }))
+        setMatchState("LIVE")
       }
       setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot, status, timeLeft, eventId })
     });
 
     lastPayerChannel.current.bind("pusher:cache_miss", (data) => {
       console.log('MISSED CACHE', data);
-      setMatchState({ previousState: "LOADING", currentState: "WAITING"})
+      setMatchState("WAITING")
       setLastPayer({ lnAddress: 'none', timestamp: Date.now(), jackpot: 0, status: 'WAITING', timeLeft: parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60'), eventId: '' })
     });
 

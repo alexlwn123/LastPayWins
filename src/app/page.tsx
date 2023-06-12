@@ -21,12 +21,8 @@ import { checkInvoiceStatus } from './utils/invoice';
 import { getZapInvoice, getNewNostrPost } from './utils/nostr';
 import { Event as NostrEvent } from 'nostr-tools'
 import useZaps from '@/hooks/useZaps';
-import { MatchStates } from '@/types/matchStates';
+import { MatchState } from '@/types/matchStates';
 
-const initialMatchState: MatchStates = {
-  previousState: "LOADING",
-  currentState: "LOADING"
-}
 
 export default function Home() {
   const [invoice, setInvoice] = useState<string | null | undefined>(null);
@@ -42,7 +38,7 @@ export default function Home() {
   const initialRender = useRef(true);
   const [newNote, setNewNote] = useState<NostrEvent | null>(null)
   const { zapChecked, nostrPrivKey, nostrZapCallback } = useZaps(process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS!)
-  const [ matchState, setMatchState ] = useState<MatchStates>(initialMatchState)
+  const [ matchState, setMatchState ] = useState<MatchState>("LOADING")
 
   const { lnAddress, timestamp, jackpot, status, timeLeft, eventId, setStatus } = usePusher(setMatchState);
 
@@ -86,9 +82,9 @@ export default function Home() {
   // Get invoice
   useEffect(() => {
     console.debug('MATCH STATE', matchState)
-    if (!nostrPrivKey || !nostrZapCallback || fetching || matchState.currentState === "LOADING") return;
-    setFetching(true);
-    if (matchState.currentState === "WAITING") {
+    if (!nostrPrivKey || !nostrZapCallback || fetching || matchState === "LOADING") return;
+    if (matchState === "WAITING") {
+      setFetching(true);
       console.debug('creating new post and fetching zap invoice')
       getNewNostrPost()
         .then((data) => {
@@ -101,8 +97,9 @@ export default function Home() {
               setFetching(false);
             })
         })
-    } else if (matchState.previousState !== "LIVE" && matchState.currentState === "LIVE") {
+    } else if (matchState === "LIVE") { 
       console.debug('fetching zap invoice')
+      setFetching(true);
       setNewNote(null)
       getZapInvoice(nostrPrivKey, nostrZapCallback, eventId)
         .then((data) => {
@@ -119,7 +116,7 @@ export default function Home() {
     if (settled || !hash || status === 'LOADING' || checking) return;
     const interval = setInterval(() => {
       if (checking) return;
-      checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote, matchState);
+      checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote, matchState, setRefetch);
     }, 1000);
     return () => clearInterval(interval);
   }, [hash, fetching, status, userAddress, settled, checking]);

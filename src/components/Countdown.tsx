@@ -36,10 +36,7 @@ const Countdown = ({currentTime, countdownKey, status, setStatus, setMatchState,
         // 100, 50, 25, 0
         onComplete={() => {
           setStatus(isWinning ? 'WINNER' : 'EXPIRED', toast);
-          setMatchState((prev) => ({
-            previousState: prev.currentState,
-            currentState: "WAITING"
-          }))
+          setMatchState("WAITING")
           return {
             shouldRepeat: true
           }
