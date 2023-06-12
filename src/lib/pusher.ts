@@ -19,7 +19,7 @@ type Payer = {
   eventId: string
 }
 
-export const updateLastPayer = async (lnAddress, event: NostrEvent | null) => {
+export const updateLastPayer = async (lnAddress: string, event: NostrEvent | null) => {
   const amount = parseInt(process.env.NEXT_PUBLIC_INVOICE_AMOUNT ?? '0') || 100;
   const previousPayer = await getLastPayer();
   const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - previousPayer.timestamp) / 1000);
@@ -27,7 +27,6 @@ export const updateLastPayer = async (lnAddress, event: NostrEvent | null) => {
   let eventId = previousPayer.eventId
   if (previousPayer.jackpot === 0 || timeLeft < 0) {
     // Multiple posts possible if two people start round at same time?
-    // await publishEvent(event)
     if (event) {
       eventId = event.id
       publishEvent(event)
@@ -44,7 +43,7 @@ export const updateLastPayer = async (lnAddress, event: NostrEvent | null) => {
 
   client.trigger(channelName, "update", payer);
   await inngest.send({
-    id: `bid-${payer.lnAddress}-${payer.timestamp}-${payer.jackpot}}`,
+    id: `bid-${payer.lnAddress}-${payer.timestamp}-${payer.jackpot}`,
     name: 'bid',
     data: payer,
 

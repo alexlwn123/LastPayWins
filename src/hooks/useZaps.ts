@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { generatePrivateKey } from 'nostr-tools'
-import { getZapEndpoint } from '@/app/utils'
+import { getZapEndpoint } from '@/app/utils/nostr'
 
 export const useZaps = (lightningAddress: string | null)  => {
   const [zapChecked, setZapChecked] = useState(false)

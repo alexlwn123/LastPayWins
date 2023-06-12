@@ -1,15 +1,14 @@
 'use client'
 import { Payer, Status, channelData } from "@/types/payer";
 import Pusher, { Channel } from "pusher-js";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import va from "@vercel/analytics";
 import { MatchStates } from "@/types/matchStates";
 
 const appKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
 const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!;
 
-// const usePusher = (setMatchState: (matchStates: MatchStates) => void) => {
-const usePusher = (setMatchState) => {
+const usePusher = (setMatchState: Dispatch<SetStateAction<MatchStates>>) => {
   const pusher = useRef<Pusher>();
   const lastPayerChannel = useRef<Channel>();
   const [lastPayer, setLastPayer] = useState<Payer>({

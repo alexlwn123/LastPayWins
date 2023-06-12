@@ -1,5 +1,6 @@
 export type MatchState = "LOADING" | "WAITING" | "LIVE"
-export interface MatchStates {
+
+export type MatchStates = {
   previousState: MatchState;
   currentState: MatchState;
 }

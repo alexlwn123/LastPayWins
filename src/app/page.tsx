@@ -16,7 +16,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import va from "@vercel/analytics";
 import { Analytics } from '@vercel/analytics/react';
-import { checkInvoiceStatus, handleStatusUpdate, validateLnurl, getZapInvoice, getNewNostrPost } from './utils';
+import { handleStatusUpdate, validateLnurl } from './utils';
+import { checkInvoiceStatus } from './utils/invoice';
+import { getZapInvoice, getNewNostrPost } from './utils/nostr';
 import { Event as NostrEvent } from 'nostr-tools'
 import useZaps from '@/hooks/useZaps';
 import { MatchStates } from '@/types/matchStates';
