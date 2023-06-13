@@ -25,22 +25,15 @@ import { MatchState } from '@/types/matchStates';
 
 
 export default function Home() {
-  const [invoice, setInvoice] = useState<string | null | undefined>(null);
-  const [hash, setHash] = useState<string | null | undefined>(null);
-  const [settled, setSettled] = useState(false);
   const [userAddress, setUserAddress] = useState('');
-  const [refetch, setRefetch] = useState(false)
   const [countdownKey, setCountdownKey] = useState<number>(0)
-  const [fetching, setFetching] = useState(false);
   const [checking, setChecking] = useState(false);
   const [isValidAddress, setIsValidAddress] = useState(false);
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const initialRender = useRef(true);
-  const [newNote, setNewNote] = useState<NostrEvent | null>(null)
-  const { zapChecked, nostrPrivKey, nostrZapCallback } = useZaps(process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS!)
   const [ matchState, setMatchState ] = useState<MatchState>("LOADING")
-
   const { lnAddress, timestamp, jackpot, status, timeLeft, eventId, setStatus } = usePusher(setMatchState);
+  const { hash, setHash, settled, setSettled, fetching, setRefetch, newNote, invoice } = useZaps(process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS!, matchState, eventId)
 
   // validate user input
   useEffect(() => {
@@ -63,10 +56,6 @@ export default function Home() {
     }
     handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp, va, toast);
     setCountdownKey(prevKey => prevKey + 1);
-
-    if (status === 'LOADING') {
-      setRefetch(true);
-    }
   }, [status, jackpot]);
 
 
@@ -77,38 +66,6 @@ export default function Home() {
       setUserAddress(lnaddr);
     }
    }, []);
-
-
-  // Get invoice
-  useEffect(() => {
-    console.debug('MATCH STATE', matchState)
-    if (!nostrPrivKey || !nostrZapCallback || fetching || matchState === "LOADING") return;
-
-    const fetchInvoice = async () => {
-      setFetching(true)
-
-      if (matchState === "WAITING") {
-        const event = await getNewNostrPost()
-        if (!event) return
-        setNewNote(event)
-
-        const zap = await getZapInvoice(nostrPrivKey, nostrZapCallback, event.id)
-        setInvoice(zap?.invoice)
-        setHash(zap?.paymentHash)
-        setSettled(false);
-        setFetching(false);
-        return
-      }
-
-      const zap = await getZapInvoice(nostrPrivKey, nostrZapCallback, eventId)
-      setInvoice(zap?.invoice)
-      setHash(zap?.paymentHash)
-      setSettled(false);
-      setFetching(false);
-    }
-
-    fetchInvoice()
-  }, [refetch, zapChecked, nostrPrivKey, nostrZapCallback, matchState]);
 
   // Check invoice
   useEffect(() => {
