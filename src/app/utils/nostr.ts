@@ -1,12 +1,18 @@
 import { Event as NostrEvent, finishEvent, nip57, validateEvent, verifySignature } from 'nostr-tools';
 import { decodeInvoice } from './invoice'
 
-export async function getNewNostrPost(): Promise<{event: NostrEvent}> {
+export async function getNewNostrPost(): Promise<NostrEvent | null> {
   const url = '/api/nostr'
-  const res = await fetch(url, { method: 'POST' })
-  let data = await res.json()
-  console.debug('client getNewNostrPost data', data)
-  return {event: data}
+  try {
+    const res = await fetch(url, { method: 'POST' })
+    let event: NostrEvent = await res.json()
+    console.debug('client getNewNostrPost event', event)
+    return event
+  } catch (e) {
+    console.error(e)
+  }
+
+  return null
 }
 
 export async function getZapEndpoint(
@@ -33,14 +39,14 @@ export async function getZapEndpoint(
         lnurl: lnurl,
       }
     }
-  } catch (err) {
-    /*-*/
+  } catch (e) {
+    console.error(e)
   }
 
   return null
 }
 
-export const getZapInvoice = async (privateKey: string, nostrZapCallback: string, eventId: string): Promise<{invoice: string, paymentHash: string} | undefined> => {
+export const getZapInvoice = async (privateKey: string, nostrZapCallback: string, eventId: string): Promise<{invoice: string, paymentHash: string} | null> => {
   const amountMillisats = parseInt(process.env.NEXT_PUBLIC_INVOICE_AMOUNT || "1000") * 1000
 
   const zapRequestArgs = {
@@ -70,8 +76,13 @@ export const getZapInvoice = async (privateKey: string, nostrZapCallback: string
     const decodedInvoice = decodeInvoice(invoice)
     if (!decodedInvoice?.paymentHash) throw new Error('Missing payment hash')
 
-    return { invoice, paymentHash: decodedInvoice.paymentHash } 
+    return {
+      invoice: invoice,
+      paymentHash: decodedInvoice.paymentHash
+    }
   } catch(e) {
     console.error(e)
   }
+
+  return null
 }

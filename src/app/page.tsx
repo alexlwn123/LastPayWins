@@ -83,32 +83,31 @@ export default function Home() {
   useEffect(() => {
     console.debug('MATCH STATE', matchState)
     if (!nostrPrivKey || !nostrZapCallback || fetching || matchState === "LOADING") return;
-    if (matchState === "WAITING") {
-      setFetching(true);
-      console.debug('creating new post and fetching zap invoice')
-      getNewNostrPost()
-        .then((data) => {
-          setNewNote(data.event)
-          getZapInvoice(nostrPrivKey, nostrZapCallback, data.event.id)
-            .then((data) => {
-              setInvoice(data?.invoice)
-              setHash(data?.paymentHash)
-              setSettled(false);
-              setFetching(false);
-            })
-        })
-    } else if (matchState === "LIVE") { 
-      console.debug('fetching zap invoice')
-      setFetching(true);
-      setNewNote(null)
-      getZapInvoice(nostrPrivKey, nostrZapCallback, eventId)
-        .then((data) => {
-          setInvoice(data?.invoice)
-          setHash(data?.paymentHash)
-          setSettled(false);
-          setFetching(false);
-        })
+
+    const fetchInvoice = async () => {
+      setFetching(true)
+
+      if (matchState === "WAITING") {
+        const event = await getNewNostrPost()
+        if (!event) return
+        setNewNote(event)
+
+        const zap = await getZapInvoice(nostrPrivKey, nostrZapCallback, event.id)
+        setInvoice(zap?.invoice)
+        setHash(zap?.paymentHash)
+        setSettled(false);
+        setFetching(false);
+        return
+      }
+
+      const zap = await getZapInvoice(nostrPrivKey, nostrZapCallback, eventId)
+      setInvoice(zap?.invoice)
+      setHash(zap?.paymentHash)
+      setSettled(false);
+      setFetching(false);
     }
+
+    fetchInvoice()
   }, [refetch, zapChecked, nostrPrivKey, nostrZapCallback, matchState]);
 
   // Check invoice
