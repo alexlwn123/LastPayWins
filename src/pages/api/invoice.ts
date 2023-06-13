@@ -4,7 +4,7 @@ import { updateLastPayer } from '../../lib/pusher';
 import { checkLnbitsInvoice, getLnbitsInvoice } from "@/lib/lnbits";
 
 const getInvoice = async () => { 
-  const amount = process.env.INVOICE_AMOUNT || 1000;
+  const amount = process.env.NEXT_PUBLIC_INVOICE_AMOUNT || 1000;
   const expiry = 3600;
   const memo = "Bid - Last Pay Wins";
   const url = `${process.env.LND_HOST}/v1/invoices`
@@ -32,10 +32,10 @@ const getInvoice = async () => {
   }
 }
 
-const checkInvoice = async (hash, lnAddress) => {
+const checkInvoice = async (hash, lnAddress, event) => {
   const data = await checkLnbitsInvoice(hash) as {paid: boolean};
   if (data.paid) {
-    await updateLastPayer(lnAddress);
+    await updateLastPayer(lnAddress, event);
   }
   return { settled: data.paid }
 };
@@ -48,11 +48,9 @@ export default async (req, res) => {
     } else if (req.method === 'GET') {
       const rHash = decodeURIComponent(req.query.hash);
       const lnAddress = req.query.lnaddr;
-      const data = await checkInvoice(rHash, lnAddress);
+      const nostr = JSON.parse(req.query.nostr);
+      const data = await checkInvoice(rHash, lnAddress, nostr);
       res.status(200).json(data);
-    // } else if (req.method === 'PATCH'){ 
-    //   const data = await getLnbitsInvoice();
-    //   res.status(200).json(data);
     } else {
       res.status(405).json({ error: 'Method not supported' });
     }

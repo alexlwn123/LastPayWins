@@ -2,7 +2,7 @@ import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import styles from './Countdown.module.css';
 import { Status } from "@/types/payer";
 
-const Countdown = ({currentTime, countdownKey, status, setStatus, isWinning, toast, displayingInvoice}: {currentTime: number, countdownKey: number, status: Status, setStatus, isWinning: boolean, toast, displayingInvoice: boolean }) => {
+const Countdown = ({currentTime, countdownKey, status, setStatus, setMatchState, isWinning, toast, displayingInvoice}: {currentTime: number, countdownKey: number, status: Status, setStatus, setMatchState, isWinning: boolean, toast, displayingInvoice: boolean }) => {
   const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60');
   const percentages = [1, .5, .25, 0];
   let colorsTime = percentages.map(p => Math.floor(p * duration));
@@ -36,6 +36,7 @@ const Countdown = ({currentTime, countdownKey, status, setStatus, isWinning, toa
         // 100, 50, 25, 0
         onComplete={() => {
           setStatus(isWinning ? 'WINNER' : 'EXPIRED', toast);
+          setMatchState("WAITING")
           return {
             shouldRepeat: true
           }

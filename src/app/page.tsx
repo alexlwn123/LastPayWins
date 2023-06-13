@@ -16,22 +16,24 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import va from "@vercel/analytics";
 import { Analytics } from '@vercel/analytics/react';
-import { checkInvoiceStatus, handleStatusUpdate, validateLnurl } from './utils';
+import { handleStatusUpdate, validateLnurl } from './utils';
+import { checkInvoiceStatus } from './utils/invoice';
+import { getZapInvoice, getNewNostrPost } from './utils/nostr';
+import { Event as NostrEvent } from 'nostr-tools'
+import useZaps from '@/hooks/useZaps';
+import { MatchState } from '@/types/matchStates';
+
 
 export default function Home() {
-  const [invoice, setInvoice] = useState(null);
-  const [hash, setHash] = useState<string | null>(null);
-  const [settled, setSettled] = useState(false);
   const [userAddress, setUserAddress] = useState('');
-  const [refetch, setRefetch] = useState(false)
   const [countdownKey, setCountdownKey] = useState<number>(0)
-  const [fetching, setFetching] = useState(false);
   const [checking, setChecking] = useState(false);
   const [isValidAddress, setIsValidAddress] = useState(false);
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const initialRender = useRef(true);
-
-  const { lnAddress, timestamp, jackpot, status, timeLeft, setStatus } = usePusher();
+  const [ matchState, setMatchState ] = useState<MatchState>("LOADING")
+  const { lnAddress, timestamp, jackpot, status, timeLeft, eventId, setStatus } = usePusher(setMatchState);
+  const { hash, setHash, settled, setSettled, fetching, setRefetch, newNote, invoice } = useZaps(process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS!, matchState, eventId)
 
   // validate user input
   useEffect(() => {
@@ -47,49 +49,30 @@ export default function Home() {
 
   // handle status update
   useEffect(() => {
-    console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft);
+    console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft, 'eventId', eventId);
     if (initialRender.current) {
       initialRender.current = false;
       return;
     }
     handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp, va, toast);
     setCountdownKey(prevKey => prevKey + 1);
-
-    if (status === 'LOADING') {
-      setRefetch(true);
-    }
   }, [status, jackpot]);
 
 
-  // get lnaddr from local storage
   useEffect(() => {
+    // get lnaddr from local storage
     const lnaddr = localStorage.getItem('lnaddr');
     if (lnaddr) {
       setUserAddress(lnaddr);
     }
    }, []);
 
-
-  // Get invoice
-  useEffect(() => {
-    if (fetching || hash) return;
-    setFetching(true);
-    fetch('/api/invoice', { method: 'POST' })
-      .then((response) => response.json())
-      .then((data) => {
-        setInvoice(data.payment_request)
-        setHash(data.payment_hash)
-        setSettled(false);
-        setFetching(false);
-      });
-  }, [refetch, hash]);
-
   // Check invoice
   useEffect(() => {
     if (settled || !hash || status === 'LOADING' || checking) return;
     const interval = setInterval(() => {
       if (checking) return;
-      checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey);
+      checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote, matchState, setRefetch);
     }, 1000);
     return () => clearInterval(interval);
   }, [hash, fetching, status, userAddress, settled, checking]);
@@ -114,6 +97,7 @@ export default function Home() {
               countdownKey={countdownKey}
               status={status}
               setStatus={setStatus}
+              setMatchState={setMatchState}
               isWinning={lnAddress === userAddress}
               toast={toast}
               displayingInvoice={isValidAddress}

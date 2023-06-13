@@ -1,0 +1,1 @@
+export type MatchState = "LOADING" | "WAITING" | "LIVE"
