@@ -33,24 +33,16 @@ export const useZaps = (lightningAddress: string | null, matchState: MatchState,
     const fetchInvoice = async () => {
       setFetching(true)
 
-      if (matchState === "WAITING") {
-        const event = await getNewNostrPost()
-        if (!event) return
-        setNewNote(event)
+      const event = await getNewNostrPost()
+      if (!event) return
+      setNewNote(event)
 
-        const zap = await getZapInvoice(nostrPrivKey, nostrZapCallback, event.id)
-        setInvoice(zap?.invoice)
-        setHash(zap?.paymentHash)
-        setSettled(false);
-        setFetching(false);
-        return
-      }
-
-      const zap = await getZapInvoice(nostrPrivKey, nostrZapCallback, eventId)
+      const zap = await getZapInvoice(nostrPrivKey, nostrZapCallback, event.id)
       setInvoice(zap?.invoice)
       setHash(zap?.paymentHash)
       setSettled(false);
       setFetching(false);
+      return
     }
 
     fetchInvoice()

@@ -19,8 +19,17 @@ export default async (req, res) => {
       const rawState = await pusher.get({path: `/channels/${channel}`, params: {info: ['cache']}});
       const state = await rawState.json();
       console.log('testy - cached state', state);
-      const newPayer = updateLastPayer('alexl@getalby.com');
-      res.status(200).json({ message: 'ok', data: newPayer})
+      const event = {
+        "content": "hello world",
+        "created_at": 1687269280,
+        "id": "916fd1914b73ee48257677dc32dcc7a924882710a5e1e3e4c3be78166e5ae181",
+        "kind": 1,
+        "pubkey": "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+        "sig": "52a9ddbf3161e058f67c918526c5c56cc283839a7eedcd08de635ee28ede75ddfb8b0841aa1ea82c72e77a028e6237c6deeacce117052fcb3c3dbc1765a3f0fc",
+        "tags": []
+      }
+      const newPayer = updateLastPayer('alexl@getalby.com', event);
+      res.status(200).json({ message: 'ok', data: newPayer, time: new Date().toString()})
     } else if (req.method === 'PATCH') {
       const body = req.body;
       await pusher.trigger(channel, 'update', {lnAddress: body.lnAddress, timestamp: Date.now(), jackpot: body.jackpot});

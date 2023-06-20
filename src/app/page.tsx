@@ -18,8 +18,6 @@ import va from "@vercel/analytics";
 import { Analytics } from '@vercel/analytics/react';
 import { handleStatusUpdate, validateLnurl } from './utils';
 import { checkInvoiceStatus } from './utils/invoice';
-import { getZapInvoice, getNewNostrPost } from './utils/nostr';
-import { Event as NostrEvent } from 'nostr-tools'
 import useZaps from '@/hooks/useZaps';
 import { MatchState } from '@/types/matchStates';
 
@@ -32,7 +30,7 @@ export default function Home() {
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const initialRender = useRef(true);
   const [ matchState, setMatchState ] = useState<MatchState>("LOADING")
-  const { lnAddress, timestamp, jackpot, status, timeLeft, eventId, setStatus } = usePusher(setMatchState);
+  const { lnAddress, timestamp, jackpot, status, eventId, setStatus } = usePusher(setMatchState);
   const { hash, setHash, settled, setSettled, fetching, setRefetch, newNote, invoice } = useZaps(process.env.NEXT_PUBLIC_NOSTR_LIGHTNING_ADDRESS!, matchState, eventId)
 
   // validate user input
@@ -49,7 +47,7 @@ export default function Home() {
 
   // handle status update
   useEffect(() => {
-    console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft, 'eventId', eventId);
+    console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'eventId', eventId);
     if (initialRender.current) {
       initialRender.current = false;
       return;
@@ -75,7 +73,7 @@ export default function Home() {
       checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey, newNote, matchState, setRefetch);
     }, 1000);
     return () => clearInterval(interval);
-  }, [hash, fetching, status, userAddress, settled, checking]);
+  }, [hash, fetching, status, userAddress, settled, checking, matchState]);
 
   return (
     <main className={styles.main}>
@@ -93,10 +91,12 @@ export default function Home() {
         <div className={styles.center}>
           <div className={styles.stack}>
             <Countdown
-              currentTime={timeLeft}
+              lastPayerTimestamp={timestamp}
               countdownKey={countdownKey}
+              setCountdownKey={setCountdownKey}
               status={status}
               setStatus={setStatus}
+              matchState={matchState}
               setMatchState={setMatchState}
               isWinning={lnAddress === userAddress}
               toast={toast}

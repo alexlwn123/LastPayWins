@@ -15,7 +15,6 @@ const usePusher = (setMatchState: Dispatch<SetStateAction<MatchState>>) => {
     lnAddress: '',
     timestamp: 0,
     jackpot: 0,
-    timeLeft: 0,
     eventId: '',
     status: 'LOADING'
   });
@@ -23,7 +22,6 @@ const usePusher = (setMatchState: Dispatch<SetStateAction<MatchState>>) => {
     lnAddress: '',
     timestamp: 0,
     jackpot: 0,
-    timeLeft: 0,
     eventId: '',
     status: 'LOADING'
   });
@@ -47,7 +45,6 @@ const usePusher = (setMatchState: Dispatch<SetStateAction<MatchState>>) => {
     lastPayerChannel.current = pusher.current.subscribe(channel);
 
     lastPayerChannel.current.bind("update", (data: channelData) => {
-      console.log('LAST PAYER update', data);
       let jackpot = data.jackpot;
       const lnAddress = data.lnAddress;
       const timeLeft = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '60') - Math.floor((Date.now() - data.timestamp) / 1000);
@@ -65,7 +62,7 @@ const usePusher = (setMatchState: Dispatch<SetStateAction<MatchState>>) => {
       } else {
         setMatchState("LIVE")
       }
-      setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot, status, timeLeft, eventId })
+      setLastPayer({ lnAddress, timestamp: data.timestamp, jackpot: jackpot, status, eventId })
     });
 
     lastPayerChannel.current.bind("pusher:cache_miss", (data) => {

@@ -35,5 +35,6 @@ export const createEvent = () => {
 
 export const publishEvent = (event: NostrEvent) => {
   const pool = new SimplePool()
+  console.debug('PUBLISHING EVENT')
   pool.publish(relays, event)
 }

@@ -27,9 +27,11 @@ export const updateLastPayer = async (lnAddress: string, event: NostrEvent | nul
   let eventId = previousPayer.eventId
   if (previousPayer.jackpot === 0 || timeLeft < 0) {
     // Multiple posts possible if two people start round at same time?
+    // TODO: Always send event in query so if payment is made right when round finished
+    // (on a replaced QR Invoice) it will start a new round and bump the eventID
     if (event) {
       eventId = event.id
-      publishEvent(event)
+      if (process.env.NOSTR_ENABLED === 'true') publishEvent(event)
     }
     else console.error("Should be a nostr event attached")
   }

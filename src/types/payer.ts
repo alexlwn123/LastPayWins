@@ -3,7 +3,6 @@ export type Payer = {
   lnAddress: string;
   timestamp: number;
   jackpot: number;
-  timeLeft: number;
   eventId: string;
   status: Status;
 }
