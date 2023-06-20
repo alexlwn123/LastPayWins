@@ -13,13 +13,16 @@ const Countdown = ({lastPayerTimestamp, countdownKey, setCountdownKey, status, s
   const isVisible = usePageVisibility()
 
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && status === 'LIVE') {
       let timeRemaining = duration - Math.floor((Date.now() - lastPayerTimestamp) / 1000)
       if (timeRemaining <= 0) {
           setStatus(isWinning ? 'WINNER' : 'EXPIRED', toast);
           timeRemaining = duration
       }
       setInitialTimeRemaining(timeRemaining)
+      setCountdownKey(countdownKey + 1)
+    } else if (status !== 'LIVE') {
+      setInitialTimeRemaining(duration)
       setCountdownKey(countdownKey + 1)
     }
   }, [isVisible])
