@@ -31,7 +31,7 @@ export default function Home() {
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const initialRender = useRef(true);
 
-  const { lnAddress, timestamp, jackpot, status, timeLeft, setStatus } = usePusher();
+  const { lnAddress, timestamp, jackpot, status, setStatus } = usePusher();
 
   // validate user input
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function Home() {
 
   // handle status update
   useEffect(() => {
-    console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status, 'timeleft', timeLeft);
+    console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status );
     if (initialRender.current) {
       initialRender.current = false;
       return;
@@ -110,8 +110,9 @@ export default function Home() {
         <div className={styles.center}>
           <div className={styles.stack}>
             <Countdown
-              currentTime={timeLeft}
+              lastPayerTimestamp={timestamp}
               countdownKey={countdownKey}
+              setCountdownKey={setCountdownKey}
               status={status}
               setStatus={setStatus}
               isWinning={lnAddress === userAddress}
