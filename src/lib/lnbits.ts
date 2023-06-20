@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-type ScanResult = {
+export type ScanResult = {
   status: string;
   callback: string;
   description: string;
