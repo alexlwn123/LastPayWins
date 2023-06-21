@@ -4,9 +4,9 @@ function getBrowserVisibilityProp() {
   if (typeof document.hidden !== "undefined") {
     // Opera 12.10 and Firefox 18 and later support
     return "visibilitychange"
-  } else if (typeof document.msHidden !== "undefined") {
+  } else if (typeof document['msHidden'] !== "undefined") {
     return "msvisibilitychange"
-  } else if (typeof document.webkitHidden !== "undefined") {
+  } else if (typeof document['webkitHidden'] !== "undefined") {
     return "webkitvisibilitychange"
   }
 }
@@ -14,15 +14,16 @@ function getBrowserVisibilityProp() {
 function getBrowserDocumentHiddenProp() {
   if (typeof document.hidden !== "undefined") {
     return "hidden"
-  } else if (typeof document.msHidden !== "undefined") {
+  } else if (typeof document['msHidden'] !== "undefined") {
     return "msHidden"
-  } else if (typeof document.webkitHidden !== "undefined") {
+  } else if (typeof document['webkitHidden'] !== "undefined") {
     return "webkitHidden"
   }
 }
 
 function getIsDocumentHidden() {
-  return !document[getBrowserDocumentHiddenProp()]
+  const hidden = getBrowserDocumentHiddenProp()
+  return !document[hidden as keyof Document]
 }
 
 export function usePageVisibility() {
@@ -32,10 +33,10 @@ export function usePageVisibility() {
   useEffect(() => {
     const visibilityChange = getBrowserVisibilityProp()
 
-    document.addEventListener(visibilityChange, onVisibilityChange, false)
+    document.addEventListener(visibilityChange as keyof DocumentEventMap, onVisibilityChange, false)
 
     return () => {
-      document.removeEventListener(visibilityChange, onVisibilityChange)
+      document.removeEventListener(visibilityChange as keyof DocumentEventMap, onVisibilityChange)
     }
   })
 
