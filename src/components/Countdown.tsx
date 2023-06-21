@@ -14,7 +14,8 @@ const Countdown = ({lastPayerTimestamp, countdownKey, setCountdownKey, status, s
 
   useEffect(() => {
     if (isVisible && status === 'LIVE') {
-      let timeRemaining = duration - Math.floor((Date.now() - lastPayerTimestamp) / 1000)
+      let timeRemaining = ((duration * 1000 + lastPayerTimestamp) - Date.now()) / 1000
+      console.log('TIME REMAINING', timeRemaining)
       if (timeRemaining <= 0) {
           setStatus(isWinning ? 'WINNER' : 'EXPIRED', toast);
           timeRemaining = duration
@@ -25,7 +26,7 @@ const Countdown = ({lastPayerTimestamp, countdownKey, setCountdownKey, status, s
       setInitialTimeRemaining(duration)
       setCountdownKey(countdownKey + 1)
     }
-  }, [isVisible])
+  }, [isVisible, status, lastPayerTimestamp])
 
   const renderTime = ({ remainingTime, color }) => {
     if (remainingTime === 0) {
