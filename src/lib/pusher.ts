@@ -1,4 +1,6 @@
 import { inngest } from "@/pages/api/inngest";
+import { Agent } from "https";
+import fetch from 'node-fetch';
 import Pusher from "pusher";
 
 const client = new Pusher({
@@ -15,6 +17,27 @@ type Payer = {
   jackpot: number, 
   timestamp: number 
 }
+const hitWebhook = async (lnAddress, bid) => {
+
+  const url = `${process.env.ZAPIER_WEBHOOK_URL ?? 'https://webhook.site'}`
+  const data = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Grpc-Metadata-macaroon': process.env.MACAROON!,
+      'Content-Type': 'application/json',
+    },
+    agent: new Agent({
+      rejectUnauthorized: false,
+    }),
+    body: JSON.stringify({
+      lnAddress,
+      bid,
+    })
+  });
+  const rawResult = await data.json()
+  console.log('webhook', rawResult);
+
+};
 
 export const updateLastPayer = async (lnAddress) => {
   const amount = parseInt(process.env.INVOICE_AMOUNT ?? '0') || 100;
@@ -32,8 +55,8 @@ export const updateLastPayer = async (lnAddress) => {
     id: `bid-${payer.lnAddress}-${payer.timestamp}-${payer.jackpot}}`,
     name: 'bid',
     data: payer,
-
   })
+  await hitWebhook(lnAddress, payer.jackpot).catch(e => console.error('webhook failed', e));
   return payer;
 }
 
