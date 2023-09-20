@@ -2,7 +2,7 @@
 import { Payer, Status } from "@/types/payer";
 import Pusher, { Channel } from "pusher-js";
 import { useEffect, useRef, useState } from "react";
-import va from "@vercel/analytics";
+import { v4 } from 'uuid';
 
 const appKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
 const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!;
@@ -10,6 +10,8 @@ const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!;
 const usePusher = () => {
   const pusher = useRef<Pusher>();
   const lastPayerChannel = useRef<Channel>();
+  const presenceChannel = useRef<Channel>();
+  const [uuid, setUuid] = useState<string>('');
   const [lastPayer, setLastPayer] = useState<Payer>({
     lnAddress: '',
     timestamp: 0,
@@ -24,6 +26,7 @@ const usePusher = () => {
     timeLeft: 0,
     status: 'LOADING'
   });
+  const [memberCount, setMemberCount] = useState(0);
 
   const setStatus = async (status: Status) => {
     if (status === 'WINNER' && winner.current.status !== 'WINNER' && winner.current.timestamp !== lastPayer.timestamp) {
@@ -33,15 +36,47 @@ const usePusher = () => {
     setLastPayer((lastPayer) => ({ ...lastPayer, status }));
   }
 
+  // get lnaddr from local storage
+  useEffect(() => {
+    const uuid = localStorage.getItem('uuid');
+    if (uuid) {
+      setUuid(uuid);
+    } else {
+      const id = v4();
+      localStorage.setItem('uuid', id);
+      setUuid(id);
+    }
+   }, []);
+
   useEffect(() => {
     if (pusher.current) return;
+
+    let uuid = localStorage.getItem('uuid');
+    if (uuid === null) {
+      uuid = v4();
+      localStorage.setItem('uuid', uuid ?? '');
+    }
 
     // Pusher.log((message) => {console.log('-- PUSHER --> ', message)})
     pusher.current = new Pusher(appKey, {
       cluster: cluster,
+      authEndpoint: '/api/pusher?uuid=' + uuid,
     });
-    const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
-    lastPayerChannel.current = pusher.current.subscribe(channel);
+    const channelName = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
+    const presenceChannelName = process.env.NEXT_PUBLIC_PRESENCE_CHANNEL!;
+
+    presenceChannel.current = pusher.current.subscribe(presenceChannelName);
+    presenceChannel.current.bind("pusher:subscription_succeeded", (data) => {
+      setMemberCount(data.count)
+    });
+    presenceChannel.current.bind("pusher:member_added", (data) => {
+      setMemberCount(memberCount + 1);
+    });
+    presenceChannel.current.bind("pusher:member_removed", (data) => {
+      setMemberCount(memberCount - 1)
+    });
+
+    lastPayerChannel.current = pusher.current.subscribe(channelName);
     lastPayerChannel.current.bind("update", (data) => {
       console.log('LAST PAYER update', data);
       let jackpot = parseInt(data.jackpot);
@@ -67,11 +102,12 @@ const usePusher = () => {
 
     return () => {
       pusher.current?.unbind_all();
-      pusher.current?.unsubscribe(channel)
+      pusher.current?.unsubscribe(channelName)
+      pusher.current?.unsubscribe(presenceChannelName)
     }
 
   }, []);
 
-  return { ...lastPayer, setStatus };
+  return { ...lastPayer, setStatus, memberCount };
 };
 export default usePusher;

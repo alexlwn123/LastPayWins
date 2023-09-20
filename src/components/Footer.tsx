@@ -32,7 +32,7 @@ const Footer = () => (
         @chdwlch
       </Link>
     </footer>
-    <p>
+    <p className={styles.bug}>
       If it bugs out and you don't get paid, DM{" "}
       <Link
         href="https://twitter.com/_alexlewin"

@@ -74,4 +74,14 @@ export const getLastPayer = async (): Promise<Payer> => {
   }
 };
 
+export const authorizeUser = async (socketId: string, uuid: string): Promise<Pusher.ChannelAuthResponse> => {
+  const channel = process.env.NEXT_PUBLIC_PRESENCE_CHANNEL!;
+  const presenceData = {
+    user_id: uuid,
+  };
+  const authResponse = client.authorizeChannel(socketId, channel, presenceData);
+  return authResponse;
+
+}
+
 export default client;

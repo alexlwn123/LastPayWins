@@ -17,12 +17,14 @@ import { ToastContainer, toast } from "react-toastify";
 import va from "@vercel/analytics";
 import { Analytics } from '@vercel/analytics/react';
 import { checkInvoiceStatus, handleStatusUpdate, validateLnurl } from './utils';
+import { v4 } from "uuid";
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
   const [hash, setHash] = useState<string | null>(null);
   const [settled, setSettled] = useState(false);
   const [userAddress, setUserAddress] = useState('');
+  const [uuid, setUuid] = useState<string>();
   const [refetch, setRefetch] = useState(false)
   const [countdownKey, setCountdownKey] = useState<number>(0)
   const [fetching, setFetching] = useState(false);
@@ -31,7 +33,7 @@ export default function Home() {
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const initialRender = useRef(true);
 
-  const { lnAddress, timestamp, jackpot, status, setStatus } = usePusher();
+  const { lnAddress, timestamp, jackpot, status, setStatus, memberCount } = usePusher();
 
   // validate user input
   useEffect(() => {
@@ -64,8 +66,16 @@ export default function Home() {
   // get lnaddr from local storage
   useEffect(() => {
     const lnaddr = localStorage.getItem('lnaddr');
+    const uuid = localStorage.getItem('uuid');
     if (lnaddr) {
       setUserAddress(lnaddr);
+    }
+    if (uuid) {
+      setUuid(uuid);
+    } else {
+      const id = v4();
+      localStorage.setItem('uuid', id);
+      setUuid(id);
     }
    }, []);
 
@@ -132,11 +142,12 @@ export default function Home() {
               isValidAddress={isValidAddress}
               isValidating={isValidatingAddress}
             />
+            <div className={styles.online}>Players Online: <b>{memberCount}</b></div>
           </div>
           {userAddress && isValidAddress && <Invoice invoice={invoice} toast={toast} /> }
         </div>
       </Loading>
-      <Footer />
+      <Footer currentlyOnline={memberCount} />
       <Analytics />
     </main>
   );
