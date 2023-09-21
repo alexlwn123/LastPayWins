@@ -26,7 +26,17 @@ const usePusher = () => {
     timeLeft: 0,
     status: 'LOADING'
   });
-  const [memberCount, setMemberCount] = useState(0);
+  const [members, setMembers] = useState<Set<string>>(new Set());
+
+  const addMember = (id: string) => {
+    setMembers(prev => new Set(prev.add(id)));
+  }
+  const removeMember = (id: string) => {
+    setMembers(prev => {
+      prev.delete(id); 
+      return new Set(prev);
+    });
+  }
 
   const setStatus = async (status: Status) => {
     if (status === 'WINNER' && winner.current.status !== 'WINNER' && winner.current.timestamp !== lastPayer.timestamp) {
@@ -67,13 +77,13 @@ const usePusher = () => {
 
     presenceChannel.current = pusher.current.subscribe(presenceChannelName);
     presenceChannel.current.bind("pusher:subscription_succeeded", (data) => {
-      setMemberCount(data.count)
+      setMembers(new Set(Object.keys(data?.members ?? {})));
     });
     presenceChannel.current.bind("pusher:member_added", (data) => {
-      setMemberCount(memberCount + 1);
+      addMember(data.id)
     });
     presenceChannel.current.bind("pusher:member_removed", (data) => {
-      setMemberCount(memberCount - 1)
+      removeMember(data.id);
     });
 
     lastPayerChannel.current = pusher.current.subscribe(channelName);
@@ -108,6 +118,6 @@ const usePusher = () => {
 
   }, []);
 
-  return { ...lastPayer, setStatus, memberCount };
+  return { ...lastPayer, setStatus, memberCount: members.size };
 };
 export default usePusher;

@@ -62,6 +62,7 @@ export default function Home() {
     }
   }, [status, jackpot]);
 
+  useEffect(() => {console.log(`Members online: ${memberCount}`)}, [memberCount]);
 
   // get lnaddr from local storage
   useEffect(() => {
