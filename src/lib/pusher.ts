@@ -19,7 +19,11 @@ type Payer = {
 }
 const hitWebhook = async (lnAddress, bid) => {
 
-  const url = `${process.env.ZAPIER_WEBHOOK_URL ?? 'https://webhook.site'}`
+  const url = process.env.ZAPIER_WEBHOOK_URL;
+  if (!url) {
+    console.log('ZAPIER_WEBHOOK_URL is not set. Skipping webhook.');
+    return;
+  }
   const data = await fetch(url, {
     method: 'POST',
     headers: {
@@ -36,7 +40,6 @@ const hitWebhook = async (lnAddress, bid) => {
   });
   const rawResult = await data.json()
   console.log('webhook', rawResult);
-
 };
 
 export const updateLastPayer = async (lnAddress) => {

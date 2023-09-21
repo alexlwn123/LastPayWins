@@ -147,7 +147,7 @@ export default function Home() {
           {userAddress && isValidAddress && <Invoice invoice={invoice} toast={toast} /> }
         </div>
       </Loading>
-      <Footer currentlyOnline={memberCount} />
+      <Footer />
       <Analytics />
     </main>
   );

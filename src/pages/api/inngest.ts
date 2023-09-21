@@ -9,7 +9,7 @@ export const inngest = new Inngest({ name: "Last Pay Wins" });
 const duration = parseInt(`${process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '300'}`);
 const handleExpiry = inngest.createFunction(
   { name: 'Bid Received', 
-    retries: 0, 
+    retries: 3, 
     // Cancels on bid event if the bid is within the duration
     cancelOn: [
       { event: 'bid', if: `async.data.timestamp - event.data.timestamp < ${duration * 1000}`, timeout: `${duration}s` }
@@ -39,17 +39,19 @@ const handleExpiry = inngest.createFunction(
           'x-api-key': process.env.LNBITS_API_KEY!,
         },
       })
-      return await res.json() as ScanResult;
+      const result = await res.json() as ScanResult;
+      if (result.status !== 'OK' || 'error' in result) {
+        throw new Error(`Read lnurl failed: ${lnAddress} - ${result}`);
+      }
+      return result;
     });
 
     // Pay the winner 
     await step.run("Pay Winner", async () => {
       const amount = jackpot;
-      if (lnurlRes.status !== 'OK' || 'error' in lnurlRes) {
-        return { status: 'failed', error: lnurlRes.status };
-      }
-      const body =  {
+      const body = {
         amount: amount * 1000, // millisatoshis
+        // amount: 500, // millisatoshis
         callback: lnurlRes.callback,
         comment: `Congraturations! You've won ${amount} satoshis from LastPayWins!`,
         description: lnurlRes.description,
@@ -64,8 +66,11 @@ const handleExpiry = inngest.createFunction(
         },
         body: JSON.stringify(body)
       });
-      const result = await res.json();
-      return result;
+      const result = await res.json() as { success_action: string, error: string };
+      if (!('success_action' in result || 'payment_hash' in result)) {
+        throw new Error(`Pay failed: ${lnAddress}: ${amount} sats - ${JSON.stringify(result)}`)
+      }
+      return { success: 'true', data: result }
     });
   }
 );
