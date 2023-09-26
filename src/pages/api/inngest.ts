@@ -41,7 +41,7 @@ const handleExpiry = inngest.createFunction(
       })
       const result = await res.json() as ScanResult;
       if (result.status !== 'OK' || 'error' in result) {
-        throw new Error(`Read lnurl failed: ${lnAddress} - ${result}`);
+        throw new Error(`Read lnurl failed: ${lnAddress} - ${JSON.stringify(result)}`);
       }
       return result;
     });
