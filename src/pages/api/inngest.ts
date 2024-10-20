@@ -9,7 +9,7 @@ export const inngest = new Inngest({ name: "Last Pay Wins" });
 const duration = parseInt(`${process.env.NEXT_PUBLIC_CLOCK_DURATION ?? '300'}`);
 const handleExpiry = inngest.createFunction(
   { name: 'Bid Received', 
-    retries: 3, 
+    // retries: 3, 
     // Cancels on bid event if the bid is within the duration
     cancelOn: [
       { event: 'bid', if: `async.data.timestamp - event.data.timestamp < ${duration * 1000}`, timeout: `${duration}s` }
