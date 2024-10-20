@@ -3,6 +3,11 @@ import pusher, { updateLastPayer } from '../../lib/pusher';
 let jackpot = 0;
 export default async (req, res) => {
   const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
+  const password = process.env.DEV_PASSWORD!;
+  if (process.env.NODE_ENV !== 'development') {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
   try {
     if (req.method === 'DELETE') {
       await pusher.trigger(channel, 'update', {lnAddress: 'None!', timestamp: Date.now(), jackpot: 0});
