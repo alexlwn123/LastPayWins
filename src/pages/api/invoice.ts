@@ -40,6 +40,8 @@ const checkInvoice = async (hash, lnAddress) => {
   return { settled: data.paid }
 };
 
+const seen = new Set();
+
 export default async (req, res) => {
   try {
     if (req.method === 'POST') {
@@ -47,8 +49,15 @@ export default async (req, res) => {
       res.status(200).json(data);
     } else if (req.method === 'GET') {
       const rHash = decodeURIComponent(req.query.hash);
+      if (seen.has(rHash)) {
+        res.status(200).json({ settled: true });
+        return;
+      }
       const lnAddress = req.query.lnaddr;
       const data = await checkInvoice(rHash, lnAddress);
+      if (data.settled) {
+        seen.add(rHash);
+      }
       res.status(200).json(data);
     // } else if (req.method === 'PATCH'){ 
     //   const data = await getLnbitsInvoice();
