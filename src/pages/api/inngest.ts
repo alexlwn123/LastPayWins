@@ -50,10 +50,10 @@ const handleExpiry = inngest.createFunction(
     await step.run("Pay Winner", async () => {
       const amount = jackpot;
       const body = {
-        amount: amount * 1000, // millisatoshis
+        amount: amount * 1000 * 0.9, // millisatoshis, deduct 10% for fees
         // amount: 500, // millisatoshis
         callback: lnurlRes.callback,
-        comment: `Congraturations! You've won ${amount} satoshis from LastPayWins!`,
+        comment: `Congratulations! You've won the ${amount} satoshi jackpot from LastPayWins! (10% deducted for fees)`,
         description: lnurlRes.description,
         description_hash: lnurlRes.description_hash,
       };
