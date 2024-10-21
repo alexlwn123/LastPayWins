@@ -32,7 +32,7 @@ const Footer = () => (
         @chdwlch
       </Link>
     </footer>
-    <p>
+    <p className={styles.fees}>
       Fees: 5% goes to @_alexlewin to run the servers. 5% goes to{" "}
       <Link href="https://opensats.org" target="_blank" rel="noreferrer">
         OpenSats.org
