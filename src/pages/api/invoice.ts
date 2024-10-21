@@ -2,6 +2,7 @@ import { Agent } from "https";
 import fetch from 'node-fetch';
 import { updateLastPayer } from '../../lib/pusher';
 import { checkLnbitsInvoice, getLnbitsInvoice } from "@/lib/lnbits";
+import { kv } from "@vercel/kv";
 
 const getInvoice = async () => { 
   const amount = process.env.INVOICE_AMOUNT || 1000;
@@ -40,23 +41,25 @@ const checkInvoice = async (hash, lnAddress) => {
   return { settled: data.paid }
 };
 
-const seen = new Set();
-
 export default async (req, res) => {
   try {
     if (req.method === 'POST') {
       const data = await getLnbitsInvoice();
+      // @ts-ignore
+      await kv.set(data.payment_hash, false); // unpaid
       res.status(200).json(data);
     } else if (req.method === 'GET') {
       const rHash = decodeURIComponent(req.query.hash);
-      if (seen.has(rHash)) {
-        res.status(200).json({ settled: true });
+      // await kv.set(data.payment_hash, false); // unpaid
+      const seen = await kv.get(rHash);
+      if (seen) {
+        res.status(200).json({ status: "SUCK IT MANMEET & CONNER" });
         return;
       }
       const lnAddress = req.query.lnaddr;
       const data = await checkInvoice(rHash, lnAddress);
       if (data.settled) {
-        seen.add(rHash);
+        await kv.set(rHash, true); // Mark as paid
       }
       res.status(200).json(data);
     // } else if (req.method === 'PATCH'){ 
