@@ -45,20 +45,17 @@ export default async (req, res) => {
   try {
     if (req.method === 'POST') {
       const data = await getLnbitsInvoice();
-      // @ts-ignore
-      await kv.set(data.payment_hash, false); // unpaid
       res.status(200).json(data);
     } else if (req.method === 'GET') {
       const rHash = decodeURIComponent(req.query.hash);
-      // await kv.set(data.payment_hash, false); // unpaid
-      const seen = await kv.get(rHash);
-      if (seen) {
-        res.status(200).json({ status: "SUCK IT MANMEET & CONNER" });
-        return;
-      }
       const lnAddress = req.query.lnaddr;
       const data = await checkInvoice(rHash, lnAddress);
       if (data.settled) {
+        const seen = await kv.get(rHash);
+        if (seen) {
+          res.status(200).json({ status: "SUCK IT MANMEET & CONNER" });
+          return;
+        }
         await kv.set(rHash, true); // Mark as paid
       }
       res.status(200).json(data);
