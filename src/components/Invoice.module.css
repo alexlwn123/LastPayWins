@@ -1,22 +1,22 @@
 .payment {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
 }
 .copy {
-  width: 10rem;
-  height: 2rem;
+	width: 10rem;
+	height: 2rem;
 }
 
 .buttonRow {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items:flex-end;
-  gap: 0.5rem;
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+	gap: 0.5rem;
 }
 .audio {
-  position: absolute;
-  left: 100px;
+	position: absolute;
+	left: 100px;
 }
