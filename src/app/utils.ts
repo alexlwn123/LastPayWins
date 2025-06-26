@@ -1,6 +1,7 @@
 import va from "@vercel/analytics";
 import { toast } from "react-toastify";
 import { fromSats } from "satcomma";
+import type { Status } from "@/types/payer";
 
 export const validateLnurl = async (lnurl: string) => {
   const url = `/api/validate?lnurl=${encodeURIComponent(lnurl)}`;
@@ -14,11 +15,11 @@ export const validateLnurl = async (lnurl: string) => {
 };
 
 export const handleStatusUpdate = (
-  status,
-  lnAddress,
-  userAddress,
-  jackpot,
-  timestamp,
+  status: Status,
+  lnAddress: string,
+  userAddress: string | null,
+  jackpot: number,
+  timestamp: number,
 ) => {
   if (status === "LIVE" && lnAddress !== userAddress) {
     va.track("Bid", { user: lnAddress, jackpot, timestamp });
@@ -66,7 +67,6 @@ export const checkInvoiceStatus = (
       console.log("data", data);
       if (data.settled) {
         setSettled(data.settled && true);
-        localStorage.setItem("lnaddr", userAddress);
         setCountdownKey((prevKey) => prevKey + 1);
         setHash(null);
         toast("Bid Received! You're in the lead!", { type: "success" });

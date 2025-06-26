@@ -15,50 +15,32 @@ import styles from "./page.module.css";
 import "react-toastify/dist/ReactToastify.css";
 import { Analytics } from "@vercel/analytics/react";
 import { ToastContainer } from "react-toastify";
-import { v4 } from "uuid";
-import { checkInvoiceStatus, handleStatusUpdate, validateLnurl } from "./utils";
+import { useInvoice } from "@/hooks/useInvoice";
+import { useLnurl } from "@/hooks/useLnurl";
+import { handleStatusUpdate } from "./utils";
 
 export default function Home() {
-  const [invoice, setInvoice] = useState(null);
-  const [hash, setHash] = useState<string | null>(null);
-  const [settled, setSettled] = useState(false);
-  const [userAddress, setUserAddress] = useState("");
-  // const [uuid, setUuid] = useState<string>();
   const [refetch, setRefetch] = useState(false);
   const [countdownKey, setCountdownKey] = useState<number>(0);
-  const [fetching, setFetching] = useState(false);
-  const [checking, setChecking] = useState(false);
-  const [isValidAddress, setIsValidAddress] = useState(false);
-  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const initialRender = useRef(true);
+
+  const { userAddress, setUserAddress, isValidatingAddress, isValidAddress } =
+    useLnurl();
 
   const { lnAddress, timestamp, jackpot, status, setStatus, memberCount } =
     usePusher();
 
-  // validate user input
-  useEffect(() => {
-    const delayedValidate = setTimeout(async () => {
-      setIsValidatingAddress(true);
-      const res = await validateLnurl(userAddress);
-      setIsValidatingAddress(false);
-      console.log(res);
-      setIsValidAddress(res.valid);
-    }, 300);
-    return () => clearTimeout(delayedValidate);
-  }, [userAddress]);
+  const { invoice } = useInvoice({
+    userAddress: isValidAddress ? userAddress : null,
+    status,
+    setCountdownKey,
+    refetch,
+    setRefetch,
+  });
 
   // handle status update
   useEffect(() => {
-    console.log(
-      "lnAddress",
-      lnAddress,
-      "timestamp",
-      timestamp,
-      "jackpot",
-      jackpot,
-      "status",
-      status
-    );
+    console.log({ lnAddress, timestamp, jackpot, status });
     if (initialRender.current) {
       initialRender.current = false;
       return;
@@ -70,56 +52,6 @@ export default function Home() {
       setRefetch(true);
     }
   }, [status, jackpot, lnAddress, timestamp, userAddress]);
-
-  useEffect(() => {
-    console.log(`Members online: ${memberCount}`);
-  }, [memberCount]);
-
-  // get lnaddr from local storage
-  useEffect(() => {
-    const lnaddr = localStorage.getItem("lnaddr");
-    const uuid = localStorage.getItem("uuid");
-    if (lnaddr) {
-      setUserAddress(lnaddr);
-    }
-    if (!uuid) {
-      const id = v4();
-      localStorage.setItem("uuid", id);
-    }
-  }, []);
-
-  // Get invoice
-  useEffect(() => {
-    console.log("fetching invoice");
-    if (fetching || hash || !refetch) return;
-    setFetching(true);
-    fetch("/api/invoice", { method: "POST" })
-      .then((response) => response.json())
-      .then((data) => {
-        setInvoice(data.payment_request);
-        setHash(data.payment_hash);
-        setSettled(false);
-        setFetching(false);
-        setRefetch(false);
-      });
-  }, [refetch, hash, fetching]);
-
-  // Check invoice
-  useEffect(() => {
-    if (settled || !hash || status === "LOADING" || checking) return;
-    const interval = setInterval(() => {
-      if (checking) return;
-      checkInvoiceStatus(
-        setChecking,
-        hash,
-        setHash,
-        setSettled,
-        userAddress,
-        setCountdownKey
-      );
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [hash, status, userAddress, settled, checking]);
 
   return (
     <main className={styles.main}>

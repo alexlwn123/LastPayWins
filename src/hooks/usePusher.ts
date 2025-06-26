@@ -23,10 +23,10 @@ const usePusher = () => {
   const pusher = useRef<Pusher>();
   const lastPayerChannel = useRef<Channel>();
   const presenceChannel = useRef<Channel>();
-  // const [uuid, setUuid] = useState<string>("");
   const [lastPayer, setLastPayer] = useState<Payer>(emptyPayer);
   const winner = useRef<Payer>(emptyPayer);
   const [members, setMembers] = useState<Set<string>>(new Set());
+  const [uuid, setUuid] = useState<string | null>(null);
 
   const addMember = useCallback((id: string) => {
     setMembers((prev) => new Set(prev.add(id)));
@@ -50,23 +50,20 @@ const usePusher = () => {
     setLastPayer((lastPayer) => ({ ...lastPayer, status }));
   };
 
-  // get lnaddr from local storage
+  // get uuid from local storage
   useEffect(() => {
-    const uuid = localStorage.getItem("uuid");
-    if (!uuid) {
+    const existingId = localStorage.getItem("uuid");
+    if (existingId) {
+      setUuid(existingId);
+    } else {
       const id = v4();
       localStorage.setItem("uuid", id);
+      setUuid(id);
     }
   }, []);
 
   useEffect(() => {
-    if (pusher.current) return;
-
-    let uuid = localStorage.getItem("uuid");
-    if (uuid === null) {
-      uuid = v4();
-      localStorage.setItem("uuid", uuid ?? "");
-    }
+    if (pusher.current || !uuid) return;
 
     // Pusher.log((message) => {console.log('-- PUSHER --> ', message)})
     pusher.current = new Pusher(NEXT_PUBLIC_PUSHER_APP_KEY, {
@@ -132,7 +129,7 @@ const usePusher = () => {
       pusher.current?.unsubscribe(NEXT_PUBLIC_PUSHER_CHANNEL);
       pusher.current?.unsubscribe(NEXT_PUBLIC_PRESENCE_CHANNEL);
     };
-  }, [addMember, removeMember]);
+  }, [addMember, removeMember, uuid]);
 
   return { ...lastPayer, setStatus, memberCount: members.size };
 };
