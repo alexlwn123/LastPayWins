@@ -1,16 +1,28 @@
-import { inngest } from "@/pages/api/inngest";
 import { Agent } from "https";
 import fetch from "node-fetch";
 import Pusher from "pusher";
+import { inngest } from "@/pages/api/inngest";
+import {
+  INVOICE_AMOUNT,
+  MACAROON,
+  NEXT_PUBLIC_CLOCK_DURATION,
+  NEXT_PUBLIC_PRESENCE_CHANNEL,
+  NEXT_PUBLIC_PUSHER_APP_CLUSTER,
+  NEXT_PUBLIC_PUSHER_APP_KEY,
+  NEXT_PUBLIC_PUSHER_CHANNEL,
+  PUSHER_APP_ID,
+  PUSHER_APP_SECRET,
+  ZAPIER_WEBHOOK_URL,
+} from "./constants";
 
 const client = new Pusher({
-  appId: process.env.PUSHER_APP_ID!,
-  key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY!,
-  secret: process.env.PUSHER_APP_SECRET!,
-  cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!,
+  appId: PUSHER_APP_ID,
+  key: NEXT_PUBLIC_PUSHER_APP_KEY,
+  secret: PUSHER_APP_SECRET,
+  cluster: NEXT_PUBLIC_PUSHER_APP_CLUSTER,
   useTLS: true,
 });
-const channelName = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
+const channelName = NEXT_PUBLIC_PUSHER_CHANNEL;
 
 type Payer = {
   lnAddress: string;
@@ -18,7 +30,7 @@ type Payer = {
   timestamp: number;
 };
 const hitWebhook = async (lnAddress, bid) => {
-  const url = process.env.ZAPIER_WEBHOOK_URL;
+  const url = ZAPIER_WEBHOOK_URL;
   if (!url) {
     console.log("ZAPIER_WEBHOOK_URL is not set. Skipping webhook.");
     return;
@@ -26,7 +38,7 @@ const hitWebhook = async (lnAddress, bid) => {
   const data = await fetch(url, {
     method: "POST",
     headers: {
-      "Grpc-Metadata-macaroon": process.env.MACAROON!,
+      "Grpc-Metadata-macaroon": MACAROON,
       "Content-Type": "application/json",
     },
     agent: new Agent({
@@ -42,10 +54,11 @@ const hitWebhook = async (lnAddress, bid) => {
 };
 
 export const updateLastPayer = async (lnAddress) => {
-  const amount = parseInt(process.env.INVOICE_AMOUNT ?? "0") || 100;
+  console.log("updating last payer", lnAddress);
+  const amount = parseInt(INVOICE_AMOUNT ?? "0") || 100;
   const previousPayer = await getLastPayer();
   const timeLeft =
-    parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? "60") -
+    parseInt(NEXT_PUBLIC_CLOCK_DURATION ?? "60") -
     Math.floor((Date.now() - previousPayer.timestamp) / 1000);
   const previousJackpot = timeLeft > 0 ? previousPayer.jackpot : 0;
 
@@ -67,7 +80,7 @@ export const updateLastPayer = async (lnAddress) => {
 };
 
 export const getLastPayer = async (): Promise<Payer> => {
-  const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
+  const channel = NEXT_PUBLIC_PUSHER_CHANNEL;
   const currentState = await client.get({
     path: `/channels/${channel}`,
     params: { info: ["cache"] },
@@ -87,7 +100,7 @@ export const authorizeUser = async (
   socketId: string,
   uuid: string,
 ): Promise<Pusher.ChannelAuthResponse> => {
-  const channel = process.env.NEXT_PUBLIC_PRESENCE_CHANNEL!;
+  const channel = NEXT_PUBLIC_PRESENCE_CHANNEL;
   const presenceData = {
     user_id: uuid,
   };

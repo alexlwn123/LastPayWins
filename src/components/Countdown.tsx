@@ -1,8 +1,8 @@
-import { CountdownCircleTimer } from "react-countdown-circle-timer";
-import styles from "./Countdown.module.css";
-import { Status } from "@/types/payer";
 import { useEffect, useState } from "react";
+import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
+import type { Status } from "@/types/payer";
+import styles from "./Countdown.module.css";
 
 const Countdown = ({
   lastPayerTimestamp,
@@ -25,7 +25,7 @@ const Countdown = ({
 }) => {
   const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? "60");
   const percentages = [1, 0.5, 0.25, 0];
-  let colorsTime = percentages.map((p) => Math.floor(p * duration));
+  const colorsTime = percentages.map((p) => Math.floor(p * duration));
 
   const [initialTimeRemaining, setInitialTimeRemaining] = useState(duration);
   const isVisible = usePageVisibility();

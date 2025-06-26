@@ -1,9 +1,10 @@
+import { kv } from "@vercel/kv";
+import { INVOICE_AMOUNT } from "@/lib/constants";
 import { checkLnbitsInvoice, createLnbitsInvoice } from "@/lib/lightning";
 import { updateLastPayer } from "../../lib/pusher";
-import { kv } from "@vercel/kv";
 
 const getInvoice = async () => {
-  const amount = parseInt(process.env.INVOICE_AMOUNT || "1000");
+  const amount = parseInt(INVOICE_AMOUNT || "1000");
   const expiry = 3600;
   const memo = "Bid - Last Pay Wins";
   return await createLnbitsInvoice(amount, memo, expiry);
@@ -14,7 +15,7 @@ const checkInvoice = async (hash, lnAddress) => {
   if (data.settled) {
     await updateLastPayer(lnAddress);
   }
-  return { settled: data.settled };
+  return data;
 };
 
 export default async (req, res) => {

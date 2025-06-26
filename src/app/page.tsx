@@ -1,23 +1,23 @@
 "use client";
-import styles from "./page.module.css";
 import { useEffect, useRef, useState } from "react";
 import {
-  Header,
+  Countdown,
   CurrentWinner,
   Footer,
-  Countdown,
-  Jackpot,
-  Invoice,
-  Loading,
+  Header,
   Input,
+  Invoice,
+  Jackpot,
+  Loading,
 } from "@/components";
 import usePusher from "@/hooks/usePusher";
+import styles from "./page.module.css";
 import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer, toast } from "react-toastify";
 import va from "@vercel/analytics";
 import { Analytics } from "@vercel/analytics/react";
-import { checkInvoiceStatus, handleStatusUpdate, validateLnurl } from "./utils";
+import { ToastContainer, toast } from "react-toastify";
 import { v4 } from "uuid";
+import { checkInvoiceStatus, handleStatusUpdate, validateLnurl } from "./utils";
 
 export default function Home() {
   const [invoice, setInvoice] = useState(null);
@@ -58,7 +58,7 @@ export default function Home() {
       "jackpot",
       jackpot,
       "status",
-      status,
+      status
     );
     if (initialRender.current) {
       initialRender.current = false;
@@ -71,7 +71,7 @@ export default function Home() {
       jackpot,
       timestamp,
       va,
-      toast,
+      toast
     );
     setCountdownKey((prevKey) => prevKey + 1);
 
@@ -99,6 +99,7 @@ export default function Home() {
 
   // Get invoice
   useEffect(() => {
+    console.log("fetching invoice");
     if (fetching || hash) return;
     setFetching(true);
     fetch("/api/invoice", { method: "POST" })
@@ -124,7 +125,7 @@ export default function Home() {
         setSettled,
         toast,
         userAddress,
-        setCountdownKey,
+        setCountdownKey
       );
     }, 1000);
     return () => clearInterval(interval);

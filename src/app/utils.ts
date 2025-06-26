@@ -59,10 +59,12 @@ export const checkInvoiceStatus = (
   setCountdownKey,
 ) => {
   setChecking(true);
-  const url = `/api/invoice?hash=${encodeURIComponent(hash!)}&lnaddr=${userAddress}`;
+  console.log("checking invoice");
+  const url = `/api/invoice?hash=${encodeURIComponent(hash)}&lnaddr=${userAddress}`;
   fetch(url, { method: "GET" })
     .then((response) => response.json())
     .then((data) => {
+      console.log("data", data);
       if (data.settled) {
         setSettled(data.settled && true);
         localStorage.setItem("lnaddr", userAddress);
