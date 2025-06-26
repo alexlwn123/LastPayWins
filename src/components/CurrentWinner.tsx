@@ -1,7 +1,7 @@
 import { fromSats } from "satcomma";
 import styles from "./CurrentWinner.module.css";
 
-const CurrentWinner = ({ currentWinner, isActive, jackpot, status }) => {
+const CurrentWinner = ({ currentWinner, isActive, jackpot }) => {
   return (
     <div className={styles.block}>
       <div>

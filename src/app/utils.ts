@@ -1,3 +1,5 @@
+import va from "@vercel/analytics";
+import { toast } from "react-toastify";
 import { fromSats } from "satcomma";
 
 export const validateLnurl = async (lnurl: string) => {
@@ -17,8 +19,6 @@ export const handleStatusUpdate = (
   userAddress,
   jackpot,
   timestamp,
-  va,
-  toast,
 ) => {
   if (status === "LIVE" && lnAddress !== userAddress) {
     va.track("Bid", { user: lnAddress, jackpot, timestamp });
@@ -54,7 +54,6 @@ export const checkInvoiceStatus = (
   hash,
   setHash,
   setSettled,
-  toast,
   userAddress,
   setCountdownKey,
 ) => {

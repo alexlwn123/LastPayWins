@@ -6,7 +6,9 @@ const X = () => (
     height="20px"
     viewBox="0 0 800.000000 800.000000"
     preserveAspectRatio="xMidYMid meet"
-    xlinkTitle="testy"
+    xlinkTitle="X"
+    aria-label="X"
+    role="img"
   >
     <g
       transform="translate(0.000000,800.000000) scale(0.100000,-0.100000)"

@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 declare global {
   interface Window {
+    // biome-ignore lint/suspicious/noExplicitAny: TODO. add the type
     webln: any;
   }
 }
-export const handleWeblnPay = async (setWebln, toast, invoice) => {
+export const handleWeblnPay = async (setWebln, invoice) => {
   setWebln(true);
   try {
     await window.webln.enable();
-  } catch (e) {
+  } catch {
     console.error("Failed to enable webln");
     toast("Failed to enable webln", { type: "error" });
     setWebln(false);

@@ -1,12 +1,14 @@
-import type { ScanResult } from "@/lib/lnbits";
 import { Inngest } from "inngest";
 import { serve } from "inngest/next";
 import fetch from "node-fetch";
+import type { ScanResult } from "@/lib/lightning";
+import { NEXT_PUBLIC_CLOCK_DURATION } from "@/lib/publicEnvs";
+import { LNBITS_API_KEY, LNBITS_URL } from "@/lib/serverEnvs";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ name: "Last Pay Wins" });
 
-const duration = parseInt(`${process.env.NEXT_PUBLIC_CLOCK_DURATION ?? "300"}`);
+const duration = parseInt(NEXT_PUBLIC_CLOCK_DURATION ?? "300");
 const handleExpiry = inngest.createFunction(
   {
     name: "Bid Received",
@@ -36,16 +38,13 @@ const handleExpiry = inngest.createFunction(
 
     // Scan the bidder's lnurl
     const lnurlRes: ScanResult = await step.run("Read Lnurl", async () => {
-      const res = await fetch(
-        `${process.env.LNBITS_URL!}/api/v1/lnurlscan/${lnAddress}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": process.env.LNBITS_API_KEY!,
-          },
+      const res = await fetch(`${LNBITS_URL}/api/v1/lnurlscan/${lnAddress}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": LNBITS_API_KEY,
         },
-      );
+      });
       const result = (await res.json()) as ScanResult;
       if (result.status !== "OK" || "error" in result) {
         throw new Error(
@@ -67,12 +66,12 @@ const handleExpiry = inngest.createFunction(
         description: lnurlRes.description,
         description_hash: lnurlRes.description_hash,
       };
-      const url = `${process.env.LNBITS_URL!}/api/v1/payments/lnurl`;
+      const url = `${LNBITS_URL}/api/v1/payments/lnurl`;
       const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": process.env.LNBITS_API_KEY_ADMIN!,
+          "x-api-key": LNBITS_API_KEY,
         },
         body: JSON.stringify(body),
       });

@@ -4,6 +4,8 @@ const Github = () => (
     viewBox="0 0 24 24"
     width="20"
     height="20"
+    aria-label="Github"
+    role="img"
   >
     <path fill="none" d="M0 0h24v24H0z" />
     <path

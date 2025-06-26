@@ -1,12 +1,20 @@
-import { Agent } from "https";
+import { Agent } from "node:https";
 import fetch from "node-fetch";
-import { LNBITS_API_KEY, LNBITS_URL, LND_HOST, MACAROON } from "./constants";
+import { LNBITS_API_KEY, LNBITS_URL, LND_HOST, MACAROON } from "./serverEnvs";
 
 type Invoice = { payment_request: string; r_hash: string };
-// export type CreateInvoice = (amount: number, memo: string, expiry: number) => Promise<{ invoice: string; rHash: string }>;
+// export type CreateInvoice = (
+//   amount: number,
+//   memo: string,
+//   expiry: number,
+// ) => Promise<{ invoice: string; rHash: string }>;
 export type CheckInvoice = (rHash: string) => Promise<{ settled: boolean }>;
 
-export const createLnbitsInvoice = async (amount, memo, expiry) => {
+export const createLnbitsInvoice = async (
+  amount: number,
+  memo: string,
+  expiry: number,
+) => {
   const url = `${LNBITS_URL}/api/v1/payments`;
   const body = {
     out: false,
@@ -24,10 +32,7 @@ export const createLnbitsInvoice = async (amount, memo, expiry) => {
     },
     body: JSON.stringify(body),
   });
-  return (await rawData.json()) as {
-    payment_request: string;
-    payment_hash: string;
-  };
+  return (await rawData.json()) as Invoice;
 };
 
 // export const checkLnbitsInvoice: CheckInvoice = async (paymentHash) => {
@@ -40,7 +45,7 @@ export const checkLnbitsInvoice = async (paymentHash) => {
       "x-api-key": LNBITS_API_KEY,
     },
   });
-  const res = await rawData.json();
+  const res = (await rawData.json()) as { paid: boolean };
   return { settled: res.paid };
 };
 

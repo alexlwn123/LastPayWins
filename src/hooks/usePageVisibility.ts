@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/complexity/useLiteralKeys: types on document for different browsers */
 import { useEffect, useState } from "react";
 
 function getBrowserVisibilityProp() {

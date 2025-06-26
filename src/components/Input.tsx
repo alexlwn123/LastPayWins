@@ -12,10 +12,10 @@ export default function Input({
   isValidating,
 }) {
   const dot = () => <RevolvingDot radius={10} height={20} width={20} />;
-  const [icon, setIcon] = useState(dot);
+  const [icon, setIcon] = useState<React.ReactNode>(dot);
 
   useEffect(() => {
-    if (!value) setIcon(<></>);
+    if (!value) setIcon(null);
     else if (isValidating) setIcon(dot);
     else if (isValidAddress) setIcon(<Check />);
     else setIcon(<X />);

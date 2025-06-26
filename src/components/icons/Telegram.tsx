@@ -5,6 +5,8 @@ const Telegram = () => (
     width="20"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 500 500"
+    aria-label="Telegram"
+    role="img"
   >
     <path
       d="M250 500c138.071 0 250-111.929 250-250S388.071 0 250 0 0 111.929 0 250s111.929 250 250 250z"

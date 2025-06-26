@@ -3,7 +3,7 @@ import { handleWeblnPay, useWeblnAvailable } from "@/hooks/useWeblnAvailable";
 import styles from "./Invoice.module.css";
 import Qr from "./Qr";
 
-const Invoice = ({ invoice, toast }) => {
+const Invoice = ({ invoice }) => {
   const { weblnAvailable, webLn, setWebln } = useWeblnAvailable();
   return (
     <div className={styles.payment}>
@@ -24,7 +24,7 @@ const Invoice = ({ invoice, toast }) => {
           <button
             type="button"
             className={styles.copy}
-            onClick={() => handleWeblnPay(setWebln, toast, invoice)}
+            onClick={() => handleWeblnPay(setWebln, invoice)}
           >
             Pay with WebLN
           </button>

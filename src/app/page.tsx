@@ -13,9 +13,8 @@ import {
 import usePusher from "@/hooks/usePusher";
 import styles from "./page.module.css";
 import "react-toastify/dist/ReactToastify.css";
-import va from "@vercel/analytics";
 import { Analytics } from "@vercel/analytics/react";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { v4 } from "uuid";
 import { checkInvoiceStatus, handleStatusUpdate, validateLnurl } from "./utils";
 
@@ -58,27 +57,19 @@ export default function Home() {
       "jackpot",
       jackpot,
       "status",
-      status,
+      status
     );
     if (initialRender.current) {
       initialRender.current = false;
       return;
     }
-    handleStatusUpdate(
-      status,
-      lnAddress,
-      userAddress,
-      jackpot,
-      timestamp,
-      va,
-      toast,
-    );
+    handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp);
     setCountdownKey((prevKey) => prevKey + 1);
 
     if (status === "LOADING") {
       setRefetch(true);
     }
-  }, [status, jackpot]);
+  }, [status, jackpot, lnAddress, timestamp, userAddress]);
 
   useEffect(() => {
     console.log(`Members online: ${memberCount}`);
@@ -100,7 +91,7 @@ export default function Home() {
   // Get invoice
   useEffect(() => {
     console.log("fetching invoice");
-    if (fetching || hash) return;
+    if (fetching || hash || !refetch) return;
     setFetching(true);
     fetch("/api/invoice", { method: "POST" })
       .then((response) => response.json())
@@ -110,6 +101,7 @@ export default function Home() {
         setHash(data.payment_hash);
         setSettled(false);
         setFetching(false);
+        setRefetch(false);
       });
   }, [refetch, hash, fetching]);
 
@@ -123,13 +115,12 @@ export default function Home() {
         hash,
         setHash,
         setSettled,
-        toast,
         userAddress,
-        setCountdownKey,
+        setCountdownKey
       );
     }, 1000);
     return () => clearInterval(interval);
-  }, [hash, fetching, status, userAddress, settled, checking]);
+  }, [hash, status, userAddress, settled, checking]);
 
   return (
     <main className={styles.main}>
@@ -153,14 +144,12 @@ export default function Home() {
               status={status}
               setStatus={setStatus}
               isWinning={lnAddress === userAddress}
-              toast={toast}
               displayingInvoice={isValidAddress}
             />
             <CurrentWinner
               currentWinner={lnAddress ?? "Anon"}
               isActive={status === "LIVE"}
               jackpot={jackpot}
-              status={status}
             />
             <Input
               placeholder={"example@lightningaddress.com"}
@@ -173,9 +162,7 @@ export default function Home() {
               Players Online: <b>{memberCount}</b>
             </div>
           </div>
-          {userAddress && isValidAddress && (
-            <Invoice invoice={invoice} toast={toast} />
-          )}
+          {userAddress && isValidAddress && <Invoice invoice={invoice} />}
         </div>
       </Loading>
       <Footer />

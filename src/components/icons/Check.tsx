@@ -6,6 +6,8 @@ const Check = () => (
     height="20px"
     viewBox="0 0 512.000000 424.000000"
     preserveAspectRatio="xMidYMid meet"
+    aria-label="Check"
+    role="img"
   >
     <g
       transform="translate(0.000000,424.000000) scale(0.100000,-0.100000)"

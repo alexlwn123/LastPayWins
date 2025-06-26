@@ -1,17 +1,21 @@
 "use client";
-import type { Payer, Status } from "@/types/payer";
 import Pusher, { type Channel } from "pusher-js";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
-
-const appKey = process.env.NEXT_PUBLIC_PUSHER_APP_KEY!;
-const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!;
+import {
+  NEXT_PUBLIC_CLOCK_DURATION,
+  NEXT_PUBLIC_PRESENCE_CHANNEL,
+  NEXT_PUBLIC_PUSHER_APP_CLUSTER,
+  NEXT_PUBLIC_PUSHER_APP_KEY,
+  NEXT_PUBLIC_PUSHER_CHANNEL,
+} from "@/lib/publicEnvs";
+import type { Payer, Status } from "@/types/payer";
 
 const usePusher = () => {
   const pusher = useRef<Pusher>();
   const lastPayerChannel = useRef<Channel>();
   const presenceChannel = useRef<Channel>();
-  const [uuid, setUuid] = useState<string>("");
+  // const [uuid, setUuid] = useState<string>("");
   const [lastPayer, setLastPayer] = useState<Payer>({
     lnAddress: "",
     timestamp: 0,
@@ -28,15 +32,15 @@ const usePusher = () => {
   });
   const [members, setMembers] = useState<Set<string>>(new Set());
 
-  const addMember = (id: string) => {
+  const addMember = useCallback((id: string) => {
     setMembers((prev) => new Set(prev.add(id)));
-  };
-  const removeMember = (id: string) => {
+  }, []);
+  const removeMember = useCallback((id: string) => {
     setMembers((prev) => {
       prev.delete(id);
       return new Set(prev);
     });
-  };
+  }, []);
 
   const setStatus = async (status: Status) => {
     if (
@@ -53,12 +57,9 @@ const usePusher = () => {
   // get lnaddr from local storage
   useEffect(() => {
     const uuid = localStorage.getItem("uuid");
-    if (uuid) {
-      setUuid(uuid);
-    } else {
+    if (!uuid) {
       const id = v4();
       localStorage.setItem("uuid", id);
-      setUuid(id);
     }
   }, []);
 
@@ -72,14 +73,14 @@ const usePusher = () => {
     }
 
     // Pusher.log((message) => {console.log('-- PUSHER --> ', message)})
-    pusher.current = new Pusher(appKey, {
-      cluster: cluster,
-      authEndpoint: "/api/pusher?uuid=" + uuid,
+    pusher.current = new Pusher(NEXT_PUBLIC_PUSHER_APP_KEY, {
+      cluster: NEXT_PUBLIC_PUSHER_APP_CLUSTER,
+      authEndpoint: `/api/pusher?uuid=${uuid}`,
     });
-    const channelName = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
-    const presenceChannelName = process.env.NEXT_PUBLIC_PRESENCE_CHANNEL!;
 
-    presenceChannel.current = pusher.current.subscribe(presenceChannelName);
+    presenceChannel.current = pusher.current.subscribe(
+      NEXT_PUBLIC_PRESENCE_CHANNEL,
+    );
     presenceChannel.current.bind("pusher:subscription_succeeded", (data) => {
       setMembers(new Set(Object.keys(data?.members ?? {})));
     });
@@ -90,13 +91,15 @@ const usePusher = () => {
       removeMember(data.id);
     });
 
-    lastPayerChannel.current = pusher.current.subscribe(channelName);
+    lastPayerChannel.current = pusher.current.subscribe(
+      NEXT_PUBLIC_PUSHER_CHANNEL,
+    );
     lastPayerChannel.current.bind("update", (data) => {
       console.log("LAST PAYER update", data);
       const jackpot = parseInt(data.jackpot);
       const lnAddress = data.lnAddress;
       const timeLeft =
-        parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? "60") -
+        parseInt(NEXT_PUBLIC_CLOCK_DURATION ?? "60") -
         Math.floor((Date.now() - data.timestamp) / 1000);
       let status: Status = "LIVE";
       if (jackpot === 0) {
@@ -130,10 +133,10 @@ const usePusher = () => {
 
     return () => {
       pusher.current?.unbind_all();
-      pusher.current?.unsubscribe(channelName);
-      pusher.current?.unsubscribe(presenceChannelName);
+      pusher.current?.unsubscribe(NEXT_PUBLIC_PUSHER_CHANNEL);
+      pusher.current?.unsubscribe(NEXT_PUBLIC_PRESENCE_CHANNEL);
     };
-  }, []);
+  }, [addMember, removeMember]);
 
   return { ...lastPayer, setStatus, memberCount: members.size };
 };

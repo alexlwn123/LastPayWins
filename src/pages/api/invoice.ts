@@ -1,6 +1,6 @@
 import { kv } from "@vercel/kv";
-import { INVOICE_AMOUNT } from "@/lib/constants";
 import { checkLnbitsInvoice, createLnbitsInvoice } from "@/lib/lightning";
+import { INVOICE_AMOUNT } from "@/lib/serverEnvs";
 import { updateLastPayer } from "../../lib/pusher";
 
 const getInvoice = async () => {

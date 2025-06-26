@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import type { Status } from "@/types/payer";
 import styles from "./Countdown.module.css";
+
+const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? "60");
 
 const Countdown = ({
   lastPayerTimestamp,
@@ -11,41 +13,43 @@ const Countdown = ({
   status,
   setStatus,
   isWinning,
-  toast,
   displayingInvoice,
 }: {
   lastPayerTimestamp: number;
   countdownKey: number;
-  setCountdownKey: (key: number) => void;
+  setCountdownKey: Dispatch<SetStateAction<number>>;
   status: Status;
-  setStatus;
+  setStatus: Dispatch<SetStateAction<Status>>;
   isWinning: boolean;
-  toast;
   displayingInvoice: boolean;
 }) => {
-  const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? "60");
-  const percentages = [1, 0.5, 0.25, 0];
-  const colorsTime = percentages.map((p) => Math.floor(p * duration));
-
   const [initialTimeRemaining, setInitialTimeRemaining] = useState(duration);
   const isVisible = usePageVisibility();
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: TODO fix this to make the logic less annoying
   useEffect(() => {
     if (isVisible && status === "LIVE") {
       let timeRemaining =
         (duration * 1000 + lastPayerTimestamp - Date.now()) / 1000;
       console.log("TIME REMAINING", timeRemaining);
       if (timeRemaining <= 0) {
-        setStatus(isWinning ? "WINNER" : "EXPIRED", toast);
+        setStatus(isWinning ? "WINNER" : "EXPIRED");
         timeRemaining = duration;
       }
       setInitialTimeRemaining(timeRemaining);
-      setCountdownKey(countdownKey + 1);
+      setCountdownKey((countdownKey) => countdownKey + 1);
     } else if (status !== "LIVE") {
       setInitialTimeRemaining(duration);
-      setCountdownKey(countdownKey + 1);
+      setCountdownKey((countdownKey) => countdownKey + 1);
     }
-  }, [isVisible, status, lastPayerTimestamp]);
+  }, [
+    isVisible,
+    status,
+    lastPayerTimestamp,
+    // isWinning,
+    // setCountdownKey,
+    // setStatus,
+  ]);
 
   const renderTime = ({ remainingTime, color }) => {
     if (remainingTime === 0) {
@@ -67,6 +71,7 @@ const Countdown = ({
     <div className={styles.timerWrapper}>
       <CountdownCircleTimer
         isPlaying={isVisible && status === "LIVE"}
+        key={countdownKey}
         duration={duration}
         initialRemainingTime={initialTimeRemaining}
         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
@@ -78,7 +83,7 @@ const Countdown = ({
         ]}
         // 100, 50, 25, 0
         onComplete={() => {
-          setStatus(isWinning ? "WINNER" : "EXPIRED", toast);
+          setStatus(isWinning ? "WINNER" : "EXPIRED");
           return {
             shouldRepeat: true,
           };

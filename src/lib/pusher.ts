@@ -1,19 +1,21 @@
-import { Agent } from "https";
+import { Agent } from "node:https";
 import fetch from "node-fetch";
 import Pusher from "pusher";
 import { inngest } from "@/pages/api/inngest";
 import {
-  INVOICE_AMOUNT,
-  MACAROON,
   NEXT_PUBLIC_CLOCK_DURATION,
   NEXT_PUBLIC_PRESENCE_CHANNEL,
   NEXT_PUBLIC_PUSHER_APP_CLUSTER,
   NEXT_PUBLIC_PUSHER_APP_KEY,
   NEXT_PUBLIC_PUSHER_CHANNEL,
+} from "./publicEnvs";
+import {
+  INVOICE_AMOUNT,
+  MACAROON,
   PUSHER_APP_ID,
   PUSHER_APP_SECRET,
   ZAPIER_WEBHOOK_URL,
-} from "./constants";
+} from "./serverEnvs";
 
 const client = new Pusher({
   appId: PUSHER_APP_ID,
@@ -91,7 +93,7 @@ export const getLastPayer = async (): Promise<Payer> => {
   try {
     const lastPayerJson = JSON.parse(lastPayer) as Payer;
     return lastPayerJson;
-  } catch (e) {
+  } catch {
     return { jackpot: 0, lnAddress: "none", timestamp: 0 };
   }
 };

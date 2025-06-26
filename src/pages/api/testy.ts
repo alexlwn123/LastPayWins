@@ -1,9 +1,12 @@
-import { checkLnbitsInvoice } from "@/lib/lnbits";
+import { checkLnbitsInvoice } from "@/lib/lightning";
+import { NEXT_PUBLIC_PUSHER_CHANNEL } from "@/lib/publicEnvs";
+import { INVOICE_AMOUNT } from "@/lib/serverEnvs";
 import pusher, { updateLastPayer } from "../../lib/pusher";
+
 let jackpot = 0;
 export default async (req, res) => {
-  const channel = process.env.NEXT_PUBLIC_PUSHER_CHANNEL!;
-  const password = process.env.DEV_PASSWORD!;
+  const channel = NEXT_PUBLIC_PUSHER_CHANNEL;
+  // const password = process.env.DEV_PASSWORD!;
   if (process.env.NODE_ENV !== "development") {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -22,7 +25,7 @@ export default async (req, res) => {
       // const lastPlayer = await getLastPayer();
       res.status(200).json({ message: "ok", data });
     } else if (req.method === "POST") {
-      jackpot = jackpot + parseInt(process.env.INVOICE_AMOUNT ?? "0");
+      jackpot = jackpot + parseInt(INVOICE_AMOUNT ?? "0");
       const rawState = await pusher.get({
         path: `/channels/${channel}`,
         params: { info: ["cache"] },
