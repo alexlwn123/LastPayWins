@@ -5,12 +5,18 @@ type Invoice = { payment_request: string; r_hash: string };
 // export type CreateInvoice = (amount: number, memo: string, expiry: number) => Promise<{ invoice: string; rHash: string }>;
 export type CheckInvoice = (rHash: string) => Promise<{ settled: boolean }>;
 
-export const createLnbitsInvoice: CreateInvoice = async (
-	amount,
-	memo,
-	expiry,
-) => {
-	const url = `${process.env.LNBITS_URL!}/api/v1/payments`;
+const apiKey = process.env.LNBITS_API_KEY_ADMIN;
+const lnbitsUrl = process.env.LNBITS_URL;
+const lndHost = process.env.LND_HOST;
+const macaroon = process.env.MACAROON;
+
+if (!apiKey) throw new Error("LNBITS_API_KEY_ADMIN is not set");
+if (!lnbitsUrl) throw new Error("LNBITS_URL is not set");
+if (!lndHost) throw new Error("LND_HOST is not set");
+if (!macaroon) throw new Error("MACAROON is not set");
+
+export const createLnbitsInvoice = async (amount, memo, expiry) => {
+	const url = `${lnbitsUrl}/api/v1/payments`;
 	const body = {
 		out: false,
 		amount: amount, // Sats
@@ -23,25 +29,26 @@ export const createLnbitsInvoice: CreateInvoice = async (
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
-			"x-api-key": process.env.LNBITS_API_KEY_ADMIN!,
+			"x-api-key": apiKey,
 		},
 		body: JSON.stringify(body),
 	});
-	const data = await rawData.json();
-	return { invoice: data.payment_request, rHash: data.payment_hash };
+	return (await rawData.json()) as {
+		payment_request: string;
+		payment_hash: string;
+	};
 };
 
 export const checkLnbitsInvoice: CheckInvoice = async (paymentHash) => {
-	const url = `${process.env.LNBITS_URL!}/api/v1/payments/${paymentHash}`;
+	const url = `${lnbitsUrl}/api/v1/payments/${paymentHash}`;
 	const rawData = await fetch(url, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json",
-			"x-api-key": process.env.LNBITS_API_KEY_ADMIN!,
+			"x-api-key": apiKey,
 		},
 	});
-	const data = await rawData.json();
-	return { settled: data.paid };
+	return (await rawData.json()) as { settled: boolean };
 };
 
 export const createLndInvoice = async (
@@ -49,11 +56,11 @@ export const createLndInvoice = async (
 	memo: string,
 	expiry: number,
 ): Promise<Invoice> => {
-	const url = `${process.env.LND_HOST}/v1/invoices`;
+	const url = `${lndHost}/v1/invoices`;
 	const data = await fetch(url, {
 		method: "POST",
 		headers: {
-			"Grpc-Metadata-macaroon": process.env.MACAROON!,
+			"Grpc-Metadata-macaroon": macaroon,
 			"Content-Type": "application/json",
 		},
 		agent: new Agent({
@@ -79,12 +86,12 @@ export type ScanResult =
 	  }
 	| { error: string; status: string };
 export const readLnurl = async (lnurl: string): Promise<ScanResult> => {
-	const url = `${process.env.LNBITS_URL!}/api/v1/lnurlscan/${lnurl}`;
+	const url = `${lnbitsUrl}/api/v1/lnurlscan/${lnurl}`;
 	const data = await fetch(url, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json",
-			"x-api-key": process.env.LNBITS_API_KEY!,
+			"x-api-key": apiKey,
 		},
 	});
 	if (data.status !== 200) {
