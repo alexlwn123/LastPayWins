@@ -9,17 +9,20 @@ const Invoice = ({ invoice, toast }) => {
     <div className={styles.payment}>
       <Qr invoice={invoice} />
       <button
+        type="button"
         className={styles.copy}
-        onClick={() =>
+        onClick={() => {
+          console.warn("copying", invoice);
           navigator?.clipboard?.writeText(invoice) ??
-          console.error("Failed to copy")
-        }
+            console.error("Failed to copy");
+        }}
       >
         Copy Invoice
       </button>
       {weblnAvailable && (
         <div className={styles.buttonRow}>
           <button
+            type="button"
             className={styles.copy}
             onClick={() => handleWeblnPay(setWebln, toast, invoice)}
           >
