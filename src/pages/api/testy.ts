@@ -5,7 +5,6 @@ import pusher, { updateLastPayer } from "../../lib/pusher";
 
 let jackpot = 0;
 export default async (req, res) => {
-  const channel = NEXT_PUBLIC_PUSHER_CHANNEL;
   // const password = process.env.DEV_PASSWORD!;
   if (process.env.NODE_ENV !== "development") {
     res.status(401).json({ error: "Unauthorized" });
@@ -13,7 +12,7 @@ export default async (req, res) => {
   }
   try {
     if (req.method === "DELETE") {
-      await pusher.trigger(channel, "update", {
+      await pusher.trigger(NEXT_PUBLIC_PUSHER_CHANNEL, "update", {
         lnAddress: "None!",
         timestamp: Date.now(),
         jackpot: 0,
@@ -27,7 +26,7 @@ export default async (req, res) => {
     } else if (req.method === "POST") {
       jackpot = jackpot + parseInt(INVOICE_AMOUNT ?? "0");
       const rawState = await pusher.get({
-        path: `/channels/${channel}`,
+        path: `/channels/${NEXT_PUBLIC_PUSHER_CHANNEL}`,
         params: { info: ["cache"] },
       });
       const state = await rawState.json();
@@ -36,13 +35,13 @@ export default async (req, res) => {
       res.status(200).json({ message: "ok", data: newPayer });
     } else if (req.method === "PATCH") {
       const body = req.body;
-      await pusher.trigger(channel, "update", {
+      await pusher.trigger(NEXT_PUBLIC_PUSHER_CHANNEL, "update", {
         lnAddress: body.lnAddress,
         timestamp: Date.now(),
         jackpot: body.jackpot,
       });
       const rawState = await pusher.get({
-        path: `/channels/${channel}`,
+        path: `/channels/${NEXT_PUBLIC_PUSHER_CHANNEL}`,
         params: { info: ["cache"] },
       });
       const state = await rawState.json();

@@ -1,10 +1,11 @@
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
+import { NEXT_PUBLIC_CLOCK_DURATION } from "@/lib/publicEnvs";
 import type { Status } from "@/types/payer";
 import styles from "./Countdown.module.css";
 
-const duration = parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? "60");
+const duration = parseInt(NEXT_PUBLIC_CLOCK_DURATION);
 
 const Countdown = ({
   lastPayerTimestamp,

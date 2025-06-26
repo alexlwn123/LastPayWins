@@ -12,7 +12,7 @@ const Invoice = ({ invoice }) => {
         type="button"
         className={styles.copy}
         onClick={() => {
-          console.warn("copying", invoice);
+          console.log("copying", invoice);
           navigator?.clipboard?.writeText(invoice) ??
             console.error("Failed to copy");
         }}

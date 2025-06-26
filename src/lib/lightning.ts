@@ -1,3 +1,4 @@
+"server only";
 import { Agent } from "node:https";
 import fetch from "node-fetch";
 import { LNBITS_API_KEY, LNBITS_URL, LND_HOST, MACAROON } from "./serverEnvs";

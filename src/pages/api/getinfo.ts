@@ -18,7 +18,7 @@ export default async (_req: NextApiRequest, res: NextApiResponse) => {
     });
     res.status(200).json(await data.json());
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.status(500).json(e);
   }
 };

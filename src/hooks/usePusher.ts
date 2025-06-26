@@ -11,25 +11,21 @@ import {
 } from "@/lib/publicEnvs";
 import type { Payer, Status } from "@/types/payer";
 
+const emptyPayer = {
+  lnAddress: "",
+  timestamp: 0,
+  jackpot: 0,
+  timeLeft: 0,
+  status: "LOADING",
+} satisfies Payer;
+
 const usePusher = () => {
   const pusher = useRef<Pusher>();
   const lastPayerChannel = useRef<Channel>();
   const presenceChannel = useRef<Channel>();
   // const [uuid, setUuid] = useState<string>("");
-  const [lastPayer, setLastPayer] = useState<Payer>({
-    lnAddress: "",
-    timestamp: 0,
-    jackpot: 0,
-    timeLeft: 0,
-    status: "LOADING",
-  });
-  const winner = useRef<Payer>({
-    lnAddress: "",
-    timestamp: 0,
-    jackpot: 0,
-    timeLeft: 0,
-    status: "LOADING",
-  });
+  const [lastPayer, setLastPayer] = useState<Payer>(emptyPayer);
+  const winner = useRef<Payer>(emptyPayer);
   const [members, setMembers] = useState<Set<string>>(new Set());
 
   const addMember = useCallback((id: string) => {
@@ -123,7 +119,7 @@ const usePusher = () => {
         timestamp: Date.now(),
         jackpot: 0,
         status: "WAITING",
-        timeLeft: parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? "60"),
+        timeLeft: parseInt(NEXT_PUBLIC_CLOCK_DURATION ?? "60"),
       });
     });
 

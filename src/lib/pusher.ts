@@ -1,3 +1,4 @@
+"server only";
 import { Agent } from "node:https";
 import fetch from "node-fetch";
 import Pusher from "pusher";

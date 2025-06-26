@@ -1,3 +1,4 @@
+"server only";
 import { verifyEnv } from "./publicEnvs";
 
 export const LNBITS_API_KEY = verifyEnv(
