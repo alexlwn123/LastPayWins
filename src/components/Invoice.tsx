@@ -1,7 +1,7 @@
+import { Audio } from "react-loader-spinner";
+import { handleWeblnPay, useWeblnAvailable } from "@/hooks/useWeblnAvailable";
 import styles from "./Invoice.module.css";
 import Qr from "./Qr";
-import { Audio } from "react-loader-spinner";
-import { useWeblnAvailable, handleWeblnPay } from "@/hooks/useWeblnAvailable";
 
 const Invoice = ({ invoice, toast }) => {
   const { weblnAvailable, webLn, setWebln } = useWeblnAvailable();

@@ -8,12 +8,12 @@ import Loading from "./Loading";
 import Input from "./Input";
 
 export {
-	Countdown,
-	CurrentWinner,
-	Footer,
-	Header,
-	Invoice,
-	Jackpot,
-	Loading,
-	Input,
+  Countdown,
+  CurrentWinner,
+  Footer,
+  Header,
+  Invoice,
+  Jackpot,
+  Loading,
+  Input,
 };

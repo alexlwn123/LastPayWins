@@ -1,41 +1,41 @@
 .container {
-	color: #fff;
-	font-family: Arial, sans-serif;
+  color: #fff;
+  font-family: Arial, sans-serif;
 }
 
 .input {
-	position: relative;
-	margin: 20px;
+  position: relative;
+  margin: 20px;
 }
 
 .input input {
-	font-size: 16px;
-	padding: 10px 20px;
-	width: 100%;
-	min-width: 300px;
-	box-sizing: border-box;
-	outline: none;
-	color: #fff;
-	/* background-color: 444; */
-	border: none;
-	outline: none;
-	border-radius: 50px;
-	transition: box-shadow 0.3s ease-in-out;
-	z-index: 5;
+  font-size: 16px;
+  padding: 10px 20px;
+  width: 100%;
+  min-width: 300px;
+  box-sizing: border-box;
+  outline: none;
+  color: #fff;
+  /* background-color: 444; */
+  border: none;
+  outline: none;
+  border-radius: 50px;
+  transition: box-shadow 0.3s ease-in-out;
+  z-index: 5;
 }
 .icon {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	right: 12px;
-	color: #888;
-	height: 20px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 12px;
+  color: #888;
+  height: 20px;
 }
 
 .input input::placeholder {
-	color: #888;
+  color: #888;
 }
 
 .input input:focus {
-	box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.1);
 }

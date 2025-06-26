@@ -1,27 +1,27 @@
 .timerWrapper {
-	display: flex;
-	justify-content: center;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 1rem;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .timer p {
-	font-size: 1px;
-	text-align: center;
-	max-width: 150px;
+  font-size: 1px;
+  text-align: center;
+  max-width: 150px;
 }
 
 .text {
-	color: #aaa;
-	text-align: center;
+  color: #aaa;
+  text-align: center;
 }
 .subtext {
-	color: #aaa;
+  color: #aaa;
 }
 
 .value {
-	font-size: 4rem;
-	text-align: center;
+  font-size: 4rem;
+  text-align: center;
 }
