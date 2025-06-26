@@ -58,7 +58,7 @@ export default function Home() {
       "jackpot",
       jackpot,
       "status",
-      status
+      status,
     );
     if (initialRender.current) {
       initialRender.current = false;
@@ -71,7 +71,7 @@ export default function Home() {
       jackpot,
       timestamp,
       va,
-      toast
+      toast,
     );
     setCountdownKey((prevKey) => prevKey + 1);
 
@@ -125,7 +125,7 @@ export default function Home() {
         setSettled,
         toast,
         userAddress,
-        setCountdownKey
+        setCountdownKey,
       );
     }, 1000);
     return () => clearInterval(interval);

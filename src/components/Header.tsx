@@ -1,4 +1,5 @@
 import styles from "./Header.module.css";
+
 const Header = ({ status }) => (
   <header className={styles.description}>
     <h1>Last Pay Wins</h1>

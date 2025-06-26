@@ -4,6 +4,7 @@
   align-items: center;
   gap: 1rem;
 }
+
 .copy {
   width: 10rem;
   height: 2rem;
@@ -16,6 +17,7 @@
   align-items: flex-end;
   gap: 0.5rem;
 }
+
 .audio {
   position: absolute;
   left: 100px;

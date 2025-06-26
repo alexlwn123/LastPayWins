@@ -1,4 +1,4 @@
-import { ScanResult } from "@/lib/lnbits";
+import type { ScanResult } from "@/lib/lnbits";
 import { Inngest } from "inngest";
 import { serve } from "inngest/next";
 import fetch from "node-fetch";

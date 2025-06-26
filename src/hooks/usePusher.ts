@@ -1,6 +1,6 @@
 "use client";
-import { Payer, Status } from "@/types/payer";
-import Pusher, { Channel } from "pusher-js";
+import type { Payer, Status } from "@/types/payer";
+import Pusher, { type Channel } from "pusher-js";
 import { useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
 
@@ -93,7 +93,7 @@ const usePusher = () => {
     lastPayerChannel.current = pusher.current.subscribe(channelName);
     lastPayerChannel.current.bind("update", (data) => {
       console.log("LAST PAYER update", data);
-      let jackpot = parseInt(data.jackpot);
+      const jackpot = parseInt(data.jackpot);
       const lnAddress = data.lnAddress;
       const timeLeft =
         parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? "60") -

@@ -16,7 +16,7 @@ const Countdown = ({
 }: {
   lastPayerTimestamp: number;
   countdownKey: number;
-  setCountdownKey: Function;
+  setCountdownKey: (key: number) => void;
   status: Status;
   setStatus;
   isWinning: boolean;
@@ -67,7 +67,6 @@ const Countdown = ({
     <div className={styles.timerWrapper}>
       <CountdownCircleTimer
         isPlaying={isVisible && status === "LIVE"}
-        key={countdownKey}
         duration={duration}
         initialRemainingTime={initialTimeRemaining}
         colors={["#004777", "#F7B801", "#A30000", "#A30000"]}

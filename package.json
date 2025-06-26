@@ -6,9 +6,8 @@
     "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "lint:biome": "pnpm biome lint .",
-    "format:biome": "pnpm biome format --write .",
+    "lint": "pnpm biome lint .",
+    "format": "pnpm biome format --write .",
     "inngest": "npx inngest-cli@latest dev"
   },
   "dependencies": {
@@ -39,6 +38,7 @@
     "webln": "^0.3.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.0.5",
     "@svgr/webpack": "^8.1.0"
   }
 }

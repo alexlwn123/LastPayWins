@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Github from "./icons/Github";
 import styles from "./Footer.module.css";
+import Github from "./icons/Github";
 import Telegram from "./icons/Telegram";
 
 const Footer = () => (
