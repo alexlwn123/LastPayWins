@@ -1,15 +1,6 @@
-.main {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
-  color: white;
-}
+/* Leaderboard specific styles - base layout inherited from globals.css */
 
-.container {
+.leaderboardContainer {
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
@@ -138,10 +129,6 @@
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
-  .main {
-    padding: 1rem;
-  }
-  
   .title {
     font-size: 2rem;
     margin-bottom: 1.5rem;

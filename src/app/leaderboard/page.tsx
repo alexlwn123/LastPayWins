@@ -50,10 +50,12 @@ export default function Leaderboard() {
 
   if (loading) {
     return (
-      <main className={styles.main}>
-        <div className={styles.container}>
-          <h1 className={styles.title}>Leaderboard</h1>
-          <div className={styles.loading}>Loading...</div>
+      <main className="page-main">
+        <div className="page-container">
+          <div className={styles.leaderboardContainer}>
+            <h1 className={styles.title}>Leaderboard</h1>
+            <div className={styles.loading}>Loading...</div>
+          </div>
         </div>
         <Analytics />
       </main>
@@ -62,13 +64,15 @@ export default function Leaderboard() {
 
   if (error) {
     return (
-      <main className={styles.main}>
-        <div className={styles.container}>
-          <h1 className={styles.title}>Leaderboard</h1>
-          <div className={styles.error}>Error: {error}</div>
-          <Link href="/" className={styles.backLink}>
-            ← Back to Game
-          </Link>
+      <main className="page-main">
+        <div className="page-container">
+          <div className={styles.leaderboardContainer}>
+            <h1 className={styles.title}>Leaderboard</h1>
+            <div className={styles.error}>Error: {error}</div>
+            <Link href="/" className={styles.backLink}>
+              ← Back to Game
+            </Link>
+          </div>
         </div>
         <Analytics />
       </main>
@@ -76,38 +80,40 @@ export default function Leaderboard() {
   }
 
   return (
-    <main className={styles.main}>
-      <div className={styles.container}>
-        <h1 className={styles.title}>🏆 Past Winners</h1>
-        
-        <Link href="/" className={styles.backLink}>
-          ← Back to Game
-        </Link>
+    <main className="page-main">
+      <div className="page-container">
+        <div className={styles.leaderboardContainer}>
+          <h1 className={styles.title}>🏆 Past Winners</h1>
+          
+          <Link href="/" className={styles.backLink}>
+            ← Back to Game
+          </Link>
 
-        {winners.length === 0 ? (
-          <div className={styles.noWinners}>
-            No winners yet. Be the first to win!
-          </div>
-        ) : (
-          <div className={styles.leaderboard}>
-            {winners.map((winner, index) => (
-              <div key={winner.timestamp} className={styles.winnerCard}>
-                <div className={styles.rank}>#{index + 1}</div>
-                <div className={styles.winnerInfo}>
-                  <div className={styles.address}>
-                    {maskAddress(winner.lnAddress)}
+          {winners.length === 0 ? (
+            <div className={styles.noWinners}>
+              No winners yet. Be the first to win!
+            </div>
+          ) : (
+            <div className={styles.leaderboard}>
+              {winners.map((winner, index) => (
+                <div key={winner.timestamp} className={styles.winnerCard}>
+                  <div className={styles.rank}>#{index + 1}</div>
+                  <div className={styles.winnerInfo}>
+                    <div className={styles.address}>
+                      {maskAddress(winner.lnAddress)}
+                    </div>
+                    <div className={styles.date}>
+                      {formatDate(winner.date)}
+                    </div>
                   </div>
-                  <div className={styles.date}>
-                    {formatDate(winner.date)}
+                  <div className={styles.jackpot}>
+                    ₿ {formatSats(winner.jackpot)}
                   </div>
                 </div>
-                <div className={styles.jackpot}>
-                  ₿ {formatSats(winner.jackpot)}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       <Analytics />
     </main>

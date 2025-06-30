@@ -1,4 +1,4 @@
-:root {
+THIS SHOULD BE A LINTER ERROR:root {
   color-scheme: dark;
   --max-width: 1100px;
   --border-radius: 12px;
@@ -57,6 +57,7 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+  min-height: 100vh;
 }
 
 a {
@@ -66,6 +67,32 @@ a {
 
 html {
   color-scheme: dark;
+}
+
+/* Shared page layout styles */
+.page-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4rem;
+  min-height: 100vh;
+  padding-bottom: 2rem;
+  position: relative;
+}
+
+.page-container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+/* Mobile styles for shared layouts */
+@media (max-width: 700px) {
+  .page-main {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
 }
 
 /* @media (prefers-color-scheme: dark light) {
