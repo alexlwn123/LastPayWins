@@ -17,11 +17,13 @@ import { Analytics } from "@vercel/analytics/react";
 import { ToastContainer } from "react-toastify";
 import { useInvoice } from "@/hooks/useInvoice";
 import { useLnurl } from "@/hooks/useLnurl";
+import type { Status } from "@/types/payer";
 import { handleStatusUpdate } from "./utils";
 
 export default function Home() {
   const [refetch, setRefetch] = useState(false);
   const [countdownKey, setCountdownKey] = useState<number>(0);
+  const [existingStatus, setExistingStatus] = useState<Status>("LOADING");
   const initialRender = useRef(true);
 
   const { userAddress, setUserAddress, isValidatingAddress, isValidAddress } =
@@ -40,18 +42,20 @@ export default function Home() {
 
   // handle status update
   useEffect(() => {
-    console.log({ lnAddress, timestamp, jackpot, status });
     if (initialRender.current) {
       initialRender.current = false;
       return;
+    } else if (existingStatus === status) {
+      return;
     }
+    setExistingStatus(status);
     handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp);
     setCountdownKey((prevKey) => prevKey + 1);
 
     if (status === "LOADING") {
       setRefetch(true);
     }
-  }, [status, jackpot, lnAddress, timestamp, userAddress]);
+  }, [status, jackpot, lnAddress, timestamp, userAddress, existingStatus]);
 
   return (
     <main className={styles.main}>
