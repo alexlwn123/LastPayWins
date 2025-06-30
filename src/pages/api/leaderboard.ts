@@ -10,7 +10,7 @@ export type Winner = {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -18,14 +18,14 @@ export default async function handler(
 
   try {
     // Get winners list from KV
-    const winners: Winner[] = (await kv.get('winners:list')) || [];
-    
+    const winners: Winner[] = (await kv.get("winners:list")) || [];
+
     // Return top 10 winners
     const topWinners = winners.slice(0, 10);
-    
+
     res.status(200).json(topWinners);
   } catch (error) {
-    console.error('Failed to fetch leaderboard:', error);
+    console.error("Failed to fetch leaderboard:", error);
     res.status(500).json({ error: "Failed to fetch leaderboard" });
   }
 }

@@ -84,7 +84,7 @@ export default function Leaderboard() {
       <div className="page-container">
         <div className={styles.leaderboardContainer}>
           <h1 className={styles.title}>🏆 Past Winners</h1>
-          
+
           <Link href="/" className={styles.backLink}>
             ← Back to Game
           </Link>
@@ -102,9 +102,7 @@ export default function Leaderboard() {
                     <div className={styles.address}>
                       {maskAddress(winner.lnAddress)}
                     </div>
-                    <div className={styles.date}>
-                      {formatDate(winner.date)}
-                    </div>
+                    <div className={styles.date}>{formatDate(winner.date)}</div>
                   </div>
                   <div className={styles.jackpot}>
                     ₿ {formatSats(winner.jackpot)}

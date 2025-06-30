@@ -1,7 +1,7 @@
+import { kv } from "@vercel/kv";
 import { Inngest } from "inngest";
 import { serve } from "inngest/next";
 import fetch from "node-fetch";
-import { kv } from "@vercel/kv";
 import type { ScanResult } from "@/lib/lightning";
 import { NEXT_PUBLIC_CLOCK_DURATION } from "@/lib/publicEnvs";
 import { LNBITS_API_KEY, LNBITS_URL } from "@/lib/serverEnvs";
@@ -94,23 +94,25 @@ const handleExpiry = inngest.createFunction(
           timestamp,
           date: new Date(timestamp).toISOString(),
         };
-        
+
         // Store individual winner
         await kv.set(`winner:${timestamp}`, winner);
-        
+
         // Add to winners list (for easy retrieval)
-        const existingWinners = await kv.get('winners:list');
-        const winners: typeof winner[] = Array.isArray(existingWinners) ? existingWinners : [];
+        const existingWinners = await kv.get("winners:list");
+        const winners: (typeof winner)[] = Array.isArray(existingWinners)
+          ? existingWinners
+          : [];
         winners.unshift(winner); // Add to beginning
-        
+
         // Keep only top 50 winners to avoid storage bloat
         if (winners.length > 50) {
           winners.splice(50);
         }
-        
-        await kv.set('winners:list', winners);
+
+        await kv.set("winners:list", winners);
       } catch (error) {
-        console.error('Failed to store winner:', error);
+        console.error("Failed to store winner:", error);
         // Don't throw - payment succeeded, storage is secondary
       }
 
