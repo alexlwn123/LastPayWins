@@ -22,7 +22,7 @@ export const useInvoice = ({
 
   // Get invoice
   useEffect(() => {
-    if (fetching || hash || !refetch) return;
+    if (fetching || hash) return;
     setFetching(true);
     fetch("/api/invoice", { method: "POST" })
       .then((response) => response.json())
@@ -33,7 +33,7 @@ export const useInvoice = ({
         setFetching(false);
         setRefetch(false);
       });
-  }, [refetch, hash, fetching, setRefetch]);
+  }, [hash, fetching, setRefetch]);
 
   // Check invoice
   useEffect(() => {
