@@ -121,4 +121,4 @@ const handleExpiry = inngest.createFunction(
   },
 );
 
-export default serve(inngest, [handleExpiry]);
+export const { GET, POST, PUT } = serve(inngest, [handleExpiry]);
