@@ -57,6 +57,7 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+  min-height: 100vh;
 }
 
 a {
@@ -66,6 +67,41 @@ a {
 
 html {
   color-scheme: dark;
+}
+
+/* Shared page layout styles */
+.page-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem;
+  min-height: 100vh;
+  padding-bottom: 2rem;
+  position: relative;
+}
+
+/* Main page specific - space between for header/content/footer */
+.page-main.home {
+  justify-content: space-between;
+}
+
+/* Other pages - center content */
+.page-main.centered {
+  justify-content: center;
+}
+
+.page-container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+/* Mobile styles for shared layouts */
+@media (max-width: 700px) {
+  .page-main {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
 }
 
 /* @media (prefers-color-scheme: dark light) {
