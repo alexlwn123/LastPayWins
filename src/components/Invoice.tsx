@@ -1,27 +1,30 @@
-import Qr from "./Qr"
-import styles from './Invoice.module.css';
-import { Audio } from 'react-loader-spinner';
-import { useWeblnAvailable, handleWeblnPay } from "@/hooks/useWeblnAvailable";
+import { Audio } from "react-loader-spinner";
+import { handleWeblnPay, useWeblnAvailable } from "@/hooks/useWeblnAvailable";
+import styles from "./Invoice.module.css";
+import Qr from "./Qr";
 
-const Invoice = ({invoice, toast}) => {
-  const { weblnAvailable, webLn, setWebln } = useWeblnAvailable()
+const Invoice = ({ invoice }) => {
+  const { weblnAvailable, webLn, setWebln } = useWeblnAvailable();
   return (
     <div className={styles.payment}>
       <Qr invoice={invoice} />
       <button
+        type="button"
         className={styles.copy}
-        onClick={() =>
+        onClick={() => {
+          console.log("copying", invoice);
           navigator?.clipboard?.writeText(invoice) ??
-          console.error("Failed to copy")
-        }
+            console.error("Failed to copy");
+        }}
       >
         Copy Invoice
       </button>
       {weblnAvailable && (
         <div className={styles.buttonRow}>
           <button
+            type="button"
             className={styles.copy}
-            onClick={() => handleWeblnPay(setWebln, toast, invoice)}
+            onClick={() => handleWeblnPay(setWebln, invoice)}
           >
             Pay with WebLN
           </button>
@@ -31,12 +34,11 @@ const Invoice = ({invoice, toast}) => {
             color="orange"
             ariaLabel="loading-webln"
             visible={webLn}
-            wrapperClass={`audio`}
+            wrapperClass={"audio"}
           />
         </div>
       )}
     </div>
-  )
-
-}
-export default Invoice
+  );
+};
+export default Invoice;

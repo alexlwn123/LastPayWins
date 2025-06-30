@@ -1,6 +1,7 @@
 .jackpot div {
   max-width: var(--max-width);
 }
+
 .jackpot h1 {
   font-size: 5rem;
   text-align: center;

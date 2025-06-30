@@ -1,14 +1,16 @@
-import { Agent } from "https";
-import fetch from 'node-fetch';
+import { Agent } from "node:https";
+import type { NextApiRequest, NextApiResponse } from "next";
+import fetch from "node-fetch";
+import { LND_HOST, MACAROON } from "@/lib/serverEnvs";
 
-export default async (req, res) => {
+export default async (_req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const url = `${process.env.LND_HOST}/v1/getinfo`
+    const url = `${LND_HOST}/v1/getinfo`;
     const data = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Grpc-Metadata-macaroon': process.env.MACAROON!,
-        'Content-Type': 'application/json',
+        "Grpc-Metadata-macaroon": MACAROON,
+        "Content-Type": "application/json",
       },
       agent: new Agent({
         rejectUnauthorized: false,
@@ -16,8 +18,7 @@ export default async (req, res) => {
     });
     res.status(200).json(await data.json());
   } catch (e) {
-    console.log(e)
+    console.error(e);
     res.status(500).json(e);
   }
-
-}
+};

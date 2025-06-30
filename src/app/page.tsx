@@ -1,109 +1,57 @@
-'use client'
-import styles from './page.module.css';
+"use client";
 import { useEffect, useRef, useState } from "react";
 import {
-  Header,
+  Countdown,
   CurrentWinner,
   Footer,
-  Countdown,
-  Jackpot,
-  Invoice,
-  Loading,
+  Header,
   Input,
+  Invoice,
+  Jackpot,
+  Loading,
 } from "@/components";
-import usePusher from '@/hooks/usePusher';
+import usePusher from "@/hooks/usePusher";
+import styles from "./page.module.css";
 import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer, toast } from "react-toastify";
-import va from "@vercel/analytics";
-import { Analytics } from '@vercel/analytics/react';
-import { checkInvoiceStatus, handleStatusUpdate, validateLnurl } from './utils';
-import { v4 } from "uuid";
+import { Analytics } from "@vercel/analytics/react";
+import { ToastContainer } from "react-toastify";
+import { useInvoice } from "@/hooks/useInvoice";
+import { useLnurl } from "@/hooks/useLnurl";
+import { handleStatusUpdate } from "./utils";
 
 export default function Home() {
-  const [invoice, setInvoice] = useState(null);
-  const [hash, setHash] = useState<string | null>(null);
-  const [settled, setSettled] = useState(false);
-  const [userAddress, setUserAddress] = useState('');
-  const [uuid, setUuid] = useState<string>();
-  const [refetch, setRefetch] = useState(false)
-  const [countdownKey, setCountdownKey] = useState<number>(0)
-  const [fetching, setFetching] = useState(false);
-  const [checking, setChecking] = useState(false);
-  const [isValidAddress, setIsValidAddress] = useState(false);
-  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+  const [refetch, setRefetch] = useState(false);
+  const [countdownKey, setCountdownKey] = useState<number>(0);
   const initialRender = useRef(true);
 
-  const { lnAddress, timestamp, jackpot, status, setStatus, memberCount } = usePusher();
+  const { userAddress, setUserAddress, isValidatingAddress, isValidAddress } =
+    useLnurl();
 
-  // validate user input
-  useEffect(() => {
-    const delayedValidate = setTimeout(async () => {
-      setIsValidatingAddress(true)
-      const res = await validateLnurl(userAddress);
-      setIsValidatingAddress(false);
-      console.log(res);
-      setIsValidAddress(res.valid);
-    }, 300);
-    return () => clearTimeout(delayedValidate);
-  }, [userAddress]);
+  const { lnAddress, timestamp, jackpot, status, setStatus, memberCount } =
+    usePusher();
+
+  const { invoice } = useInvoice({
+    userAddress: isValidAddress ? userAddress : null,
+    status,
+    setCountdownKey,
+    refetch,
+    setRefetch,
+  });
 
   // handle status update
   useEffect(() => {
-    console.log('lnAddress', lnAddress, 'timestamp', timestamp, 'jackpot', jackpot, 'status', status );
+    console.log({ lnAddress, timestamp, jackpot, status });
     if (initialRender.current) {
       initialRender.current = false;
       return;
     }
-    handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp, va, toast);
-    setCountdownKey(prevKey => prevKey + 1);
+    handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp);
+    setCountdownKey((prevKey) => prevKey + 1);
 
-    if (status === 'LOADING') {
+    if (status === "LOADING") {
       setRefetch(true);
     }
-  }, [status, jackpot]);
-
-  useEffect(() => {console.log(`Members online: ${memberCount}`)}, [memberCount]);
-
-  // get lnaddr from local storage
-  useEffect(() => {
-    const lnaddr = localStorage.getItem('lnaddr');
-    const uuid = localStorage.getItem('uuid');
-    if (lnaddr) {
-      setUserAddress(lnaddr);
-    }
-    if (uuid) {
-      setUuid(uuid);
-    } else {
-      const id = v4();
-      localStorage.setItem('uuid', id);
-      setUuid(id);
-    }
-   }, []);
-
-
-  // Get invoice
-  useEffect(() => {
-    if (fetching || hash) return;
-    setFetching(true);
-    fetch('/api/invoice', { method: 'POST' })
-      .then((response) => response.json())
-      .then((data) => {
-        setInvoice(data.payment_request)
-        setHash(data.payment_hash)
-        setSettled(false);
-        setFetching(false);
-      });
-  }, [refetch, hash]);
-
-  // Check invoice
-  useEffect(() => {
-    if (settled || !hash || status === 'LOADING' || checking) return;
-    const interval = setInterval(() => {
-      if (checking) return;
-      checkInvoiceStatus(setChecking, hash, setHash, setSettled, toast, userAddress, setCountdownKey);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [hash, fetching, status, userAddress, settled, checking]);
+  }, [status, jackpot, lnAddress, timestamp, userAddress]);
 
   return (
     <main className={styles.main}>
@@ -117,7 +65,7 @@ export default function Home() {
 
       <Header status={status} />
       <Loading isLoading={status === "LOADING" || !invoice}>
-        <Jackpot jackpotSats={status === 'LIVE' ? jackpot : 0} />
+        <Jackpot jackpotSats={status === "LIVE" ? jackpot : 0} />
         <div className={styles.center}>
           <div className={styles.stack}>
             <Countdown
@@ -127,14 +75,12 @@ export default function Home() {
               status={status}
               setStatus={setStatus}
               isWinning={lnAddress === userAddress}
-              toast={toast}
               displayingInvoice={isValidAddress}
             />
             <CurrentWinner
               currentWinner={lnAddress ?? "Anon"}
               isActive={status === "LIVE"}
               jackpot={jackpot}
-              status={status}
             />
             <Input
               placeholder={"example@lightningaddress.com"}
@@ -143,9 +89,11 @@ export default function Home() {
               isValidAddress={isValidAddress}
               isValidating={isValidatingAddress}
             />
-            <div className={styles.online}>Players Online: <b>{memberCount}</b></div>
+            <div className={styles.online}>
+              Players Online: <b>{memberCount}</b>
+            </div>
           </div>
-          {userAddress && isValidAddress && <Invoice invoice={invoice} toast={toast} /> }
+          {userAddress && isValidAddress && <Invoice invoice={invoice} />}
         </div>
       </Loading>
       <Footer />

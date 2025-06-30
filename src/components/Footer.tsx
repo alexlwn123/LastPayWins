@@ -1,6 +1,6 @@
 import Link from "next/link";
+import styles from "./Footer.module.css";
 import Github from "./icons/Github";
-import styles from './Footer.module.css';
 import Telegram from "./icons/Telegram";
 
 const Footer = () => (
@@ -33,7 +33,7 @@ const Footer = () => (
       </Link>
     </footer>
     <p className={styles.fees}>
-      Fees: 5% goes to @_alexlewin to run the servers.  5% goes to{" "}
+      Fees: 5% goes to @_alexlewin to run the servers. 5% goes to{" "}
       <Link href="https://opensats.org" target="_blank" rel="noreferrer">
         OpenSats.org
       </Link>

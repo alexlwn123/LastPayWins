@@ -1,7 +1,7 @@
 import { useQRCode } from "next-qrcode";
 
 export default (invoice) => {
-  const text = `lightning:${invoice.invoice}`
+  const text = `lightning:${invoice.invoice}`;
   const { Canvas } = useQRCode();
 
   return invoice ? (
@@ -9,7 +9,7 @@ export default (invoice) => {
       <Canvas
         text={text}
         options={{
-          level: "L",
+          errorCorrectionLevel: "L",
           margin: 3,
           scale: 4,
           width: 300,
@@ -20,6 +20,7 @@ export default (invoice) => {
         }}
       />
     </a>
-  ) : <h1>LOADING</h1>;
-
-}
+  ) : (
+    <h1>LOADING</h1>
+  );
+};

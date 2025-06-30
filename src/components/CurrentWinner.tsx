@@ -1,17 +1,18 @@
-import styles from './CurrentWinner.module.css'
-import { fromSats } from 'satcomma';
-const CurrentWinner = ({currentWinner, isActive, jackpot, status}) => {
+import { fromSats } from "satcomma";
+import styles from "./CurrentWinner.module.css";
+
+const CurrentWinner = ({ currentWinner, isActive, jackpot }) => {
   return (
     <div className={styles.block}>
-      <p>
+      <div>
         <div className={styles.line}>
           {/* {isActive ? "Current " : "Previous "} Winner: <span className={styles.winner}>{currentWinner}</span> */}
-          {isActive ? "Current " : "Previous "} Winner: 
+          <p>{isActive ? "Current " : "Previous "} Winner:</p>
         </div>
-        <b className={styles.line}>
-          <span className={styles.winner}>{currentWinner}</span>
-        </b>
-      </p>
+        <p className={styles.winner}>
+          <b className={styles.line}>{currentWinner}</b>
+        </p>
+      </div>
       {!isActive && <p>₿ {fromSats(jackpot)}</p>}
     </div>
   );

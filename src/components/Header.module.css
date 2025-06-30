@@ -10,6 +10,7 @@
   font-family: var(--font-mono);
   gap: 0.5rem;
 }
+
 .description h1 {
   font-size: 3rem;
   font-weight: 600;
@@ -17,6 +18,7 @@
   text-align: center;
   /* filter: drop-shadow(0 0 0.3rem #ffffff70); */
 }
+
 .description h2 {
   font-size: 1rem;
   font-weight: 200;

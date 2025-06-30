@@ -1,6 +1,6 @@
-import styles from './Header.module.css';
-const Header = ({status}) => (
+import styles from "./Header.module.css";
 
+const Header = ({ status }) => (
   <header className={styles.description}>
     <h1>Last Pay Wins</h1>
     <h2>
@@ -10,6 +10,5 @@ const Header = ({status}) => (
       If the timer hits zero before someone else pays, you win the jackpot.
     </h2>
   </header>
-
 );
 export default Header;
