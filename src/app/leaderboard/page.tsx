@@ -50,7 +50,7 @@ export default function Leaderboard() {
 
   if (loading) {
     return (
-      <main className="page-main">
+      <main className="page-main centered">
         <div className="page-container">
           <div className={styles.leaderboardContainer}>
             <h1 className={styles.title}>Leaderboard</h1>
@@ -64,7 +64,7 @@ export default function Leaderboard() {
 
   if (error) {
     return (
-      <main className="page-main">
+      <main className="page-main centered">
         <div className="page-container">
           <div className={styles.leaderboardContainer}>
             <h1 className={styles.title}>Leaderboard</h1>
@@ -80,7 +80,7 @@ export default function Leaderboard() {
   }
 
   return (
-    <main className="page-main">
+    <main className="page-main centered">
       <div className="page-container">
         <div className={styles.leaderboardContainer}>
           <h1 className={styles.title}>🏆 Past Winners</h1>

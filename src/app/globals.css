@@ -1,4 +1,4 @@
-THIS SHOULD BE A LINTER ERROR:root {
+:root {
   color-scheme: dark;
   --max-width: 1100px;
   --border-radius: 12px;
@@ -73,12 +73,21 @@ html {
 .page-main {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: center;
   padding: 4rem;
   min-height: 100vh;
   padding-bottom: 2rem;
   position: relative;
+}
+
+/* Main page specific - space between for header/content/footer */
+.page-main.home {
+  justify-content: space-between;
+}
+
+/* Other pages - center content */
+.page-main.centered {
+  justify-content: center;
 }
 
 .page-container {
