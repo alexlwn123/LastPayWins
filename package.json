@@ -6,7 +6,7 @@
     "dev": "NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "pnpm biome lint .",
+    "lint": "pnpm biome lint . && tsc --noEmit",
     "format": "pnpm biome format --write .",
     "inngest": "npx inngest-cli@latest dev"
   },

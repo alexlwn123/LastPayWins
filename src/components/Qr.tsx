@@ -9,7 +9,7 @@ export default (invoice) => {
       <Canvas
         text={text}
         options={{
-          level: "L",
+          errorCorrectionLevel: "L",
           margin: 3,
           scale: 4,
           width: 300,
