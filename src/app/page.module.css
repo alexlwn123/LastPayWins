@@ -1,49 +1,107 @@
-.main {
+/* Main app container */
+.app {
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #fff;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4rem;
-  min-height: 100vh;
-  padding-bottom: 2rem;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(25%, auto));
-  width: var(--max-width);
-  max-width: 100%;
+.main {
+  flex: 1;
+  padding: 32px 0;
 }
 
-.card {
-  padding: 1rem 1.2rem;
-  border-radius: var(--border-radius);
-  background: rgba(var(--card-rgb), 0);
-  border: 1px solid rgba(var(--card-border-rgb), 0);
-  transition:
-    background 200ms,
-    border 200ms;
-}
-.online {
-  color: #aaa;
-  font-size: 0.8rem;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
 
+/* Hero section */
+.hero {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.title {
+  font-size: 48px;
+  font-weight: 800;
+  margin: 0 0 16px 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 20px;
+  color: #888;
+  margin: 0;
+  font-weight: 300;
+}
+
+/* Filters */
+.filters {
+  margin-bottom: 48px;
+}
+
+.eventFilter h3 {
+  color: #fff;
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.eventButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.eventButton {
+  padding: 8px 16px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.eventButton:hover {
+  background: #222;
+  border-color: #555;
+  color: #fff;
+}
+
+.eventButton.active {
+  background: #007bff;
+  border-color: #007bff;
+  color: #fff;
+}
+
+/* Markets section */
+.markets {
+  margin-bottom: 48px;
+}
+
+.sectionTitle {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+}
+
+/* Legacy styles (keeping for compatibility) */
 .center {
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  padding: 2rem 0;
-  gap: 2rem;
-  max-width: var(--max-width);
-}
-
-.stack {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  padding: 4rem 0;
 }
 
 .center::before {
@@ -63,79 +121,84 @@
 
 .center::before,
 .center::after {
-  content: "";
+  content: '';
   left: 50%;
   position: absolute;
   filter: blur(45px);
   transform: translateZ(0);
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  .card:hover {
-    background: rgba(var(--card-rgb), 0.1);
-    border: 1px solid rgba(var(--card-border-rgb), 0.15);
-  }
-
-  .card:hover span {
-    transform: translateX(4px);
-  }
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 512px;
+  width: 100%;
+  gap: 16px;
 }
 
-@media (prefers-reduced-motion) {
-  .card:hover span {
-    transform: none;
-  }
+.online {
+  text-align: center;
+  color: #888;
+  font-size: 14px;
 }
 
-/* Mobile */
-@media (max-width: 700px) {
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+  
   .main {
-    margin: 1rem;
-    padding: 1.5rem;
+    padding: 24px 0;
   }
-  .content {
-    padding: 4rem;
+  
+  .hero {
+    margin-bottom: 32px;
   }
-
-  .grid {
-    grid-template-columns: 1fr;
-    margin-bottom: 120px;
-    max-width: 320px;
-    text-align: center;
+  
+  .title {
+    font-size: 32px;
   }
-
-  .card {
-    padding: 1rem 2.5rem;
+  
+  .subtitle {
+    font-size: 16px;
   }
-
-  .card h2 {
-    margin-bottom: 0.5rem;
+  
+  .filters {
+    margin-bottom: 32px;
   }
-
-  .center {
-    padding: 1rem;
+  
+  .eventButtons {
     flex-direction: column;
   }
+  
+  .eventButton {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .markets {
+    margin-bottom: 32px;
+  }
+  
+  .sectionTitle {
+    font-size: 20px;
+  }
+}
 
+@media (max-width: 700px) {
+  .center {
+    padding: 2rem 0;
+  }
+  
   .center::before {
     transform: none;
     height: 300px;
   }
-}
-
-/* Tablet and Smaller Desktop */
-@media (min-width: 701px) and (max-width: 1120px) {
-  .grid {
-    grid-template-columns: repeat(2, 50%);
-  }
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(360deg);
-  }
-  to {
-    transform: rotate(0deg);
+  
+  .stack {
+    max-width: 100%;
+    padding: 0 1rem;
   }
 }

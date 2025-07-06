@@ -1,3 +1,4 @@
+// Legacy components (keeping for now)
 export { default as Countdown } from "./Countdown";
 export { default as CurrentWinner } from "./CurrentWinner";
 export { default as Footer } from "./Footer";
@@ -6,3 +7,9 @@ export { default as Input } from "./Input";
 export { default as Invoice } from "./Invoice";
 export { default as Jackpot } from "./Jackpot";
 export { default as Loading } from "./Loading";
+export { default as Qr } from "./Qr";
+
+// New DCI components
+export { DCIHeader } from "./DCIHeader";
+export { MarketCard } from "./MarketCard";
+export { OutcomeCard } from "./OutcomeCard";

@@ -1,0 +1,113 @@
+.marketCard {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: all 0.2s ease;
+}
+
+.marketCard:hover {
+  border-color: #555;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.marketHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.eventInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eventType {
+  background: #ff4747;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.eventDate {
+  color: #888;
+  font-size: 14px;
+}
+
+.eventLocation {
+  color: #666;
+  font-size: 14px;
+}
+
+.marketTitle h3 {
+  color: #fff;
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.marketDescription {
+  color: #888;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.outcomes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.marketStats {
+  display: flex;
+  gap: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #333;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  color: #888;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.statValue {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .marketCard {
+    padding: 16px;
+  }
+  
+  .marketHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .outcomes {
+    grid-template-columns: 1fr;
+  }
+  
+  .marketStats {
+    gap: 16px;
+  }
+}

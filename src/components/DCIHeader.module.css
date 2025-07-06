@@ -1,0 +1,118 @@
+.header {
+  background: #111;
+  border-bottom: 1px solid #333;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+}
+
+.logo h1 {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1;
+}
+
+.tagline {
+  color: #888;
+  font-size: 12px;
+  margin-top: 2px;
+  display: block;
+}
+
+.nav {
+  display: flex;
+  gap: 32px;
+}
+
+.navLink {
+  color: #888;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: #fff;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.balance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.balanceLabel {
+  color: #888;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.balanceAmount {
+  color: #4caf50;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.connectButton {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.connectButton:hover {
+  background: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+    height: 64px;
+  }
+  
+  .logo h1 {
+    font-size: 18px;
+  }
+  
+  .nav {
+    display: none;
+  }
+  
+  .actions {
+    gap: 16px;
+  }
+  
+  .balance {
+    display: none;
+  }
+  
+  .connectButton {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}

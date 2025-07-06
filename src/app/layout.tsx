@@ -4,9 +4,9 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Last Pay Wins",
+  title: "DCI Betting Market",
   description:
-    "Pay the invoice to reset the timer. If the timer hits zero before someone else pays, you win the jackpot.",
+    "Bet on DCI event outcomes and corps placements. Predict the future of drum corps competitions.",
 };
 
 export default function RootLayout({

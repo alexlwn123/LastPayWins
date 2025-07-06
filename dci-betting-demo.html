@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCI Betting Market - Predict the Future of Drum Corps</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #111;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .logo h1 {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .tagline {
+            color: #888;
+            font-size: 12px;
+            margin-top: 2px;
+            display: block;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .nav a:hover {
+            color: #fff;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .balance {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .balance-label {
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .balance-amount {
+            color: #4caf50;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .connect-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-size: 14px;
+        }
+
+        .connect-button:hover {
+            background: #0056b3;
+        }
+
+        .main {
+            flex: 1;
+            padding: 32px 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin: 0 0 16px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: #888;
+            margin: 0;
+            font-weight: 300;
+        }
+
+        .filters {
+            margin-bottom: 48px;
+        }
+
+        .filters h3 {
+            color: #fff;
+            margin: 0 0 16px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .event-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .event-button {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .event-button:hover {
+            background: #222;
+            border-color: #555;
+            color: #fff;
+        }
+
+        .event-button.active {
+            background: #007bff;
+            border-color: #007bff;
+            color: #fff;
+        }
+
+        .section-title {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 24px 0;
+        }
+
+        .market-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .market-card:hover {
+            border-color: #555;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .market-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .event-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .event-type {
+            background: #ff4747;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .event-type.championship {
+            background: #ff8c00;
+        }
+
+        .event-type.regional {
+            background: #4caf50;
+        }
+
+        .event-date {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .event-location {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .market-title h3 {
+            color: #fff;
+            margin: 0 0 8px 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .market-description {
+            color: #888;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .outcomes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .outcome-card {
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .outcome-card:hover {
+            border-color: #555;
+            background: #252525;
+        }
+
+        .outcome-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .outcome-title {
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .probability {
+            color: #4caf50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .odds {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border-radius: 6px;
+        }
+
+        .odds-label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .odds-value {
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .outcome-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .bet-button {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: auto;
+        }
+
+        .bet-button:hover {
+            background: #0056b3;
+        }
+
+        .market-stats {
+            display: flex;
+            gap: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #333;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .footer {
+            background: #111;
+            border-top: 1px solid #333;
+            padding: 24px 0;
+            margin-top: 48px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            text-align: center;
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 0 16px;
+                height: 64px;
+            }
+
+            .nav {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            .outcomes {
+                grid-template-columns: 1fr;
+            }
+
+            .market-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .market-stats {
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <h1>DCI Betting Market</h1>
+                <span class="tagline">Predict the future of drum corps</span>
+            </div>
+            
+            <nav class="nav">
+                <a href="#markets">Markets</a>
+                <a href="#events">Events</a>
+                <a href="#leaderboard">Leaderboard</a>
+            </nav>
+            
+            <div class="actions">
+                <div class="balance">
+                    <span class="balance-label">Balance</span>
+                    <span class="balance-amount">$1,000</span>
+                </div>
+                <button class="connect-button">Connect Wallet</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="hero">
+                <h1>DCI Betting Markets</h1>
+                <p>Predict the outcomes of drum corps competitions and win big</p>
+            </div>
+
+            <div class="filters">
+                <h3>Filter by Event</h3>
+                <div class="event-buttons">
+                    <button class="event-button active" onclick="filterEvents('all')">All Events</button>
+                    <button class="event-button" onclick="filterEvents('finals')">DCI Finals 2024</button>
+                    <button class="event-button" onclick="filterEvents('eastern')">Eastern Classic</button>
+                    <button class="event-button" onclick="filterEvents('southwest')">Southwest Championship</button>
+                </div>
+            </div>
+
+            <div class="markets">
+                <h2 class="section-title">Active Markets (3)</h2>
+                
+                <!-- Market 1: DCI Finals Winner -->
+                <div class="market-card">
+                    <div class="market-header">
+                        <div class="event-info">
+                            <span class="event-type">FINALS</span>
+                            <span class="event-date">Aug 10, 2024</span>
+                        </div>
+                        <div class="event-location">Indianapolis, IN</div>
+                    </div>
+                    
+                    <div class="market-title">
+                        <h3>DCI Finals 2024 Winner</h3>
+                        <p class="market-description">Which corps will win the 2024 DCI World Championship?</p>
+                    </div>
+
+                    <div class="outcomes">
+                        <div class="outcome-card">
+                            <div class="outcome-header">
+                                <div class="outcome-title">Bluecoats</div>
+                                <div class="probability">31%</div>
+                            </div>
+                            <div class="odds">
+                                <span class="odds-label">Odds</span>
+                                <span class="odds-value">3.20</span>
+                            </div>
+                            <div class="outcome-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Volume</span>
+                                    <span class="stat-value">$12.5K</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bets</span>
+                                    <span class="stat-value">156</span>
+                                </div>
+                            </div>
+                            <button class="bet-button" onclick="placeBet('Bluecoats')">Place Bet</button>
+                        </div>
+
+                        <div class="outcome-card">
+                            <div class="outcome-header">
+                                <div class="outcome-title">Carolina Crown</div>
+                                <div class="probability">36%</div>
+                            </div>
+                            <div class="odds">
+                                <span class="odds-label">Odds</span>
+                                <span class="odds-value">2.80</span>
+                            </div>
+                            <div class="outcome-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Volume</span>
+                                    <span class="stat-value">$18.7K</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bets</span>
+                                    <span class="stat-value">203</span>
+                                </div>
+                            </div>
+                            <button class="bet-button" onclick="placeBet('Carolina Crown')">Place Bet</button>
+                        </div>
+
+                        <div class="outcome-card">
+                            <div class="outcome-header">
+                                <div class="outcome-title">Blue Devils</div>
+                                <div class="probability">24%</div>
+                            </div>
+                            <div class="odds">
+                                <span class="odds-label">Odds</span>
+                                <span class="odds-value">4.10</span>
+                            </div>
+                            <div class="outcome-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Volume</span>
+                                    <span class="stat-value">$8.9K</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bets</span>
+                                    <span class="stat-value">98</span>
+                                </div>
+                            </div>
+                            <button class="bet-button" onclick="placeBet('Blue Devils')">Place Bet</button>
+                        </div>
+
+                        <div class="outcome-card">
+                            <div class="outcome-header">
+                                <div class="outcome-title">Santa Clara Vanguard</div>
+                                <div class="probability">18%</div>
+                            </div>
+                            <div class="odds">
+                                <span class="odds-label">Odds</span>
+                                <span class="odds-value">5.50</span>
+                            </div>
+                            <div class="outcome-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Volume</span>
+                                    <span class="stat-value">$5.2K</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bets</span>
+                                    <span class="stat-value">67</span>
+                                </div>
+                            </div>
+                            <button class="bet-button" onclick="placeBet('Santa Clara Vanguard')">Place Bet</button>
+                        </div>
+                    </div>
+
+                    <div class="market-stats">
+                        <div class="stat">
+                            <span class="stat-label">Total Volume</span>
+                            <span class="stat-value">$45,300</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Total Bets</span>
+                            <span class="stat-value">524</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market 2: Top 3 Finishers -->
+                <div class="market-card">
+                    <div class="market-header">
+                        <div class="event-info">
+                            <span class="event-type">FINALS</span>
+                            <span class="event-date">Aug 10, 2024</span>
+                        </div>
+                        <div class="event-location">Indianapolis, IN</div>
+                    </div>
+                    
+                    <div class="market-title">
+                        <h3>DCI Finals 2024 Top 3</h3>
+                        <p class="market-description">Which corps will finish in the top 3 at DCI Finals 2024?</p>
+                    </div>
+
+                    <div class="outcomes">
+                        <div class="outcome-card">
+                            <div class="outcome-header">
+                                <div class="outcome-title">Bluecoats Top 3</div>
+                                <div class="probability">71%</div>
+                            </div>
+                            <div class="odds">
+                                <span class="odds-label">Odds</span>
+                                <span class="odds-value">1.40</span>
+                            </div>
+                            <div class="outcome-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Volume</span>
+                                    <span class="stat-value">$25.6K</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bets</span>
+                                    <span class="stat-value">312</span>
+                                </div>
+                            </div>
+                            <button class="bet-button" onclick="placeBet('Bluecoats Top 3')">Place Bet</button>
+                        </div>
+
+                        <div class="outcome-card">
+                            <div class="outcome-header">
+                                <div class="outcome-title">Carolina Crown Top 3</div>
+                                <div class="probability">77%</div>
+                            </div>
+                            <div class="odds">
+                                <span class="odds-label">Odds</span>
+                                <span class="odds-value">1.30</span>
+                            </div>
+                            <div class="outcome-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Volume</span>
+                                    <span class="stat-value">$31.2K</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bets</span>
+                                    <span class="stat-value">398</span>
+                                </div>
+                            </div>
+                            <button class="bet-button" onclick="placeBet('Carolina Crown Top 3')">Place Bet</button>
+                        </div>
+
+                        <div class="outcome-card">
+                            <div class="outcome-header">
+                                <div class="outcome-title">Phantom Regiment Top 3</div>
+                                <div class="probability">48%</div>
+                            </div>
+                            <div class="odds">
+                                <span class="odds-label">Odds</span>
+                                <span class="odds-value">2.10</span>
+                            </div>
+                            <div class="outcome-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Volume</span>
+                                    <span class="stat-value">$15.8K</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bets</span>
+                                    <span class="stat-value">189</span>
+                                </div>
+                            </div>
+                            <button class="bet-button" onclick="placeBet('Phantom Regiment Top 3')">Place Bet</button>
+                        </div>
+                    </div>
+
+                    <div class="market-stats">
+                        <div class="stat">
+                            <span class="stat-label">Total Volume</span>
+                            <span class="stat-value">$72,600</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Total Bets</span>
+                            <span class="stat-value">899</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market 3: Eastern Classic Winner -->
+                <div class="market-card">
+                    <div class="market-header">
+                        <div class="event-info">
+                            <span class="event-type regional">REGIONAL</span>
+                            <span class="event-date">Jul 27, 2024</span>
+                        </div>
+                        <div class="event-location">Allentown, PA</div>
+                    </div>
+                    
+                    <div class="market-title">
+                        <h3>DCI Eastern Classic 2024 Winner</h3>
+                        <p class="market-description">Which corps will win the 2024 DCI Eastern Classic?</p>
+                    </div>
+
+                    <div class="outcomes">
+                        <div class="outcome-card">
+                            <div class="outcome-header">
+                                <div class="outcome-title">Boston Crusaders</div>
+                                <div class="probability">40%</div>
+                            </div>
+                            <div class="odds">
+                                <span class="odds-label">Odds</span>
+                                <span class="odds-value">2.50</span>
+                            </div>
+                            <div class="outcome-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Volume</span>
+                                    <span class="stat-value">$6.7K</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bets</span>
+                                    <span class="stat-value">87</span>
+                                </div>
+                            </div>
+                            <button class="bet-button" onclick="placeBet('Boston Crusaders')">Place Bet</button>
+                        </div>
+
+                        <div class="outcome-card">
+                            <div class="outcome-header">
+                                <div class="outcome-title">The Cadets</div>
+                                <div class="probability">32%</div>
+                            </div>
+                            <div class="odds">
+                                <span class="odds-label">Odds</span>
+                                <span class="odds-value">3.10</span>
+                            </div>
+                            <div class="outcome-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Volume</span>
+                                    <span class="stat-value">$4.8K</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bets</span>
+                                    <span class="stat-value">64</span>
+                                </div>
+                            </div>
+                            <button class="bet-button" onclick="placeBet('The Cadets')">Place Bet</button>
+                        </div>
+
+                        <div class="outcome-card">
+                            <div class="outcome-header">
+                                <div class="outcome-title">The Cavaliers</div>
+                                <div class="probability">24%</div>
+                            </div>
+                            <div class="odds">
+                                <span class="odds-label">Odds</span>
+                                <span class="odds-value">4.20</span>
+                            </div>
+                            <div class="outcome-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Volume</span>
+                                    <span class="stat-value">$3.2K</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Bets</span>
+                                    <span class="stat-value">43</span>
+                                </div>
+                            </div>
+                            <button class="bet-button" onclick="placeBet('The Cavaliers')">Place Bet</button>
+                        </div>
+                    </div>
+
+                    <div class="market-stats">
+                        <div class="stat">
+                            <span class="stat-label">Total Volume</span>
+                            <span class="stat-value">$14,700</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Total Bets</span>
+                            <span class="stat-value">194</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p>&copy; 2024 DCI Betting Market. Predict responsibly.</p>
+        </div>
+    </footer>
+
+    <script>
+        function filterEvents(eventType) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.event-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Simple filter logic (in a real app, this would filter the markets)
+            console.log('Filtering by:', eventType);
+        }
+
+        function placeBet(outcome) {
+            // Simple bet placement (in a real app, this would open a bet modal)
+            alert(`Placing bet on: ${outcome}\n\nThis is a demo. In a real app, this would open a betting interface.`);
+        }
+
+        // Connect wallet functionality
+        document.querySelector('.connect-button').addEventListener('click', function() {
+            alert('Connect Wallet functionality would be implemented here.\n\nThis would connect to a Web3 wallet like MetaMask.');
+        });
+    </script>
+</body>
+</html>
