@@ -7,7 +7,12 @@ const getInvoice = async () => {
   const amount = parseInt(INVOICE_AMOUNT || "1000");
   const expiry = 3600;
   const memo = "Bid - Last Pay Wins";
-  return await createLnbitsInvoice(amount, memo, expiry);
+  try {
+    return await createLnbitsInvoice(amount, memo, expiry);
+  } catch (e) {
+    console.error(e, { amount, memo, expiry });
+    throw new Error("Failed to get invoice");
+  }
 };
 
 const checkInvoice = async (hash, lnAddress) => {
@@ -40,7 +45,7 @@ export default async (req, res) => {
       res.status(405).json({ error: "Method not supported" });
     }
   } catch (e) {
-    console.error(e);
+    console.error(e, { method: req.method, query: req.query });
     res.status(500).json(e);
   }
 };
