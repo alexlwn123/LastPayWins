@@ -58,7 +58,7 @@ export default function Home() {
   }, [status, jackpot, lnAddress, timestamp, userAddress, existingStatus]);
 
   return (
-    <main className={styles.main}>
+    <main className="page-main home">
       <ToastContainer
         hideProgressBar={true}
         autoClose={3000}
