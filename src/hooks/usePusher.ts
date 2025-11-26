@@ -20,9 +20,9 @@ const emptyPayer = {
 } satisfies Payer;
 
 const usePusher = () => {
-  const pusher = useRef<Pusher>();
-  const lastPayerChannel = useRef<Channel>();
-  const presenceChannel = useRef<Channel>();
+  const pusher = useRef<Pusher | undefined>(undefined);
+  const lastPayerChannel = useRef<Channel | undefined>(undefined);
+  const presenceChannel = useRef<Channel | undefined>(undefined);
   const [lastPayer, setLastPayer] = useState<Payer>(emptyPayer);
   const winner = useRef<Payer>(emptyPayer);
   const [members, setMembers] = useState<Set<string>>(new Set());

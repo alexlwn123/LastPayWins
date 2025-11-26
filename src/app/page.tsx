@@ -1,5 +1,8 @@
 "use client";
+// import "react-toastify/dist/ReactToastify.css";
+import { Analytics } from "@vercel/analytics/react";
 import { useEffect, useRef, useState } from "react";
+import { ToastContainer } from "react-toastify";
 import {
   Countdown,
   CurrentWinner,
@@ -10,14 +13,11 @@ import {
   Jackpot,
   Loading,
 } from "@/components";
-import usePusher from "@/hooks/usePusher";
-import styles from "./page.module.css";
-import "react-toastify/dist/ReactToastify.css";
-import { Analytics } from "@vercel/analytics/react";
-import { ToastContainer } from "react-toastify";
 import { useInvoice } from "@/hooks/useInvoice";
 import { useLnurl } from "@/hooks/useLnurl";
+import usePusher from "@/hooks/usePusher";
 import type { Status } from "@/types/payer";
+import styles from "./page.module.css";
 import { handleStatusUpdate } from "./utils";
 
 export default function Home() {

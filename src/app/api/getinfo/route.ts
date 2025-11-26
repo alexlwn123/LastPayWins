@@ -1,9 +1,8 @@
 import { Agent } from "node:https";
-import type { NextApiRequest, NextApiResponse } from "next";
 import fetch from "node-fetch";
 import { LND_HOST, MACAROON } from "@/lib/serverEnvs";
 
-export default async (_req: NextApiRequest, res: NextApiResponse) => {
+export const GET = async () => {
   try {
     const url = `${LND_HOST}/v1/getinfo`;
     const data = await fetch(url, {
@@ -16,9 +15,9 @@ export default async (_req: NextApiRequest, res: NextApiResponse) => {
         rejectUnauthorized: false,
       }),
     });
-    res.status(200).json(await data.json());
+    return Response.json(await data.json());
   } catch (e) {
     console.error(e);
-    res.status(500).json(e);
+    return Response.json({ error: e.message }, { status: 500 });
   }
 };

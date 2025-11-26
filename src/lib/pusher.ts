@@ -2,7 +2,7 @@
 import { Agent } from "node:https";
 import fetch from "node-fetch";
 import Pusher from "pusher";
-import { inngest } from "@/pages/api/inngest";
+import { inngest } from "@/app/api/inngest/route";
 import {
   NEXT_PUBLIC_CLOCK_DURATION,
   NEXT_PUBLIC_PRESENCE_CHANNEL,
@@ -32,7 +32,15 @@ type Payer = {
   jackpot: number;
   timestamp: number;
 };
+
+// TODO: change me when we fix the zapier telegram bot
+const isWebhookEnabled = true;
+
 const hitWebhook = async (lnAddress, bid) => {
+  if (!isWebhookEnabled) {
+    console.log("webhook is disabled. Skipping webhook.");
+    return;
+  }
   const url = ZAPIER_WEBHOOK_URL;
   if (!url) {
     console.log("ZAPIER_WEBHOOK_URL is not set. Skipping webhook.");
@@ -52,6 +60,11 @@ const hitWebhook = async (lnAddress, bid) => {
       bid,
     }),
   });
+  if (!data.ok) {
+    const text = await data.text();
+    console.error("webhook failed", data.statusText, text);
+    return;
+  }
   const rawResult = await data.json();
   console.log("webhook", rawResult);
 };
