@@ -6,18 +6,19 @@ import { NEXT_PUBLIC_CLOCK_DURATION } from "@/lib/publicEnvs";
 import { LNBITS_API_KEY, LNBITS_URL } from "@/lib/serverEnvs";
 
 // Create a client to send and receive events
-export const inngest = new Inngest({ name: "Last Pay Wins" });
+export const inngest = new Inngest({ id: "last-pay-wins" });
 
 const duration = parseInt(NEXT_PUBLIC_CLOCK_DURATION ?? "300");
 const handleExpiry = inngest.createFunction(
   {
+    id: "bid-received",
     name: "Bid Received",
     // retries: 3,
     // Cancels on bid event if the bid is within the duration
     cancelOn: [
       {
         event: "bid",
-        if: `async.data.timestamp - event.data.timestamp < ${duration * 1000}`,
+        // if: `async.data.timestamp - event.data.timestamp < ${duration * 1000}`,
         timeout: `${duration}s`,
       },
     ],
@@ -26,7 +27,7 @@ const handleExpiry = inngest.createFunction(
   async ({ event, step }) => {
     const { timestamp, lnAddress, jackpot } = event.data;
 
-    const targetDate = await step.run("setup", () => {
+    const targetDate = await step.run<() => number>("setup", () => {
       if (!timestamp || !lnAddress || !jackpot) return;
 
       const targetTimestamp = timestamp + duration * 1000;
@@ -34,7 +35,7 @@ const handleExpiry = inngest.createFunction(
     });
 
     // Wait until the target date
-    await step.sleepUntil(new Date(targetDate));
+    await step.sleepUntil("wait-for-bid-timeout", new Date(targetDate));
 
     // Scan the bidder's lnurl
     const lnurlRes: ScanResult = await step.run("Read Lnurl", async () => {
@@ -89,4 +90,7 @@ const handleExpiry = inngest.createFunction(
   },
 );
 
-export default serve(inngest, [handleExpiry]);
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: [handleExpiry],
+});
