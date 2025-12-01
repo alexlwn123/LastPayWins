@@ -33,11 +33,7 @@ const Footer = () => (
       </Link>
     </footer>
     <p className={styles.fees}>
-      Fees: 5% goes to @_alexlewin to run the servers. 5% goes to{" "}
-      <Link href="https://opensats.org" target="_blank" rel="noreferrer">
-        OpenSats.org
-      </Link>
-      .
+      Fees: 10% goes to @_alexlewin to run the servers.
     </p>
     <p className={styles.fees}>
       *fees are only applied after the jackpot reaches 20,000 sats
