@@ -2,39 +2,36 @@
   color-scheme: dark;
   --max-width: 1100px;
   --border-radius: 12px;
-  --font-mono:
-    ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono",
+  --font-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono",
     "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro",
     "Fira Mono", "Droid Sans Mono", "Courier New", monospace;
 
+  /* Neon Cyberpunk Palette */
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
+  
+  /* Deep Dark Backgrounds */
+  --bg-dark: #050505;
+  --bg-card: #0f0f13;
+  --bg-panel: #1a1a22;
 
-  --primary-glow: radial-gradient(rgba(1, 65, 255, 0.4), rgba(1, 65, 255, 0));
-  --secondary-glow: linear-gradient(
-    to bottom right,
-    rgba(1, 65, 255, 0),
-    rgba(1, 65, 255, 0),
-    rgba(1, 65, 255, 0.3)
-  );
+  /* Neon Accents */
+  --neon-gold: #ffd700;
+  --neon-gold-glow: rgba(255, 215, 0, 0.6);
+  --neon-blue: #00f3ff;
+  --neon-blue-glow: rgba(0, 243, 255, 0.6);
+  --neon-red: #ff2a2a;
+  --neon-red-glow: rgba(255, 42, 42, 0.6);
+  --neon-green: #39ff14;
+  --neon-green-glow: rgba(57, 255, 20, 0.6);
 
-  --tile-start-rgb: 2, 13, 46;
-  --tile-end-rgb: 2, 5, 19;
-  --tile-border: conic-gradient(
-    #ffffff80,
-    #ffffff40,
-    #ffffff30,
-    #ffffff20,
-    #ffffff10,
-    #ffffff10,
-    #ffffff80
-  );
+  /* Gradients */
+  --gradient-main: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000000 100%);
+  --gradient-metallic: linear-gradient(135deg, #2c3e50, #4ca1af);
+  --gradient-gold: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
 
-  --callout-rgb: 20, 20, 20;
-  --callout-border-rgb: 108, 108, 108;
-  --card-rgb: 100, 100, 100;
-  --card-border-rgb: 200, 200, 200;
+  /* Shadows & Glows */
+  --shadow-neon: 0 0 10px var(--neon-blue-glow), 0 0 20px var(--neon-blue-glow);
+  --text-shadow-gold: 0 0 10px var(--neon-gold-glow);
 }
 
 * {
@@ -47,16 +44,34 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  height: 100vh;
+  background: var(--bg-dark);
 }
 
 body {
   color: rgb(var(--foreground-rgb));
+  background: var(--gradient-main);
+  font-family: var(--font-mono);
+  position: relative;
+}
+
+/* Scanline Effect */
+body::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
   background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0.15;
 }
 
 a {
@@ -67,9 +82,3 @@ a {
 html {
   color-scheme: dark;
 }
-
-/* @media (prefers-color-scheme: dark light) {
-  html {
-    color-scheme: dark;
-  }
-} */

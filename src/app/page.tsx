@@ -1,6 +1,6 @@
 "use client";
-// import "react-toastify/dist/ReactToastify.css";
 import { Analytics } from "@vercel/analytics/react";
+import confetti from "canvas-confetti";
 import { useEffect, useRef, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import {
@@ -38,6 +38,8 @@ export default function Home() {
     setCountdownKey,
     refetch,
     setRefetch,
+    // Trigger confetti on win from invoice settling if handled there, 
+    // but usually status update triggers it.
   });
 
   // handle status update
@@ -54,6 +56,34 @@ export default function Home() {
     if (status === "LOADING") {
       setTimeout(() => setRefetch(true), 0);
     }
+
+    // Confetti Effect
+    if (status === "WINNER") {
+      const duration = 3000;
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 2,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ["#ffd700", "#ff2a2a", "#00f3ff"]
+        });
+        confetti({
+          particleCount: 2,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ["#ffd700", "#ff2a2a", "#00f3ff"]
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      };
+      frame();
+    }
   }, [status, jackpot, lnAddress, timestamp, userAddress, existingStatus]);
 
   return (
@@ -64,42 +94,57 @@ export default function Home() {
         pauseOnFocusLoss={false}
         theme="dark"
         closeButton={false}
+        toastStyle={{ 
+            background: '#1a1a1a', 
+            border: '1px solid #333', 
+            color: '#fff',
+            fontFamily: 'monospace' 
+        }}
       />
 
-      <Header status={status} />
-      <Loading isLoading={status === "LOADING" || !invoice}>
-        <Jackpot jackpotSats={status === "LIVE" ? jackpot : 0} />
-        <div className={styles.center}>
-          <div className={styles.stack}>
-            <Countdown
-              lastPayerTimestamp={timestamp}
-              countdownKey={countdownKey}
-              setCountdownKey={setCountdownKey}
-              status={status}
-              setStatus={setStatus}
-              isWinning={lnAddress === userAddress}
-              displayingInvoice={isValidAddress}
-            />
-            <CurrentWinner
-              currentWinner={lnAddress ?? "Anon"}
-              isActive={status === "LIVE"}
-              jackpot={jackpot}
-            />
-            <Input
-              placeholder={"example@lightningaddress.com"}
-              onChange={(e) => setUserAddress(e.target.value)}
-              value={userAddress}
-              isValidAddress={isValidAddress}
-              isValidating={isValidatingAddress}
-            />
-            <div className={styles.online}>
-              Players Online: <b>{memberCount}</b>
-            </div>
+      <div className={styles.cabinet}>
+        <Header status={status} />
+        
+        <Loading isLoading={status === "LOADING" || !invoice}>
+          <div className={styles.center}>
+             <Jackpot jackpotSats={status === "LIVE" ? jackpot : 0} />
+             
+             <div className={styles.stack}>
+                <Countdown
+                  key={countdownKey}
+                  lastPayerTimestamp={timestamp}
+                  status={status}
+                  setStatus={setStatus}
+                  isWinning={lnAddress === userAddress}
+                  displayingInvoice={isValidAddress}
+                />
+                
+                <CurrentWinner
+                  currentWinner={lnAddress ?? "Anon"}
+                  isActive={status === "LIVE"}
+                  jackpot={jackpot}
+                />
+                
+                <Input
+                  placeholder={"example@lightningaddress.com"}
+                  onChange={(e) => setUserAddress(e.target.value)}
+                  value={userAddress}
+                  isValidAddress={isValidAddress}
+                  isValidating={isValidatingAddress}
+                />
+                
+                {userAddress && isValidAddress && <Invoice invoice={invoice} />}
+                
+                <div className={styles.online}>
+                  Players Online: <b>{memberCount}</b>
+                </div>
+             </div>
           </div>
-          {userAddress && isValidAddress && <Invoice invoice={invoice} />}
-        </div>
-      </Loading>
-      <Footer />
+        </Loading>
+        
+        <Footer />
+      </div>
+
       <Analytics />
     </main>
   );

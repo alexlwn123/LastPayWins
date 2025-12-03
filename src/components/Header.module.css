@@ -16,11 +16,21 @@
   font-weight: 600;
   margin-bottom: 0.5rem;
   text-align: center;
-  /* filter: drop-shadow(0 0 0.3rem #ffffff70); */
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  text-shadow: 
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 20px var(--neon-blue),
+    0 0 30px var(--neon-blue),
+    0 0 40px var(--neon-blue);
 }
 
 .description h2 {
   font-size: 1rem;
   font-weight: 200;
   text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 400px;
 }

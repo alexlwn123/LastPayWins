@@ -1,27 +1,83 @@
 .timerWrapper {
   display: flex;
-  justify-content: center;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 2rem;
+  position: relative;
+  padding: 1rem;
 }
 
-.timer p {
-  font-size: 1px;
-  text-align: center;
-  max-width: 150px;
+.ringContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 260px;
+  height: 260px;
 }
 
-.text {
-  color: #aaa;
-  text-align: center;
+.svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
 }
-.subtext {
-  color: #aaa;
+
+.track {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 12px;
+  fill: none;
+}
+
+.indicator {
+  stroke-width: 12px;
+  stroke-linecap: round;
+  fill: none;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.timeDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  text-align: center;
 }
 
 .value {
-  font-size: 4rem;
+  font-size: 5rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  font-family: var(--font-mono);
+  text-shadow: 0 0 20px currentColor;
+}
+
+.label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.5rem;
+}
+
+.subtext {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
   text-align: center;
+  max-width: 300px;
+  height: 1.5em;
+  text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+.expired {
+  font-size: 2rem;
+  color: var(--neon-red);
+  font-weight: bold;
+  text-shadow: 0 0 10px var(--neon-red);
 }
