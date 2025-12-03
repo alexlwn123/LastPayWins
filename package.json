@@ -20,7 +20,7 @@
     "node-fetch": "^3.3.2",
     "pusher": "^5.2.0",
     "pusher-js": "^8.4.0",
-    "react": "19.2.0",
+    "react": "19.2.1",
     "react-countdown": "^2.3.6",
     "react-countdown-circle-timer": "^3.2.1",
     "react-dom": "19.2.0",
@@ -31,14 +31,14 @@
     "webln": "^0.3.2"
   },
   "devDependencies": {
-    "server-only": "^0.0.1",
+    "@biomejs/biome": "2.0.5",
+    "@svgr/webpack": "^8.1.0",
     "@types/node": "20.1.0",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
-    "@biomejs/biome": "2.0.5",
-    "@svgr/webpack": "^8.1.0",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.0.4",
+    "server-only": "^0.0.1",
     "typescript": "^5.9.3"
   },
   "pnpm": {
