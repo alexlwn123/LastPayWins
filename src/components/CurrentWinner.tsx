@@ -7,19 +7,26 @@ type CurrentWinnerProps = {
   jackpot: number;
 };
 
-const CurrentWinner = ({ currentWinner, isActive, jackpot }: CurrentWinnerProps) => {
+const CurrentWinner = ({
+  currentWinner,
+  isActive,
+  jackpot,
+}: CurrentWinnerProps) => {
   return (
-    <div className={styles.block}>
-      <div>
-        <div className={styles.line}>
-          <p>{isActive ? "Current " : "Previous "} Winner:</p>
-        </div>
-        <p className={styles.winner}>
-          <b className={styles.line}>{currentWinner}</b>
-        </p>
-      </div>
-      {!isActive && <p>₿ {fromSats(jackpot)}</p>}
+    <div className={`${styles.block} ${isActive ? styles.active : ""}`}>
+      <span className={styles.label}>
+        {isActive ? "CURRENT LEADER" : "PREVIOUS WINNER"}
+      </span>
+      <p className={styles.winner} title={currentWinner}>
+        {currentWinner}
+      </p>
+      {!isActive && jackpot > 0 && (
+        <span className={styles.previousWinnings}>
+          Won ₿ {fromSats(jackpot)}
+        </span>
+      )}
     </div>
   );
 };
+
 export default CurrentWinner;

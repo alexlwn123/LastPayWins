@@ -1,0 +1,220 @@
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+  z-index: 100;
+}
+
+.backdrop.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 100vw;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid var(--glass-border);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+  transform: translateX(100%);
+  transition: transform var(--transition-normal);
+  z-index: 101;
+  overflow-y: auto;
+}
+
+.panel.open {
+  transform: translateX(0);
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.closeButton:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--bitcoin-orange);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 2rem 2rem;
+  gap: 1rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--bitcoin-orange);
+  text-shadow: 0 0 20px rgba(247, 147, 26, 0.3);
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 280px;
+}
+
+.qrContainer {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--bg-card);
+  border: 2px solid var(--bitcoin-orange);
+  border-radius: 1rem;
+  box-shadow: var(--glow-orange);
+  animation: borderGlow 3s ease-in-out infinite;
+}
+
+.qrLink {
+  display: block;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.qrLink canvas {
+  display: block;
+}
+
+.qrLoading {
+  width: 240px;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 260px;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  transition: all var(--transition-fast);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.copyButton {
+  background: transparent;
+  border: 1px solid var(--bitcoin-orange);
+  color: var(--bitcoin-orange);
+}
+
+.copyButton:hover:not(:disabled) {
+  background: rgba(247, 147, 26, 0.1);
+  box-shadow: var(--glow-orange);
+}
+
+.copyButton.copied {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.weblnButton {
+  background: var(--gradient-orange);
+  border: none;
+  color: var(--bg-primary);
+}
+
+.weblnButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-orange-intense);
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 1rem;
+}
+
+.hint kbd {
+  display: inline-block;
+  padding: 0.2rem 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--text-muted);
+  border-radius: 4px;
+}
+
+/* Mobile - Bottom sheet style */
+@media (max-width: 700px) {
+  .panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 90vh;
+    border-left: none;
+    border-top: 1px solid var(--glass-border);
+    border-radius: 1.5rem 1.5rem 0 0;
+    transform: translateY(100%);
+  }
+
+  .panel.open {
+    transform: translateY(0);
+  }
+
+  .content {
+    padding: 3rem 1.5rem 2rem;
+  }
+
+  .qrContainer {
+    padding: 0.75rem;
+  }
+
+  .qrLink canvas,
+  .qrLoading {
+    width: 200px !important;
+    height: 200px !important;
+  }
+}
+

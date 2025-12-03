@@ -1,0 +1,253 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  pointer-events: none;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.overlay.bid_received {
+  background: rgba(34, 197, 94, 0.15);
+  animation: flashGreen 1.5s ease-out forwards;
+}
+
+.overlay.outbid {
+  background: rgba(239, 68, 68, 0.2);
+  animation: flashRed 2s ease-out forwards, shake 0.5s ease-out;
+}
+
+.overlay.winner {
+  background: linear-gradient(
+    180deg,
+    rgba(247, 147, 26, 0.3) 0%,
+    rgba(255, 215, 0, 0.2) 50%,
+    rgba(247, 147, 26, 0.3) 100%
+  );
+  animation: winnerGlow 5s ease-out forwards;
+}
+
+.overlay.expired {
+  background: rgba(100, 100, 100, 0.3);
+  animation: fadeInOut 3s ease-out forwards;
+}
+
+.overlay.urgent {
+  pointer-events: none;
+  background: transparent;
+}
+
+@keyframes flashGreen {
+  0% {
+    background: rgba(34, 197, 94, 0.3);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+@keyframes flashRed {
+  0% {
+    background: rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    background: rgba(239, 68, 68, 0.2);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+@keyframes winnerGlow {
+  0%, 80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  20%, 80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+  animation: scaleIn 0.3s ease-out;
+}
+
+.icon {
+  color: var(--bitcoin-orange);
+  animation: pulseGlow 1s ease-in-out infinite;
+}
+
+.overlay.bid_received .icon {
+  color: var(--success);
+}
+
+.overlay.outbid .icon {
+  color: var(--danger);
+  animation: shake 0.5s ease-out;
+}
+
+.overlay.expired .icon {
+  color: var(--text-secondary);
+}
+
+.trophy {
+  font-size: 6rem;
+  animation: float 2s ease-in-out infinite, pulseGlow 1s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.8));
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-shadow: 0 0 30px currentColor;
+  animation: textGlow 1s ease-in-out infinite;
+}
+
+.overlay.bid_received .title {
+  color: var(--success);
+}
+
+.overlay.outbid .title {
+  color: var(--danger);
+  animation: shake 0.5s ease-out, textGlow 0.5s ease-in-out infinite;
+}
+
+.overlay.winner .title {
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  max-width: 400px;
+}
+
+.jackpotDisplay {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--bitcoin-gold);
+  border-radius: 1rem;
+  box-shadow: var(--glow-gold);
+  animation: borderGlow 1s ease-in-out infinite;
+}
+
+.btcSymbol {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--bitcoin-gold);
+}
+
+.jackpotAmount {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Confetti */
+.confettiContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti {
+  position: absolute;
+  top: -20px;
+  width: 10px;
+  height: 10px;
+  animation: confettiFall linear forwards;
+}
+
+.confetti:nth-child(odd) {
+  border-radius: 50%;
+}
+
+.confetti:nth-child(even) {
+  width: 8px;
+  height: 14px;
+}
+
+/* Vignette for urgency */
+.vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  animation: vignettePulse 0.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .title {
+    font-size: 2rem;
+  }
+
+  .trophy {
+    font-size: 4rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+
+  .jackpotDisplay {
+    padding: 0.75rem 1.5rem;
+  }
+
+  .btcSymbol {
+    font-size: 1.75rem;
+  }
+
+  .jackpotAmount {
+    font-size: 2rem;
+  }
+
+  .icon svg {
+    width: 48px;
+    height: 48px;
+  }
+}
+

@@ -1,0 +1,216 @@
+.jackpotWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 3rem;
+  z-index: 1;
+}
+
+.jackpotWrapper.inactive {
+  opacity: 0.5;
+  filter: grayscale(0.5);
+}
+
+.jackpotWrapper.active {
+  animation: pulseGlowIntense 3s ease-in-out infinite;
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  color: var(--bitcoin-orange);
+  text-shadow: 0 0 10px rgba(247, 147, 26, 0.5);
+  margin-bottom: 0.5rem;
+}
+
+.jackpot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-secondary) 100%);
+  border: 2px solid var(--bitcoin-orange);
+  border-radius: 1rem;
+  box-shadow: 
+    var(--glow-orange),
+    inset 0 2px 4px rgba(255, 255, 255, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+  transition: all var(--transition-normal);
+}
+
+.jackpot.updated {
+  animation: borderGlow 0.5s ease-out;
+  transform: scale(1.02);
+}
+
+.bitcoinSymbol {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 700;
+  background: var(--gradient-orange);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(247, 147, 26, 0.5));
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.digitsContainer {
+  display: flex;
+  align-items: center;
+}
+
+.digitContainer {
+  position: relative;
+  overflow: hidden;
+}
+
+.digitContainer.number {
+  width: 3.5rem;
+  height: 5rem;
+  background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 50%, #1a1a1a 100%);
+  border-radius: 0.5rem;
+  margin: 0 2px;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.05);
+}
+
+.digitContainer.separator {
+  width: auto;
+  padding: 0 0.25rem;
+}
+
+.digit {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.digitValue {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.separator .digitValue {
+  color: var(--bitcoin-orange);
+  -webkit-text-fill-color: var(--bitcoin-orange);
+  background: none;
+  font-size: 2.5rem;
+}
+
+.spinning .digitValue {
+  animation: spinDigit 0.3s ease-out;
+}
+
+.spinReel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  animation: reelSpin 0.3s ease-out;
+}
+
+.reelDigit {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
+  height: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bitcoin-orange);
+  opacity: 0.3;
+}
+
+@keyframes reelSpin {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-500%);
+  }
+}
+
+.satsLabel {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  margin-top: 0.5rem;
+}
+
+.glowOrb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 200px;
+  background: var(--gradient-radial-orange);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .jackpotWrapper {
+    padding: 1.5rem 1rem;
+  }
+
+  .jackpot {
+    padding: 0.75rem 1rem;
+    gap: 0.25rem;
+  }
+
+  .bitcoinSymbol {
+    font-size: 2.5rem;
+  }
+
+  .digitContainer.number {
+    width: 2rem;
+    height: 3rem;
+  }
+
+  .digitValue {
+    font-size: 1.75rem;
+  }
+
+  .separator .digitValue {
+    font-size: 1.5rem;
+  }
+
+  .reelDigit {
+    font-size: 1.75rem;
+    height: 3rem;
+  }
+
+  .label {
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+  }
+
+  .glowOrb {
+    width: 200px;
+    height: 150px;
+  }
+}
+

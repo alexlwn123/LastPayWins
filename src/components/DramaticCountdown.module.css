@@ -1,0 +1,167 @@
+.countdownWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 280px;
+  height: 280px;
+  margin: 2rem 0;
+  transition: all var(--transition-normal);
+}
+
+.countdownWrapper.inactive {
+  opacity: 0.6;
+  filter: grayscale(0.3);
+}
+
+.progressRing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.trackCircle {
+  stroke: var(--bg-elevated);
+  opacity: 0.5;
+}
+
+.progressCircle {
+  transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+}
+
+.glowCircle {
+  transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+}
+
+.timerContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.timerLabel {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.timerValue {
+  font-family: var(--font-display);
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  text-shadow: 0 0 20px currentColor;
+}
+
+.timerValue.shake {
+  animation: shakeIntense 0.5s ease-in-out infinite;
+}
+
+.timerUnit {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.instruction {
+  position: absolute;
+  bottom: -3rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Urgency States */
+.countdownWrapper.urgent {
+  animation: pulseGlowIntense 1s ease-in-out infinite;
+}
+
+.countdownWrapper.urgent .timerValue {
+  animation: textGlow 1s ease-in-out infinite;
+}
+
+.countdownWrapper.critical {
+  animation: shakeIntense 0.3s ease-in-out infinite;
+}
+
+.countdownWrapper.critical .timerValue {
+  animation: textGlow 0.5s ease-in-out infinite;
+  color: var(--danger) !important;
+}
+
+.urgentPulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 120%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.1) 0%, transparent 70%);
+  animation: pulseGlow 1s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.criticalOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  height: 150%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.15) 0%, transparent 60%);
+  animation: pulseGlow 0.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .countdownWrapper {
+    width: 220px;
+    height: 220px;
+    margin: 1.5rem 0;
+  }
+
+  .timerValue {
+    font-size: 3.5rem;
+  }
+
+  .timerLabel,
+  .timerUnit {
+    font-size: 0.65rem;
+  }
+
+  .instruction {
+    font-size: 0.75rem;
+    bottom: -2.5rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 400px) {
+  .countdownWrapper {
+    width: 180px;
+    height: 180px;
+  }
+
+  .timerValue {
+    font-size: 2.5rem;
+  }
+}
+

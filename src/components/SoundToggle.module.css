@@ -1,0 +1,44 @@
+.toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  z-index: 50;
+}
+
+.toggle:hover {
+  background: var(--bg-elevated);
+  color: var(--bitcoin-orange);
+  border-color: var(--bitcoin-orange);
+  box-shadow: var(--glow-orange);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--bitcoin-orange);
+  outline-offset: 2px;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .toggle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .toggle svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+

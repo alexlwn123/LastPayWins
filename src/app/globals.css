@@ -1,40 +1,63 @@
 :root {
   color-scheme: dark;
+  
+  /* Layout */
   --max-width: 1100px;
   --border-radius: 12px;
-  --font-mono:
-    ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono",
-    "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro",
-    "Fira Mono", "Droid Sans Mono", "Courier New", monospace;
-
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
-
-  --primary-glow: radial-gradient(rgba(1, 65, 255, 0.4), rgba(1, 65, 255, 0));
-  --secondary-glow: linear-gradient(
-    to bottom right,
-    rgba(1, 65, 255, 0),
-    rgba(1, 65, 255, 0),
-    rgba(1, 65, 255, 0.3)
-  );
-
-  --tile-start-rgb: 2, 13, 46;
-  --tile-end-rgb: 2, 5, 19;
-  --tile-border: conic-gradient(
-    #ffffff80,
-    #ffffff40,
-    #ffffff30,
-    #ffffff20,
-    #ffffff10,
-    #ffffff10,
-    #ffffff80
-  );
-
-  --callout-rgb: 20, 20, 20;
-  --callout-border-rgb: 108, 108, 108;
-  --card-rgb: 100, 100, 100;
-  --card-border-rgb: 200, 200, 200;
+  
+  /* Fonts */
+  --font-display: var(--font-orbitron), "Orbitron", system-ui, sans-serif;
+  --font-body: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-mono: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", monospace;
+  
+  /* Bitcoin Orange Theme */
+  --bitcoin-orange: #f7931a;
+  --bitcoin-orange-light: #ffb347;
+  --bitcoin-orange-dark: #c77700;
+  --bitcoin-amber: #ffa000;
+  --bitcoin-gold: #ffd700;
+  
+  /* Background Colors */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-card: #1a1a1a;
+  --bg-elevated: #222222;
+  
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #aaaaaa;
+  --text-muted: #666666;
+  
+  /* Status Colors */
+  --success: #22c55e;
+  --success-glow: rgba(34, 197, 94, 0.4);
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.4);
+  --warning: #f59e0b;
+  --warning-glow: rgba(245, 158, 11, 0.4);
+  
+  /* Glow Effects */
+  --glow-orange: 0 0 20px rgba(247, 147, 26, 0.5), 0 0 40px rgba(247, 147, 26, 0.3), 0 0 60px rgba(247, 147, 26, 0.1);
+  --glow-orange-intense: 0 0 30px rgba(247, 147, 26, 0.7), 0 0 60px rgba(247, 147, 26, 0.5), 0 0 100px rgba(247, 147, 26, 0.3);
+  --glow-gold: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.3);
+  --glow-danger: 0 0 20px rgba(239, 68, 68, 0.5), 0 0 40px rgba(239, 68, 68, 0.3);
+  --glow-success: 0 0 20px rgba(34, 197, 94, 0.5), 0 0 40px rgba(34, 197, 94, 0.3);
+  
+  /* Gradients */
+  --gradient-orange: linear-gradient(135deg, var(--bitcoin-orange-dark) 0%, var(--bitcoin-orange) 50%, var(--bitcoin-orange-light) 100%);
+  --gradient-gold: linear-gradient(135deg, #c77700 0%, #ffd700 50%, #ffe55c 100%);
+  --gradient-danger: linear-gradient(135deg, #991b1b 0%, #ef4444 50%, #f87171 100%);
+  --gradient-radial-orange: radial-gradient(ellipse at center, rgba(247, 147, 26, 0.15) 0%, transparent 70%);
+  --gradient-radial-danger: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+  
+  /* Glass Effect */
+  --glass-bg: rgba(26, 26, 26, 0.8);
+  --glass-border: rgba(247, 147, 26, 0.2);
+  
+  /* Timing */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
 }
 
 * {
@@ -47,16 +70,13 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  font-family: var(--font-body);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  min-height: 100vh;
 }
 
 a {
@@ -64,12 +84,198 @@ a {
   text-decoration: none;
 }
 
-html {
-  color-scheme: dark;
+button {
+  font-family: inherit;
+  cursor: pointer;
 }
 
-/* @media (prefers-color-scheme: dark light) {
-  html {
-    color-scheme: dark;
+/* Global Keyframe Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px rgba(247, 147, 26, 0.5));
   }
-} */
+  50% {
+    filter: drop-shadow(0 0 40px rgba(247, 147, 26, 0.8));
+  }
+}
+
+@keyframes pulseGlowIntense {
+  0%, 100% {
+    box-shadow: var(--glow-orange);
+  }
+  50% {
+    box-shadow: var(--glow-orange-intense);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes shakeIntense {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-6px) translateY(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(6px) translateY(2px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes slideInUp {
+  from { 
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes spinDigit {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiExplode {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes vignettePulse {
+  0%, 100% {
+    box-shadow: inset 0 0 100px 20px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: inset 0 0 150px 40px rgba(239, 68, 68, 0.5);
+  }
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+  50% {
+    text-shadow: 0 0 20px currentColor, 0 0 40px currentColor, 0 0 60px currentColor;
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    border-color: var(--bitcoin-orange);
+    box-shadow: 0 0 10px rgba(247, 147, 26, 0.3);
+  }
+  50% {
+    border-color: var(--bitcoin-orange-light);
+    box-shadow: 0 0 20px rgba(247, 147, 26, 0.6);
+  }
+}
+
+/* Utility Classes */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.text-orange {
+  color: var(--bitcoin-orange);
+}
+
+.text-gold {
+  color: var(--bitcoin-gold);
+}
+
+.glow-orange {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Toast Overrides for Theme */
+.Toastify__toast-container {
+  z-index: 10000 !important;
+}
+
+.Toastify__toast {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--border-radius) !important;
+  font-family: var(--font-body) !important;
+}
+
+.Toastify__toast--success {
+  border-color: var(--success) !important;
+}
+
+.Toastify__toast--error {
+  border-color: var(--danger) !important;
+}
+
+.Toastify__toast--info {
+  border-color: var(--bitcoin-orange) !important;
+}
