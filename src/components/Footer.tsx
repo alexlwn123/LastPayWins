@@ -39,7 +39,7 @@ const Footer = () => (
       *fees are only applied after the jackpot reaches 20,000 sats
     </p>
     <p className={styles.bug}>
-      If it bugs out and you don't get paid, DM{" "}
+      If it bugs out and you don&apos;t get paid, DM{" "}
       <Link
         href="https://twitter.com/_alexlewin"
         target="_blank"

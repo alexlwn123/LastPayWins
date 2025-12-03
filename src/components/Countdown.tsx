@@ -7,6 +7,21 @@ import styles from "./Countdown.module.css";
 
 const duration = parseInt(NEXT_PUBLIC_CLOCK_DURATION);
 
+type CountdownProps = {
+  lastPayerTimestamp: number;
+  countdownKey: number;
+  setCountdownKey: Dispatch<SetStateAction<number>>;
+  status: Status;
+  setStatus: Dispatch<SetStateAction<Status>>;
+  isWinning: boolean;
+  displayingInvoice: boolean;
+};
+
+type RenderTimeProps = {
+  remainingTime: number;
+  color: string;
+};
+
 const Countdown = ({
   lastPayerTimestamp,
   countdownKey,
@@ -15,21 +30,14 @@ const Countdown = ({
   setStatus,
   isWinning,
   displayingInvoice,
-}: {
-  lastPayerTimestamp: number;
-  countdownKey: number;
-  setCountdownKey: Dispatch<SetStateAction<number>>;
-  status: Status;
-  setStatus: Dispatch<SetStateAction<Status>>;
-  isWinning: boolean;
-  displayingInvoice: boolean;
-}) => {
+}: CountdownProps) => {
   const [initialTimeRemaining, setInitialTimeRemaining] = useState(duration);
   const isVisible = usePageVisibility();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: TODO fix this to make the logic less annoying
   useEffect(() => {
     if (isVisible && status === "LIVE") {
+      // Do update when returning to a live game
       let timeRemaining =
         (duration * 1000 + lastPayerTimestamp - Date.now()) / 1000;
       console.log("TIME REMAINING", timeRemaining);
@@ -40,6 +48,7 @@ const Countdown = ({
       setInitialTimeRemaining(timeRemaining);
       setCountdownKey((countdownKey) => countdownKey + 1);
     } else if (status !== "LIVE") {
+      // reset
       setInitialTimeRemaining(duration);
       setCountdownKey((countdownKey) => countdownKey + 1);
     }
@@ -52,7 +61,7 @@ const Countdown = ({
     // setStatus,
   ]);
 
-  const renderTime = ({ remainingTime, color }) => {
+  const renderTime = ({ remainingTime, color }: RenderTimeProps) => {
     if (remainingTime === 0) {
       return <p className={styles.timer}>Too late...</p>;
     }

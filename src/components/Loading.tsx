@@ -1,6 +1,12 @@
+import type { ReactNode } from "react";
 import { Triangle } from "react-loader-spinner";
 
-const Loading = ({ isLoading, children }) =>
+type LoadingProps = {
+  isLoading: boolean;
+  children: ReactNode;
+};
+
+const Loading = ({ isLoading, children }: LoadingProps) =>
   isLoading ? (
     <Triangle
       height="80"

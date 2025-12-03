@@ -48,12 +48,11 @@ export default function Home() {
     } else if (existingStatus === status) {
       return;
     }
-    setExistingStatus(status);
+    setTimeout(() => setExistingStatus(status), 0);
     handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp);
-    setCountdownKey((prevKey) => prevKey + 1);
-
+    setTimeout(() => setCountdownKey((prevKey) => prevKey + 1), 0);
     if (status === "LOADING") {
-      setRefetch(true);
+      setTimeout(() => setRefetch(true), 0);
     }
   }, [status, jackpot, lnAddress, timestamp, userAddress, existingStatus]);
 

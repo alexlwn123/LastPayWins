@@ -3,19 +3,26 @@ import { handleWeblnPay, useWeblnAvailable } from "@/hooks/useWeblnAvailable";
 import styles from "./Invoice.module.css";
 import Qr from "./Qr";
 
-const Invoice = ({ invoice }) => {
+type InvoiceProps = {
+  invoice: string | null;
+};
+
+const Invoice = ({ invoice }: InvoiceProps) => {
   const { weblnAvailable, webLn, setWebln } = useWeblnAvailable();
+  const handleCopy = () => {
+    if (!invoice) return;
+    console.log("copying", invoice);
+    if (!navigator?.clipboard?.writeText(invoice)) {
+      console.error("Failed to copy");
+    }
+  };
   return (
     <div className={styles.payment}>
       <Qr invoice={invoice} />
       <button
         type="button"
         className={styles.copy}
-        onClick={() => {
-          console.log("copying", invoice);
-          navigator?.clipboard?.writeText(invoice) ??
-            console.error("Failed to copy");
-        }}
+        onClick={() => handleCopy()}
       >
         Copy Invoice
       </button>

@@ -5,17 +5,16 @@ import { validateLnurl } from "@/app/utils";
 export const useLnurl = () => {
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const [isValidAddress, setIsValidAddress] = useState(false);
-  const [userAddress, setUserAddress] = useState<string | null>(null);
+  const [userAddress, setUserAddress] = useState<string>('');
 
   // get lnaddr from local storage
   useEffect(() => {
     const lnaddr = localStorage.getItem("lnaddr");
     if (lnaddr) {
-      setUserAddress(lnaddr);
+      setTimeout(() => setUserAddress(lnaddr), 0);
     }
   }, []);
 
-  // validate user input
   useEffect(() => {
     const delayedValidate = setTimeout(async () => {
       if (!userAddress) return;

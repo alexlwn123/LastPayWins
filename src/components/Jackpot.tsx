@@ -1,7 +1,11 @@
 import { fromSats } from "satcomma";
 import styles from "./Jackpot.module.css";
 
-const Jackpot = ({ jackpotSats = 0 }) => {
+type JackpotProps = {
+  jackpotSats?: number;
+};
+
+const Jackpot = ({ jackpotSats = 0 }: JackpotProps) => {
   if (typeof jackpotSats !== "number" || Number.isNaN(jackpotSats))
     jackpotSats = 0;
   return (

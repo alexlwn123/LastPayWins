@@ -1,8 +1,16 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { RevolvingDot } from "react-loader-spinner";
 import Check from "@/components/icons/Check";
 import X from "@/components/icons/X";
 import styles from "./input.module.css";
+
+type InputProps = {
+  placeholder: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  value: string;
+  isValidAddress: boolean;
+  isValidating: boolean;
+};
 
 export default function Input({
   placeholder,
@@ -10,15 +18,13 @@ export default function Input({
   value,
   isValidAddress,
   isValidating,
-}) {
-  const dot = () => <RevolvingDot radius={10} height={20} width={20} />;
-  const [icon, setIcon] = useState<React.ReactNode>(dot);
-
-  useEffect(() => {
-    if (!value) setIcon(null);
-    else if (isValidating) setIcon(dot);
-    else if (isValidAddress) setIcon(<Check />);
-    else setIcon(<X />);
+}: InputProps) {
+  const icon = useMemo(() => {
+    if (!value) return null;
+    if (isValidating)
+      return <RevolvingDot radius={10} height={20} width={20} />;
+    if (isValidAddress) return <Check />;
+    return <X />;
   }, [isValidAddress, isValidating, value]);
 
   return (
@@ -36,7 +42,6 @@ export default function Input({
           value={value}
         />
 
-        {/* {isValidating &&  */}
         <div className={styles.icon}>{icon}</div>
       </div>
     </div>

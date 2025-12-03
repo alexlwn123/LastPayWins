@@ -1,6 +1,11 @@
+import type { Status } from "@/types/payer";
 import styles from "./Header.module.css";
 
-const Header = ({ status }) => (
+type HeaderProps = {
+  status: Status;
+};
+
+const Header = ({ status }: HeaderProps) => (
   <header className={styles.description}>
     <h1>Last Pay Wins</h1>
     <h2>

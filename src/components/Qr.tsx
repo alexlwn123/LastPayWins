@@ -1,7 +1,11 @@
 import { useQRCode } from "next-qrcode";
 
-export default (invoice) => {
-  const text = `lightning:${invoice.invoice}`;
+type QrProps = {
+  invoice: string | null;
+};
+
+const Qr = ({ invoice }: QrProps) => {
+  const text = `lightning:${invoice}`;
   const { Canvas } = useQRCode();
 
   return invoice ? (
@@ -24,3 +28,5 @@ export default (invoice) => {
     <h1>LOADING</h1>
   );
 };
+
+export default Qr;
