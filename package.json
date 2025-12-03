@@ -23,7 +23,7 @@
     "react": "19.2.1",
     "react-countdown": "^2.3.6",
     "react-countdown-circle-timer": "^3.2.1",
-    "react-dom": "19.2.0",
+    "react-dom": "19.2.1",
     "react-loader-spinner": "^8.0.0",
     "react-toastify": "^11.0.5",
     "satcomma": "^1.1.3",
