@@ -1,7 +1,13 @@
 "server only";
 import { Agent } from "node:https";
 import fetch from "node-fetch";
-import { LNBITS_API_KEY, LNBITS_URL, LND_HOST, MACAROON } from "./serverEnvs";
+import {
+  LNBITS_API_KEY,
+  LNBITS_URL,
+  LND_HOST,
+  LOCAL_LN,
+  MACAROON,
+} from "./serverEnvs";
 
 type Invoice = { payment_request: string; r_hash: string };
 // export type CreateInvoice = (
@@ -16,6 +22,9 @@ export const createLnbitsInvoice = async (
   memo: string,
   expiry: number,
 ) => {
+  if (LOCAL_LN) {
+    return { payment_request: "lnbcFAKE_INVOICE", r_hash: "fakeHash" };
+  }
   const url = `${LNBITS_URL}/api/v1/payments`;
   const body = {
     out: false,
@@ -38,6 +47,9 @@ export const createLnbitsInvoice = async (
 
 // export const checkLnbitsInvoice: CheckInvoice = async (paymentHash) => {
 export const checkLnbitsInvoice = async (paymentHash) => {
+  if (LOCAL_LN) {
+    return { settled: false };
+  }
   const url = `${LNBITS_URL}/api/v1/payments/${paymentHash}`;
   const rawData = await fetch(url, {
     method: "GET",

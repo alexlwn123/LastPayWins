@@ -15,7 +15,7 @@
     "@vercel/kv": "^3.0.0",
     "inngest": "^3.46.0",
     "lightning": "^9.14.0",
-    "next": "16.0.7",
+    "next": "16.0.10",
     "next-qrcode": "^2.5.1",
     "node-fetch": "^3.3.2",
     "pusher": "^5.2.0",

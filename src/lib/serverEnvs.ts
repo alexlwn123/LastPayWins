@@ -27,3 +27,8 @@ export const PUSHER_APP_SECRET = verifyEnv(
   process.env.PUSHER_APP_SECRET,
   "PUSHER_APP_SECRET",
 );
+
+export const LOCAL_LN = verifyEnv(
+  process.env.LOCAL_EN,
+  "LOCAL_LN"
+)
