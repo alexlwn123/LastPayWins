@@ -1,14 +1,15 @@
 "use node";
 
 import type { Id } from "./_generated/dataModel";
+import type { ActionCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { action, internalAction } from "./_generated/server";
+import { internalAction } from "./_generated/server";
 
 const LNBITS_URL = process.env.LNBITS_URL!;
 const LNBITS_API_KEY = process.env.LNBITS_API_KEY_ADMIN!;
 const INVOICE_AMOUNT = parseInt(process.env.INVOICE_AMOUNT ?? "100") || 100;
-const INVOICE_EXPIRY = 3600; // 1 hour
+const INVOICE_EXPIRY = 300; // 5 minutes
 
 // Check interval for pending invoices (5 seconds)
 const CHECK_INTERVAL_MS = 5000;
@@ -24,58 +25,78 @@ type CreateInvoiceResult = {
   invoiceId: Id<"invoices">;
 };
 
-// Create a new invoice via LNBits and store in database
-export const create = action({
-  args: { lnAddress: v.string() },
-  handler: async (ctx, args): Promise<CreateInvoiceResult> => {
-    // Create invoice via LNBits
-    const url = `${LNBITS_URL}/api/v1/payments`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": LNBITS_API_KEY,
-      },
-      body: JSON.stringify({
-        out: false,
-        amount: INVOICE_AMOUNT,
-        memo: "Bid - Last Pay Wins",
-        expiry: INVOICE_EXPIRY,
-        unit: "sat",
-      }),
+// Internal action to create invoice (scheduled by mutation)
+export const createInvoice = internalAction({
+  args: {
+    uuid: v.string(),
+    lnAddress: v.string(),
+  },
+  handler: async (ctx, args): Promise<void> => {
+    // Double-check no pending invoice exists (in case of race)
+    const existing = await ctx.runQuery(internal.invoices.getPendingByOduc, {
+      uuid: args.uuid,
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to create invoice: ${response.statusText}`);
+    if (existing) {
+      return;
     }
 
-    const invoice = (await response.json()) as LnbitsInvoice;
-
-    // Store in database
-    const invoiceId: Id<"invoices"> = await ctx.runMutation(
-      internal.invoices.store,
-      {
-        paymentHash: invoice.payment_hash,
-        paymentRequest: invoice.payment_request,
-        lnAddress: args.lnAddress,
-        amount: INVOICE_AMOUNT,
-      }
-    );
-
-    // Schedule periodic status checks
-    await ctx.scheduler.runAfter(
-      CHECK_INTERVAL_MS,
-      internal.invoiceActions.checkStatus,
-      { invoiceId }
-    );
-
-    return {
-      paymentHash: invoice.payment_hash,
-      paymentRequest: invoice.payment_request,
-      invoiceId,
-    };
+    await createInvoiceFromLnbits(ctx, args.uuid, args.lnAddress);
   },
 });
+
+const createInvoiceFromLnbits = async (
+  ctx: ActionCtx,
+  uuid: string,
+  lnAddress: string
+): Promise<CreateInvoiceResult> => {
+  const url = `${LNBITS_URL}/api/v1/payments`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": LNBITS_API_KEY,
+    },
+    body: JSON.stringify({
+      out: false,
+      amount: INVOICE_AMOUNT,
+      memo: "Bid - Last Pay Wins",
+      expiry: INVOICE_EXPIRY,
+      unit: "sat",
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create invoice: ${response.statusText}`);
+  }
+
+  const invoice = (await response.json()) as LnbitsInvoice;
+
+  // Store in database
+  const invoiceId: Id<"invoices"> = await ctx.runMutation(
+    internal.invoices.store,
+    {
+      paymentHash: invoice.payment_hash,
+      paymentRequest: invoice.payment_request,
+      uuid,
+      lnAddress,
+      amount: INVOICE_AMOUNT,
+    }
+  );
+
+  // Schedule periodic status checks
+  await ctx.scheduler.runAfter(
+    CHECK_INTERVAL_MS,
+    internal.invoiceActions.checkStatus,
+    { invoiceId }
+  );
+
+  return {
+    paymentHash: invoice.payment_hash,
+    paymentRequest: invoice.payment_request,
+    invoiceId,
+  };
+};
 
 // Check invoice status from LNBits
 export const checkStatus = internalAction({
@@ -95,7 +116,6 @@ export const checkStatus = internalAction({
       await ctx.runMutation(internal.invoices.markExpired, {
         invoiceId: args.invoiceId,
       });
-      return;
     }
 
     // Check status via LNBits

@@ -34,12 +34,13 @@ export default function Home() {
 
   const { lnAddress, timestamp, jackpot, status, memberCount } =
     useConvexGame();
-  useConvexPresence();
 
-  const { invoice } = useConvexInvoice({
-    userAddress,
-    isValidAddress,
+  // Pass lnAddress to presence - this triggers invoice creation on heartbeat
+  useConvexPresence({
+    lnAddress: isValidAddress ? userAddress : null,
   });
+
+  const { invoice } = useConvexInvoice({ isValidAddress });
 
   const isWinner = Boolean(userAddress && lnAddress === userAddress);
 

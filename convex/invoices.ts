@@ -2,16 +2,41 @@ import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-// ============ Queries ============
+// Get invoice state with pending invoice and last settlement time (by uuid)
+export const getInvoiceState = query({
+  args: { uuid: v.string() },
+  handler: async (ctx, args) => {
+    const pending = await ctx.db
+      .query("invoices")
+      .withIndex("by_uuid_status", (q) =>
+        q.eq("uuid", args.uuid).eq("status", "pending")
+      )
+      .first();
 
-// Get pending invoice for a user
-export const getPending = query({
-  args: { lnAddress: v.string() },
+    // Get most recent settled invoice for this session
+    const lastSettled = await ctx.db
+      .query("invoices")
+      .withIndex("by_uuid_status", (q) =>
+        q.eq("uuid", args.uuid).eq("status", "settled")
+      )
+      .order("desc")
+      .first();
+
+    return {
+      paymentRequest: pending?.paymentRequest ?? null,
+      lastSettledAt: lastSettled?.settledAt ?? null,
+    };
+  },
+});
+
+// Get pending invoice by uuid (internal)
+export const getPendingByOduc = internalQuery({
+  args: { uuid: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("invoices")
-      .withIndex("by_address_status", (q) =>
-        q.eq("lnAddress", args.lnAddress).eq("status", "pending")
+      .withIndex("by_uuid_status", (q) =>
+        q.eq("uuid", args.uuid).eq("status", "pending")
       )
       .first();
   },
@@ -28,8 +53,6 @@ export const getByHash = query({
   },
 });
 
-// ============ Internal Queries ============
-
 // Get invoice by ID (internal)
 export const getById = internalQuery({
   args: { invoiceId: v.id("invoices") },
@@ -38,22 +61,21 @@ export const getById = internalQuery({
   },
 });
 
-// ============ Internal Mutations ============
-
 // Store a new invoice
 export const store = internalMutation({
   args: {
     paymentHash: v.string(),
     paymentRequest: v.string(),
+    uuid: v.string(),
     lnAddress: v.string(),
     amount: v.number(),
   },
   handler: async (ctx, args) => {
-    // Mark any existing pending invoices as expired
+    // Mark any existing pending invoices for this session as expired
     const existingPending = await ctx.db
       .query("invoices")
-      .withIndex("by_address_status", (q) =>
-        q.eq("lnAddress", args.lnAddress).eq("status", "pending")
+      .withIndex("by_uuid_status", (q) =>
+        q.eq("uuid", args.uuid).eq("status", "pending")
       )
       .collect();
 
@@ -65,6 +87,7 @@ export const store = internalMutation({
     return await ctx.db.insert("invoices", {
       paymentHash: args.paymentHash,
       paymentRequest: args.paymentRequest,
+      uuid: args.uuid,
       lnAddress: args.lnAddress,
       amount: args.amount,
       status: "pending",
@@ -83,10 +106,19 @@ export const settle = internalMutation({
     }
 
     // Mark invoice as settled
-    await ctx.db.patch(args.invoiceId, { status: "settled" });
+    await ctx.db.patch(args.invoiceId, {
+      status: "settled",
+      settledAt: Date.now(),
+    });
 
     // Record the bid via internal mutation
     await ctx.scheduler.runAfter(0, internal.games.recordBid, {
+      lnAddress: invoice.lnAddress,
+    });
+
+    // Auto-create next invoice for same session
+    await ctx.scheduler.runAfter(0, internal.invoiceActions.createInvoice, {
+      uuid: invoice.uuid,
       lnAddress: invoice.lnAddress,
     });
   },

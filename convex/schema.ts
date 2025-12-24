@@ -26,14 +26,15 @@ export default defineSchema({
 
   // Presence tracking - heartbeat-based
   presence: defineTable({
-    oduc: v.string(), // unique device/user identifier
+    uuid: v.string(),
     lastSeen: v.number(),
-  }).index("by_uuid", ["oduc"]),
+  }).index("by_uuid", ["uuid"]),
 
   // Lightning invoices
   invoices: defineTable({
     paymentHash: v.string(),
     paymentRequest: v.string(),
+    uuid: v.string(), 
     lnAddress: v.string(),
     amount: v.number(),
     status: v.union(
@@ -42,9 +43,11 @@ export default defineSchema({
       v.literal("expired")
     ),
     createdAt: v.number(),
+    settledAt: v.optional(v.number()),
     // ID for scheduled status check
     scheduledCheckId: v.optional(v.id("_scheduled_functions")),
   })
     .index("by_hash", ["paymentHash"])
-    .index("by_address_status", ["lnAddress", "status"]),
+    .index("by_address_status", ["lnAddress", "status"])
+    .index("by_uuid_status", ["uuid", "status"]),
 });
