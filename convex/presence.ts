@@ -37,11 +37,17 @@ export const heartbeat = mutation({
           q.eq("uuid", args.uuid).eq("status", "pending")
         )
         .first();
+        
+      
 
       if (!pendingInvoice) {
         await ctx.scheduler.runAfter(0, internal.invoiceActions.createInvoice, {
           uuid: args.uuid,
           lnAddress: args.lnAddress,
+        });
+      } else {
+        await ctx.scheduler.runAfter(0, internal.invoiceActions.checkStatus, {
+          invoiceId: pendingInvoice._id,
         });
       }
     }

@@ -1,14 +1,14 @@
 import { useQRCode } from "next-qrcode";
 
 type QrProps = {
-  invoice: string | null;
+  invoice: string;
 };
 
 const Qr = ({ invoice }: QrProps) => {
   const text = `lightning:${invoice}`;
   const { Canvas } = useQRCode();
 
-  return invoice ? (
+  return (
     <a href={text}>
       <Canvas
         text={text}
@@ -19,13 +19,11 @@ const Qr = ({ invoice }: QrProps) => {
           width: 300,
           color: {
             dark: "#010599FF",
-            light: "#FFBF60FF",
+            light: "#ffa500",
           },
         }}
       />
     </a>
-  ) : (
-    <h1>LOADING</h1>
   );
 };
 

@@ -53,6 +53,17 @@ export const getByHash = query({
   },
 });
 
+// Get invoice by SatsPay charge ID (internal, for webhook)
+export const getByChargeId = internalQuery({
+  args: { chargeId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("invoices")
+      .withIndex("by_charge", (q) => q.eq("chargeId", args.chargeId))
+      .first();
+  },
+});
+
 // Get invoice by ID (internal)
 export const getById = internalQuery({
   args: { invoiceId: v.id("invoices") },
@@ -61,11 +72,12 @@ export const getById = internalQuery({
   },
 });
 
-// Store a new invoice
+// Store a new invoice (SatsPay charge)
 export const store = internalMutation({
   args: {
     paymentHash: v.string(),
     paymentRequest: v.string(),
+    chargeId: v.string(),
     uuid: v.string(),
     lnAddress: v.string(),
     amount: v.number(),
@@ -87,6 +99,7 @@ export const store = internalMutation({
     return await ctx.db.insert("invoices", {
       paymentHash: args.paymentHash,
       paymentRequest: args.paymentRequest,
+      chargeId: args.chargeId,
       uuid: args.uuid,
       lnAddress: args.lnAddress,
       amount: args.amount,

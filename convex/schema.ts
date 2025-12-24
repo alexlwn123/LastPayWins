@@ -30,11 +30,12 @@ export default defineSchema({
     lastSeen: v.number(),
   }).index("by_uuid", ["uuid"]),
 
-  // Lightning invoices
+  // Lightning invoices (SatsPay charges)
   invoices: defineTable({
     paymentHash: v.string(),
     paymentRequest: v.string(),
-    uuid: v.string(), 
+    chargeId: v.string(), // SatsPay charge ID for webhook lookups
+    uuid: v.string(),
     lnAddress: v.string(),
     amount: v.number(),
     status: v.union(
@@ -44,10 +45,9 @@ export default defineSchema({
     ),
     createdAt: v.number(),
     settledAt: v.optional(v.number()),
-    // ID for scheduled status check
-    scheduledCheckId: v.optional(v.id("_scheduled_functions")),
   })
     .index("by_hash", ["paymentHash"])
+    .index("by_charge", ["chargeId"])
     .index("by_address_status", ["lnAddress", "status"])
     .index("by_uuid_status", ["uuid", "status"]),
 });
