@@ -38,72 +38,87 @@ export const getCurrent = query({
   },
 });
 
+// Core bid recording logic (shared between public and internal mutations)
+const recordBidHandler = async (
+  ctx: { db: any; scheduler: any },
+  args: { lnAddress: string }
+) => {
+  const existingGame = await ctx.db.query("game").first();
+  const now = Date.now();
+
+  // Calculate if previous jackpot is still active
+  let previousJackpot = 0;
+  if (existingGame) {
+    const timeLeft = existingGame.timestamp + CLOCK_DURATION_MS - now;
+    if (timeLeft > 0) {
+      previousJackpot = existingGame.jackpot;
+    }
+
+    // Cancel the previous scheduled payout if exists
+    if (existingGame.scheduledPayoutId) {
+      await ctx.scheduler.cancel(existingGame.scheduledPayoutId);
+    }
+  }
+
+  const newJackpot = previousJackpot + INVOICE_AMOUNT;
+
+  // Schedule the payout for when timer expires
+  const scheduledPayoutId = await ctx.scheduler.runAfter(
+    CLOCK_DURATION_MS,
+    internal.games.triggerPayout,
+    {
+      lnAddress: args.lnAddress,
+      jackpot: newJackpot,
+      timestamp: now,
+    }
+  );
+
+  // Record the bid in history
+  await ctx.db.insert("bids", {
+    lnAddress: args.lnAddress,
+    amount: INVOICE_AMOUNT,
+    timestamp: now,
+    isWinner: false,
+  });
+
+  // Update or create game state
+  if (existingGame) {
+    await ctx.db.patch(existingGame._id, {
+      lnAddress: args.lnAddress,
+      jackpot: newJackpot,
+      timestamp: now,
+      scheduledPayoutId,
+    });
+  } else {
+    await ctx.db.insert("game", {
+      lnAddress: args.lnAddress,
+      jackpot: newJackpot,
+      timestamp: now,
+      scheduledPayoutId,
+    });
+  }
+
+  return {
+    lnAddress: args.lnAddress,
+    jackpot: newJackpot,
+    timestamp: now,
+  };
+};
+
+// Public mutation for direct bid recording
 export const recordBid = mutation({
   args: {
     lnAddress: v.string(),
   },
-  handler: async (ctx, args) => {
-    const existingGame = await ctx.db.query("game").first();
-    const now = Date.now();
+  handler: async (ctx, args) => recordBidHandler(ctx, args),
+});
 
-    // Calculate if previous jackpot is still active
-    let previousJackpot = 0;
-    if (existingGame) {
-      const timeLeft = existingGame.timestamp + CLOCK_DURATION_MS - now;
-      if (timeLeft > 0) {
-        previousJackpot = existingGame.jackpot;
-      }
-
-      // Cancel the previous scheduled payout if exists
-      if (existingGame.scheduledPayoutId) {
-        await ctx.scheduler.cancel(existingGame.scheduledPayoutId);
-      }
-    }
-
-    const newJackpot = previousJackpot + INVOICE_AMOUNT;
-
-    // Schedule the payout for when timer expires
-    const scheduledPayoutId = await ctx.scheduler.runAfter(
-      CLOCK_DURATION_MS,
-      internal.games.triggerPayout,
-      {
-        lnAddress: args.lnAddress,
-        jackpot: newJackpot,
-        timestamp: now,
-      }
-    );
-
-    // Record the bid in history
-    await ctx.db.insert("bids", {
-      lnAddress: args.lnAddress,
-      amount: INVOICE_AMOUNT,
-      timestamp: now,
-      isWinner: false,
-    });
-
-    // Update or create game state
-    if (existingGame) {
-      await ctx.db.patch(existingGame._id, {
-        lnAddress: args.lnAddress,
-        jackpot: newJackpot,
-        timestamp: now,
-        scheduledPayoutId,
-      });
-    } else {
-      await ctx.db.insert("game", {
-        lnAddress: args.lnAddress,
-        jackpot: newJackpot,
-        timestamp: now,
-        scheduledPayoutId,
-      });
-    }
-
-    return {
-      lnAddress: args.lnAddress,
-      jackpot: newJackpot,
-      timestamp: now,
-    };
+// Internal mutation for recording bids from invoice settlement
+export const recordBidInternal = internalMutation({
+  args: {
+    lnAddress: v.string(),
   },
+  handler: async (ctx, args) => recordBidHandler(ctx, args),
 });
 
 // Internal mutation called by scheduled function

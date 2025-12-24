@@ -14,3 +14,8 @@ export const NEXT_PUBLIC_CLOCK_DURATION = verifyEnv(
   process.env.NEXT_PUBLIC_CLOCK_DURATION,
   "NEXT_PUBLIC_CLOCK_DURATION",
 );
+
+export const NEXT_PUBLIC_CONVEX_URL = verifyEnv(
+  process.env.NEXT_PUBLIC_CONVEX_URL,
+  "NEXT_PUBLIC_CONVEX_URL",
+);

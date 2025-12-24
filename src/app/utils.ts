@@ -49,29 +49,3 @@ export const handleStatusUpdate = (
     });
   }
 };
-
-export const checkInvoiceStatus = (
-  setChecking,
-  hash,
-  setHash,
-  setSettled,
-  userAddress,
-  setCountdownKey,
-) => {
-  setChecking(true);
-  console.log("checking invoice");
-  const url = `/api/invoice?hash=${encodeURIComponent(hash)}&lnaddr=${userAddress}`;
-  fetch(url, { method: "GET" })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("data", data);
-      if (data.settled) {
-        setSettled(data.settled && true);
-        setCountdownKey((prevKey) => prevKey + 1);
-        setHash(null);
-        toast("Bid Received! You're in the lead!", { type: "success" });
-      }
-      setChecking(false);
-    })
-    .catch((_) => setChecking(false));
-};

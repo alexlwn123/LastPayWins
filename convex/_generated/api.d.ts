@@ -11,6 +11,8 @@
 import type * as actions from "../actions.js";
 import type * as crons from "../crons.js";
 import type * as games from "../games.js";
+import type * as invoiceActions from "../invoiceActions.js";
+import type * as invoices from "../invoices.js";
 import type * as presence from "../presence.js";
 
 import type {
@@ -23,6 +25,8 @@ declare const fullApi: ApiFromModules<{
   actions: typeof actions;
   crons: typeof crons;
   games: typeof games;
+  invoiceActions: typeof invoiceActions;
+  invoices: typeof invoices;
   presence: typeof presence;
 }>;
 

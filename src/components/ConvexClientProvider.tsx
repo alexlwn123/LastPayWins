@@ -2,9 +2,9 @@
 
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import type { ReactNode } from "react";
+import { NEXT_PUBLIC_CONVEX_URL } from "@/lib/publicEnvs";
 
-const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL!;
-const convex = new ConvexReactClient(convexUrl);
+const convex = new ConvexReactClient(NEXT_PUBLIC_CONVEX_URL);
 
 type Props = {
   children: ReactNode;

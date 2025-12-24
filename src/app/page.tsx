@@ -14,15 +14,14 @@ import {
   Loading,
 } from "@/components";
 import useConvexGame from "@/hooks/useConvexGame";
+import { useConvexInvoice } from "@/hooks/useConvexInvoice";
 import useConvexPresence from "@/hooks/useConvexPresence";
-import { useInvoice } from "@/hooks/useInvoice";
 import { useLnurl } from "@/hooks/useLnurl";
 import type { Status } from "@/types/payer";
 import styles from "./page.module.css";
 import { handleStatusUpdate } from "./utils";
 
 export default function Home() {
-  const [refetch, setRefetch] = useState(false);
   const [countdownKey, setCountdownKey] = useState<number>(0);
   const [existingStatus, setExistingStatus] = useState<Status>("LOADING");
   // Track local status with the timestamp it was set for
@@ -45,6 +44,12 @@ export default function Home() {
   } = useConvexGame();
   useConvexPresence();
 
+  // Use Convex for invoices (no more polling!)
+  const { invoice } = useConvexInvoice({
+    userAddress,
+    isValidAddress,
+  });
+
   // Local status only applies if it was set for the current game (same timestamp)
   const localStatus =
     localStatusState?.forTimestamp === timestamp
@@ -59,14 +64,6 @@ export default function Home() {
     setLocalStatusState({ status: newStatus, forTimestamp: timestamp });
   };
 
-  const { invoice } = useInvoice({
-    userAddress: isValidAddress ? userAddress : null,
-    status,
-    setCountdownKey,
-    refetch,
-    setRefetch,
-  });
-
   // handle status update
   useEffect(() => {
     if (initialRender.current) {
@@ -78,9 +75,6 @@ export default function Home() {
     setTimeout(() => setExistingStatus(status), 0);
     handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp);
     setTimeout(() => setCountdownKey((prevKey) => prevKey + 1), 0);
-    if (status === "LOADING") {
-      setTimeout(() => setRefetch(true), 0);
-    }
   }, [status, jackpot, lnAddress, timestamp, userAddress, existingStatus]);
 
   return (
@@ -94,7 +88,7 @@ export default function Home() {
       />
 
       <Header status={status} />
-      <Loading isLoading={status === "LOADING" || !invoice}>
+      <Loading isLoading={status === "LOADING"}>
         <Jackpot jackpotSats={status === "LIVE" ? jackpot : 0} />
         <div className={styles.center}>
           <div className={styles.stack}>

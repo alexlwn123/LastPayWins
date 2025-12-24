@@ -25,4 +25,22 @@ export default defineSchema({
     oduc: v.string(), // unique device/user identifier
     lastSeen: v.number(),
   }).index("by_uuid", ["oduc"]),
+
+  // Lightning invoices
+  invoices: defineTable({
+    paymentHash: v.string(),
+    paymentRequest: v.string(),
+    lnAddress: v.string(),
+    amount: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("settled"),
+      v.literal("expired")
+    ),
+    createdAt: v.number(),
+    // ID for scheduled status check
+    scheduledCheckId: v.optional(v.id("_scheduled_functions")),
+  })
+    .index("by_hash", ["paymentHash"])
+    .index("by_address_status", ["lnAddress", "status"]),
 });
