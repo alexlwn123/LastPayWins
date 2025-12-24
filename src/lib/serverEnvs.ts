@@ -13,5 +13,3 @@ export const INVOICE_AMOUNT = verifyEnv(
   process.env.INVOICE_AMOUNT,
   "INVOICE_AMOUNT",
 );
-
-export const CONVEX_URL = verifyEnv(process.env.CONVEX_URL, "CONVEX_URL");

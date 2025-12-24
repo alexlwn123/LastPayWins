@@ -1,5 +1,5 @@
 "use client";
-// import "react-toastify/dist/ReactToastify.css";
+
 import { Analytics } from "@vercel/analytics/react";
 import { useEffect, useRef, useState } from "react";
 import { ToastContainer } from "react-toastify";
@@ -17,65 +17,70 @@ import useConvexGame from "@/hooks/useConvexGame";
 import { useConvexInvoice } from "@/hooks/useConvexInvoice";
 import useConvexPresence from "@/hooks/useConvexPresence";
 import { useLnurl } from "@/hooks/useLnurl";
-import type { Status } from "@/types/payer";
+import type { GameStatus } from "@/types/payer";
 import styles from "./page.module.css";
 import { handleStatusUpdate } from "./utils";
 
 export default function Home() {
   const [countdownKey, setCountdownKey] = useState<number>(0);
-  const [existingStatus, setExistingStatus] = useState<Status>("LOADING");
-  // Track local status with the timestamp it was set for
-  const [localStatusState, setLocalStatusState] = useState<{
-    status: Status;
-    forTimestamp: number;
-  } | null>(null);
+  const [existingStatus, setExistingStatus] = useState<GameStatus>("LOADING");
   const initialRender = useRef(true);
+  const prevGameRef = useRef<{ jackpot: number; lnAddress: string } | null>(
+    null,
+  );
 
   const { userAddress, setUserAddress, isValidatingAddress, isValidAddress } =
     useLnurl();
 
-  // Use Convex for game state and presence
-  const {
-    lnAddress,
-    timestamp,
-    jackpot,
-    status: convexStatus,
-    memberCount,
-  } = useConvexGame();
+  const { lnAddress, timestamp, jackpot, status, memberCount } =
+    useConvexGame();
   useConvexPresence();
 
-  // Use Convex for invoices (no more polling!)
   const { invoice } = useConvexInvoice({
     userAddress,
     isValidAddress,
   });
 
-  // Local status only applies if it was set for the current game (same timestamp)
-  const localStatus =
-    localStatusState?.forTimestamp === timestamp
-      ? localStatusState.status
-      : null;
+  const isWinner = Boolean(userAddress && lnAddress === userAddress);
 
-  // Local status overrides Convex status for UI-specific states (WINNER, etc.)
-  const status: Status = localStatus ?? convexStatus;
-
-  // Allow setting local status (for WINNER detection in Countdown)
-  const setStatus = (newStatus: Status) => {
-    setLocalStatusState({ status: newStatus, forTimestamp: timestamp });
-  };
-
-  // handle status update
   useEffect(() => {
     if (initialRender.current) {
       initialRender.current = false;
-      return;
-    } else if (existingStatus === status) {
+      prevGameRef.current = { jackpot, lnAddress };
       return;
     }
+    if (existingStatus === status) {
+      prevGameRef.current = { jackpot, lnAddress };
+      return;
+    }
+
+    const gameEnded = existingStatus === "LIVE" && status === "WAITING";
+    const prevGame = prevGameRef.current;
+
     setTimeout(() => setExistingStatus(status), 0);
-    handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp);
+    handleStatusUpdate(
+      status,
+      lnAddress,
+      userAddress,
+      gameEnded && prevGame ? prevGame.jackpot : jackpot,
+      timestamp,
+      gameEnded && prevGame
+        ? Boolean(userAddress && prevGame.lnAddress === userAddress)
+        : isWinner,
+      gameEnded,
+    );
     setTimeout(() => setCountdownKey((prevKey) => prevKey + 1), 0);
-  }, [status, jackpot, lnAddress, timestamp, userAddress, existingStatus]);
+
+    prevGameRef.current = { jackpot, lnAddress };
+  }, [
+    status,
+    jackpot,
+    lnAddress,
+    timestamp,
+    userAddress,
+    existingStatus,
+    isWinner,
+  ]);
 
   return (
     <main className={styles.main}>
@@ -97,8 +102,6 @@ export default function Home() {
               countdownKey={countdownKey}
               setCountdownKey={setCountdownKey}
               status={status}
-              setStatus={setStatus}
-              isWinning={lnAddress === userAddress}
               displayingInvoice={isValidAddress}
             />
             <CurrentWinner

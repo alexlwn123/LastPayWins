@@ -86,7 +86,7 @@ export const settle = internalMutation({
     await ctx.db.patch(args.invoiceId, { status: "settled" });
 
     // Record the bid via internal mutation
-    await ctx.scheduler.runAfter(0, internal.games.recordBidInternal, {
+    await ctx.scheduler.runAfter(0, internal.games.recordBid, {
       lnAddress: invoice.lnAddress,
     });
   },
