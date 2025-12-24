@@ -27,3 +27,5 @@ export const PUSHER_APP_SECRET = verifyEnv(
   process.env.PUSHER_APP_SECRET,
   "PUSHER_APP_SECRET",
 );
+
+export const CONVEX_URL = verifyEnv(process.env.CONVEX_URL, "CONVEX_URL");

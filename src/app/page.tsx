@@ -13,9 +13,10 @@ import {
   Jackpot,
   Loading,
 } from "@/components";
+import useConvexGame from "@/hooks/useConvexGame";
+import useConvexPresence from "@/hooks/useConvexPresence";
 import { useInvoice } from "@/hooks/useInvoice";
 import { useLnurl } from "@/hooks/useLnurl";
-import usePusher from "@/hooks/usePusher";
 import type { Status } from "@/types/payer";
 import styles from "./page.module.css";
 import { handleStatusUpdate } from "./utils";
@@ -24,13 +25,39 @@ export default function Home() {
   const [refetch, setRefetch] = useState(false);
   const [countdownKey, setCountdownKey] = useState<number>(0);
   const [existingStatus, setExistingStatus] = useState<Status>("LOADING");
+  // Track local status with the timestamp it was set for
+  const [localStatusState, setLocalStatusState] = useState<{
+    status: Status;
+    forTimestamp: number;
+  } | null>(null);
   const initialRender = useRef(true);
 
   const { userAddress, setUserAddress, isValidatingAddress, isValidAddress } =
     useLnurl();
 
-  const { lnAddress, timestamp, jackpot, status, setStatus, memberCount } =
-    usePusher();
+  // Use Convex for game state and presence
+  const {
+    lnAddress,
+    timestamp,
+    jackpot,
+    status: convexStatus,
+    memberCount,
+  } = useConvexGame();
+  useConvexPresence();
+
+  // Local status only applies if it was set for the current game (same timestamp)
+  const localStatus =
+    localStatusState?.forTimestamp === timestamp
+      ? localStatusState.status
+      : null;
+
+  // Local status overrides Convex status for UI-specific states (WINNER, etc.)
+  const status: Status = localStatus ?? convexStatus;
+
+  // Allow setting local status (for WINNER detection in Countdown)
+  const setStatus = (newStatus: Status) => {
+    setLocalStatusState({ status: newStatus, forTimestamp: timestamp });
+  };
 
   const { invoice } = useInvoice({
     userAddress: isValidAddress ? userAddress : null,

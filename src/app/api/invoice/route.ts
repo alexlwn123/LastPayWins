@@ -1,8 +1,8 @@
 import { kv } from "@vercel/kv";
 import type { NextRequest } from "next/server";
+import { recordBid } from "@/lib/convex";
 import { checkLnbitsInvoice, createLnbitsInvoice } from "@/lib/lightning";
 import { INVOICE_AMOUNT } from "@/lib/serverEnvs";
-import { updateLastPayer } from "../../../lib/pusher";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +18,10 @@ const getInvoice = async () => {
   }
 };
 
-const checkInvoice = async (hash, lnAddress) => {
+const checkInvoice = async (hash: string, lnAddress: string) => {
   const data = await checkLnbitsInvoice(hash);
   if (data.settled) {
-    await updateLastPayer(lnAddress);
+    await recordBid(lnAddress);
   }
   return data;
 };
