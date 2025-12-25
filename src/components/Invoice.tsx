@@ -1,4 +1,4 @@
-import { Audio } from "react-loader-spinner";
+import { Audio, Grid } from "react-loader-spinner";
 import { handleWeblnPay, useWeblnAvailable } from "@/hooks/useWeblnAvailable";
 import styles from "./Invoice.module.css";
 import Qr from "./Qr";
@@ -18,32 +18,47 @@ const Invoice = ({ invoice }: InvoiceProps) => {
   };
   return (
     <div className={styles.payment}>
-      <Qr invoice={invoice} />
-      <button
-        type="button"
-        className={styles.copy}
-        onClick={() => handleCopy()}
-      >
-        Copy Invoice
-      </button>
-      {weblnAvailable && (
-        <div className={styles.buttonRow}>
+      {invoice ? (
+        <>
+          <Qr invoice={invoice} />
           <button
             type="button"
             className={styles.copy}
-            onClick={() => handleWeblnPay(setWebln, invoice)}
+            onClick={() => handleCopy()}
           >
-            Pay with WebLN
+            Copy Invoice
           </button>
-          <Audio
-            height="20"
-            width="20"
-            color="orange"
-            ariaLabel="loading-webln"
-            visible={webLn}
-            wrapperClass={"audio"}
-          />
-        </div>
+          {weblnAvailable && (
+            <div className={styles.buttonRow}>
+              <button
+                type="button"
+                className={styles.copy}
+                onClick={() => handleWeblnPay(setWebln, invoice)}
+              >
+                Pay with WebLN
+              </button>
+              <Audio
+                height="20"
+                width="20"
+                color="orange"
+                ariaLabel="loading-webln"
+                visible={webLn}
+                wrapperClass={"audio"}
+              />
+            </div>
+          )}
+        </>
+      ) : (
+        <Grid
+          visible={true}
+          height="80"
+          width="80"
+          color={"orange"}
+          ariaLabel="qr-loading"
+          radius="12.5"
+          wrapperStyle={{}}
+          wrapperClass="grid-wrapper"
+        />
       )}
     </div>
   );
