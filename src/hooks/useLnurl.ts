@@ -5,7 +5,7 @@ import { validateLnurl } from "@/app/utils";
 export const useLnurl = () => {
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const [isValidAddress, setIsValidAddress] = useState(false);
-  const [userAddress, setUserAddress] = useState<string>("");
+  const [userAddress, setUserAddress] = useState<string>('');
 
   // get lnaddr from local storage
   useEffect(() => {

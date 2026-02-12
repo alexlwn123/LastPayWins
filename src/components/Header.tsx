@@ -1,8 +1,8 @@
-import type { GameStatus } from "@/types/payer";
+import type { Status } from "@/types/payer";
 import styles from "./Header.module.css";
 
 type HeaderProps = {
-  status: GameStatus;
+  status: Status;
 };
 
 const Header = ({ status }: HeaderProps) => (

@@ -1,5 +1,5 @@
 "use client";
-
+// import "react-toastify/dist/ReactToastify.css";
 import { Analytics } from "@vercel/analytics/react";
 import { useEffect, useRef, useState } from "react";
 import { ToastContainer } from "react-toastify";
@@ -13,75 +13,48 @@ import {
   Jackpot,
   Loading,
 } from "@/components";
-import useConvexGame from "@/hooks/useConvexGame";
-import { useConvexInvoice } from "@/hooks/useConvexInvoice";
-import useConvexPresence from "@/hooks/useConvexPresence";
+import { useInvoice } from "@/hooks/useInvoice";
 import { useLnurl } from "@/hooks/useLnurl";
-import type { GameStatus } from "@/types/payer";
+import usePusher from "@/hooks/usePusher";
+import type { Status } from "@/types/payer";
 import styles from "./page.module.css";
 import { handleStatusUpdate } from "./utils";
 
 export default function Home() {
+  const [refetch, setRefetch] = useState(false);
   const [countdownKey, setCountdownKey] = useState<number>(0);
-  const [existingStatus, setExistingStatus] = useState<GameStatus>("LOADING");
+  const [existingStatus, setExistingStatus] = useState<Status>("LOADING");
   const initialRender = useRef(true);
-  const prevGameRef = useRef<{ jackpot: number; lnAddress: string } | null>(
-    null,
-  );
 
   const { userAddress, setUserAddress, isValidatingAddress, isValidAddress } =
     useLnurl();
 
-  const { lnAddress, timestamp, jackpot, status, memberCount } =
-    useConvexGame();
+  const { lnAddress, timestamp, jackpot, status, setStatus, memberCount } =
+    usePusher();
 
-  // Pass lnAddress to presence - this triggers invoice creation on heartbeat
-  useConvexPresence({
-    lnAddress: isValidAddress ? userAddress : null,
+  const { invoice } = useInvoice({
+    userAddress: isValidAddress ? userAddress : null,
+    status,
+    setCountdownKey,
+    refetch,
+    setRefetch,
   });
 
-  const { invoice } = useConvexInvoice({ isValidAddress });
-
-  const isWinner = Boolean(userAddress && lnAddress === userAddress);
-
+  // handle status update
   useEffect(() => {
     if (initialRender.current) {
       initialRender.current = false;
-      prevGameRef.current = { jackpot, lnAddress };
+      return;
+    } else if (existingStatus === status) {
       return;
     }
-    if (existingStatus === status) {
-      prevGameRef.current = { jackpot, lnAddress };
-      return;
-    }
-
-    const gameEnded = existingStatus === "LIVE" && status === "WAITING";
-    const prevGame = prevGameRef.current;
-
     setTimeout(() => setExistingStatus(status), 0);
-    handleStatusUpdate(
-      status,
-      lnAddress,
-      userAddress,
-      gameEnded && prevGame ? prevGame.jackpot : jackpot,
-      timestamp,
-      gameEnded && prevGame
-        ? Boolean(userAddress && prevGame.lnAddress === userAddress)
-        : isWinner,
-      gameEnded,
-    );
+    handleStatusUpdate(status, lnAddress, userAddress, jackpot, timestamp);
     setTimeout(() => setCountdownKey((prevKey) => prevKey + 1), 0);
-
-    prevGameRef.current = { jackpot, lnAddress };
-  }, [
-    status,
-    jackpot,
-    lnAddress,
-    timestamp,
-    userAddress,
-    existingStatus,
-    isWinner,
-  ]);
+    if (status === "LOADING") {
+      setTimeout(() => setRefetch(true), 0);
+    }
+  }, [status, jackpot, lnAddress, timestamp, userAddress, existingStatus]);
 
   return (
     <main className={styles.main}>
@@ -94,7 +67,7 @@ export default function Home() {
       />
 
       <Header status={status} />
-      <Loading isLoading={status === "LOADING"}>
+      <Loading isLoading={status === "LOADING" || !invoice}>
         <Jackpot jackpotSats={status === "LIVE" ? jackpot : 0} />
         <div className={styles.center}>
           <div className={styles.stack}>
@@ -103,6 +76,8 @@ export default function Home() {
               countdownKey={countdownKey}
               setCountdownKey={setCountdownKey}
               status={status}
+              setStatus={setStatus}
+              isWinning={lnAddress === userAddress}
               displayingInvoice={isValidAddress}
             />
             <CurrentWinner
