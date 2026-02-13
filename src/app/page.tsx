@@ -85,6 +85,11 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      <div className={styles.constructionBanner}>
+        <span>🚧</span>
+        <p>We&apos;re making some improvements — back soon!</p>
+        <span>🚧</span>
+      </div>
       <ToastContainer
         hideProgressBar={true}
         autoClose={3000}
