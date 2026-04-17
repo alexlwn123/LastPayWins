@@ -16,6 +16,7 @@ import type * as invoiceActions from "../invoiceActions.js";
 import type * as invoices from "../invoices.js";
 import type * as lightning from "../lightning.js";
 import type * as presence from "../presence.js";
+import type * as telegram from "../telegram.js";
 
 import type {
   ApiFromModules,
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   invoices: typeof invoices;
   lightning: typeof lightning;
   presence: typeof presence;
+  telegram: typeof telegram;
 }>;
 
 /**
