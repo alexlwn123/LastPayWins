@@ -1,8 +1,11 @@
-"server only";
+"use node";
 
 import { Agent } from "node:https";
 import fetch from "node-fetch";
-import { CERT, LND_HOST, MACAROON } from "./serverEnvs";
+
+const CERT = process.env.LND_CERT ?? process.env.CERT ?? "";
+const LND_HOST = process.env.LND_HOST!;
+const MACAROON = process.env.MACAROON!;
 
 type LndInvoice = {
   payment_request: string;
@@ -29,12 +32,11 @@ type LnurlInvoiceResponse = {
   status?: string;
 };
 
-export type ScanResult =
+type ScanResult =
   | {
       status: "OK";
       callback: string;
       commentAllowed?: number;
-      domain: string;
       maxSendable: number;
       metadata: string;
       minSendable: number;
@@ -66,10 +68,7 @@ const getLightningAddressUrl = (address: string) => {
   }
 
   const protocol = isLocalhost(host) ? "http" : "https";
-  return {
-    domain: host,
-    url: `${protocol}://${host}/.well-known/lnurlp/${encodeURIComponent(name)}`,
-  };
+  return `${protocol}://${host}/.well-known/lnurlp/${encodeURIComponent(name)}`;
 };
 
 const lndFetch = async <T>(path: string, init?: Parameters<typeof fetch>[1]) => {
@@ -106,43 +105,9 @@ const toBase64PaymentHash = (paymentHash: string) => {
   return padded;
 };
 
-export const createLndInvoice = async (
-  amount: number,
-  memo: string,
-  expiry: number,
-) => {
-  const invoice = await lndFetch<LndInvoice>("/v1/invoices", {
-    method: "POST",
-    body: JSON.stringify({
-      expiry,
-      memo,
-      value: amount,
-    }),
-  });
-
-  return {
-    paymentHash: invoice.r_hash,
-    paymentRequest: invoice.payment_request,
-  };
-};
-
-export const checkLndInvoice = async (paymentHash: string) => {
-  const invoice = await lndFetch<LndLookupInvoice>(
-    `/v2/invoices/lookup?payment_hash=${encodeURIComponent(toBase64PaymentHash(paymentHash))}`,
-    {
-      method: "GET",
-    },
-  );
-
-  return {
-    settled: invoice.state === "SETTLED" || invoice.settled === true,
-  };
-};
-
-export const readLnurl = async (lnurl: string): Promise<ScanResult> => {
+const readLnurl = async (lnAddress: string): Promise<ScanResult> => {
   try {
-    const { domain, url } = getLightningAddressUrl(lnurl);
-    const response = await fetch(url, {
+    const response = await fetch(getLightningAddressUrl(lnAddress), {
       method: "GET",
       headers: {
         Accept: "application/json",
@@ -178,7 +143,6 @@ export const readLnurl = async (lnurl: string): Promise<ScanResult> => {
     return {
       callback: result.callback,
       commentAllowed: result.commentAllowed,
-      domain,
       maxSendable: result.maxSendable,
       metadata: result.metadata,
       minSendable: result.minSendable,
@@ -192,7 +156,7 @@ export const readLnurl = async (lnurl: string): Promise<ScanResult> => {
   }
 };
 
-export const getLnurlInvoice = async (
+const getLnurlInvoice = async (
   lnAddress: string,
   amountMsats: number,
   comment?: string,
@@ -234,7 +198,7 @@ export const getLnurlInvoice = async (
   return invoice.pr;
 };
 
-export const payLndInvoice = async (paymentRequest: string, maxFee: number) => {
+const payInvoice = async (paymentRequest: string, maxFee: number) => {
   const result = await lndFetch<{
     payment_error?: string;
     payment_hash?: string;
@@ -254,4 +218,47 @@ export const payLndInvoice = async (paymentRequest: string, maxFee: number) => {
   }
 
   return result;
+};
+
+export const createLndInvoice = async (
+  amount: number,
+  memo: string,
+  expiry: number,
+) => {
+  const invoice = await lndFetch<LndInvoice>("/v1/invoices", {
+    method: "POST",
+    body: JSON.stringify({
+      expiry,
+      memo,
+      value: amount,
+    }),
+  });
+
+  return {
+    paymentHash: invoice.r_hash,
+    paymentRequest: invoice.payment_request,
+  };
+};
+
+export const checkLndInvoice = async (paymentHash: string) => {
+  const invoice = await lndFetch<LndLookupInvoice>(
+    `/v2/invoices/lookup?payment_hash=${encodeURIComponent(toBase64PaymentHash(paymentHash))}`,
+    {
+      method: "GET",
+    },
+  );
+
+  return {
+    settled: invoice.state === "SETTLED" || invoice.settled === true,
+  };
+};
+
+export const payLightningAddress = async (
+  lnAddress: string,
+  amountSats: number,
+  comment?: string,
+) => {
+  const paymentRequest = await getLnurlInvoice(lnAddress, amountSats * 1000, comment);
+  const maxFee = Math.max(5, Math.ceil(amountSats * 0.01));
+  return await payInvoice(paymentRequest, maxFee);
 };
