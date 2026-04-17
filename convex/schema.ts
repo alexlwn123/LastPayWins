@@ -30,11 +30,10 @@ export default defineSchema({
     lastSeen: v.number(),
   }).index("by_uuid", ["uuid"]),
 
-  // Lightning invoices (SatsPay charges)
+  // Lightning invoices created by LND
   invoices: defineTable({
     paymentHash: v.string(),
     paymentRequest: v.string(),
-    chargeId: v.string(), // SatsPay charge ID for webhook lookups
     uuid: v.string(),
     lnAddress: v.string(),
     amount: v.number(),
@@ -47,7 +46,6 @@ export default defineSchema({
     settledAt: v.optional(v.number()),
   })
     .index("by_hash", ["paymentHash"])
-    .index("by_charge", ["chargeId"])
     .index("by_address_status", ["lnAddress", "status"])
     .index("by_uuid_status", ["uuid", "status"]),
 });

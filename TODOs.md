@@ -6,7 +6,7 @@ This document outlines a list of refactoring tasks to improve the codebase's str
 
 ### 1. Consolidate Lightning Network Logic
 
-**Goal:** Abstract the Lightning Network interactions into a unified service to simplify API routes and make it easier to manage different backend implementations (LND, LNbits).
+**Goal:** Abstract the Lightning Network interactions into a unified LND-backed service to simplify API routes and payment handling.
 
 - [x] **Create a Lightning Service module:**
 
@@ -17,22 +17,13 @@ This document outlines a list of refactoring tasks to improve the codebase's str
 
   - In `src/lib/lightning.ts`, define a standard interface for Lightning operations, such as `createInvoice`, `checkInvoice`, and `payInvoice`.
 
-- [x] **Implement the LNbits service:**
-
-  - Move the functions from `src/lib/lnbits.ts` into the new `src/lib/lightning.ts` file.
-  - Adapt the functions to the unified interface.
-
 - [x] **Implement the LND service:**
 
   - Move the LND-related logic from `src/pages/api/invoice.ts` into `src/lib/lightning.ts`.
   - Adapt the functions to the unified interface.
 
-- [x] **Add a configuration switch:**
-
-  - Use an environment variable (e.g., `LIGHTNING_BACKEND`) to determine whether to use the "lnd" or "lnbits" implementation in the `lightningService`.
-
 - [x] **Refactor API routes to use the new service:**
-  - Update `src/pages/api/invoice.ts` and `src/pages/api/payments.ts` to import and use the `lightningService` instead of the direct LND/LNbits calls.
+  - Update `src/pages/api/invoice.ts` and `src/pages/api/payments.ts` to import and use the `lightningService` instead of direct payment calls.
 
 ### 2. Centralize State Management
 
