@@ -3,8 +3,11 @@
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import { payLightningAddress } from "./lightning";
-
-const ZAPIER_WEBHOOK_URL = process.env.ZAPIER_WEBHOOK_URL;
+import {
+  sendTelegramBidNotification,
+  sendTelegramMessage,
+  sendTelegramWinnerNotification,
+} from "./telegram";
 
 export const payWinner = internalAction({
   args: {
@@ -27,22 +30,72 @@ export const payWinner = internalAction({
 
     console.log(`Payment successful: ${args.lnAddress} - ${args.jackpot} sats`);
 
-    // Step 2: Hit Zapier webhook (optional)
-    if (ZAPIER_WEBHOOK_URL) {
-      try {
-        await fetch(ZAPIER_WEBHOOK_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            lnAddress: args.lnAddress,
-            bid: args.jackpot,
-          }),
-        });
-      } catch (e) {
-        console.error("Webhook failed", e);
-      }
+    try {
+      await sendTelegramWinnerNotification({
+        chargeFee,
+        jackpot: args.jackpot,
+        lnAddress: args.lnAddress,
+        payoutAmount,
+      });
+    } catch (error) {
+      console.error("Telegram notification failed", error);
     }
 
     return { success: true, payResult };
+  },
+});
+
+export const testTelegramNotification = internalAction({
+  args: {
+    jackpot: v.optional(v.number()),
+    lnAddress: v.optional(v.string()),
+  },
+  handler: async (_ctx, args) => {
+    const lnAddress = args.lnAddress ?? "test@getalby.com";
+    const jackpot = args.jackpot ?? 12345;
+    const chargeFee = jackpot >= 20000;
+    const payoutAmount = chargeFee
+      ? Math.floor(jackpot * 0.9)
+      : jackpot;
+
+    const lines = [
+      "TEST: Last Pay Wins Telegram notification",
+      `Winner: ${lnAddress}`,
+      `Jackpot: ${jackpot} sats`,
+      `Payout: ${payoutAmount} sats`,
+    ];
+
+    if (chargeFee) {
+      lines.push("Fee: 10%");
+    }
+
+    await sendTelegramMessage(lines.join("\n"));
+
+    return {
+      success: true,
+      chargeFee,
+      jackpot,
+      lnAddress,
+      payoutAmount,
+    };
+  },
+});
+
+export const sendBidNotification = internalAction({
+  args: {
+    jackpot: v.number(),
+    lnAddress: v.string(),
+  },
+  handler: async (_ctx, args) => {
+    await sendTelegramBidNotification({
+      jackpot: args.jackpot,
+      lnAddress: args.lnAddress,
+    });
+
+    return {
+      success: true,
+      jackpot: args.jackpot,
+      lnAddress: args.lnAddress,
+    };
   },
 });
