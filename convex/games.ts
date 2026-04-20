@@ -62,6 +62,10 @@ export const recordBid = internalMutation({
       status: "LIVE",
     });
 
+    await ctx.scheduler.runAfter(0, internal.actions.sendBidNotification, {
+      jackpot: newJackpot,
+      lnAddress: args.lnAddress,
+    });
 
     // Schedule game end when timer expires
     await ctx.scheduler.runAfter(CLOCK_DURATION_MS, internal.games.endGame, {

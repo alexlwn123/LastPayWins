@@ -31,6 +31,20 @@ export const sendTelegramWinnerNotification = async (args: {
   return await sendTelegramMessage(lines.join("\n"));
 };
 
+export const sendTelegramBidNotification = async (args: {
+  jackpot: number;
+  lnAddress: string;
+}) => {
+  const lines = [
+    "🔥 New bid placed!",
+    `⚡ Don't let ${args.lnAddress} win the current jackpot of ${args.jackpot} sats.`,
+    "",
+    "🎮 Join the fun at https://lastpaywins.com/",
+  ];
+
+  return await sendTelegramMessage(lines.join("\n"));
+};
+
 export const sendTelegramMessage = async (text: string) => {
   const config = getTelegramConfig();
   if (!config) {

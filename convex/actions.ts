@@ -3,7 +3,11 @@
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import { payLightningAddress } from "./lightning";
-import { sendTelegramMessage, sendTelegramWinnerNotification } from "./telegram";
+import {
+  sendTelegramBidNotification,
+  sendTelegramMessage,
+  sendTelegramWinnerNotification,
+} from "./telegram";
 
 export const payWinner = internalAction({
   args: {
@@ -73,6 +77,25 @@ export const testTelegramNotification = internalAction({
       jackpot,
       lnAddress,
       payoutAmount,
+    };
+  },
+});
+
+export const sendBidNotification = internalAction({
+  args: {
+    jackpot: v.number(),
+    lnAddress: v.string(),
+  },
+  handler: async (_ctx, args) => {
+    await sendTelegramBidNotification({
+      jackpot: args.jackpot,
+      lnAddress: args.lnAddress,
+    });
+
+    return {
+      success: true,
+      jackpot: args.jackpot,
+      lnAddress: args.lnAddress,
     };
   },
 });
