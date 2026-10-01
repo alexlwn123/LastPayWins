@@ -532,3 +532,51 @@ describe("external payout settlement", () => {
     expect((await t.run((ctx) => ctx.db.get(payoutId)))?.status).toBe(status);
   });
 });
+
+describe("production payment amounts", () => {
+  test.each([1, 2, 3])("%i bids each charge 10200, credit 10000, and pay the jackpot minus 5 percent", async (count) => {
+    const t = setup();
+    vi.stubEnv("INVOICE_AMOUNT", "10000");
+    const { gameId } = await fixture(t);
+    await t.mutation(internal.games.applyFeeToEmptyRound, { gameId });
+    for (let i = 0; i < count; i++) {
+      const invoiceId = await t.mutation(api.invoices.requestInvoice, {
+        uuid: `amount-verification-session-${i}`, lnAddress: `winner${i}@example.com`,
+      });
+      const invoice = await t.run((ctx) => ctx.db.get(invoiceId));
+      expect(invoice).toMatchObject({ amount: 10200, bidAmount: 10000 });
+      await t.run((ctx) => ctx.db.patch(invoiceId, { checkoutId: "checkout-a", generation: 1 }));
+      const receipt = { ...confirmed(invoiceId), amount: 10200, netAmount: 9996 };
+      await t.mutation(internal.invoices.update, receipt);
+      await t.mutation(internal.invoices.update, receipt);
+      expect((await t.query(api.games.getCurrent)).jackpot).toBe((i + 1) * 10000);
+    }
+    const game = await t.query(api.games.getCurrent);
+    expect(game).toMatchObject({ jackpot: count * 10000, winnerAmount: count * 9500, platformFeeAmount: count * 500 });
+    vi.setSystemTime(Date.now() + 60000);
+    const storedGame = await t.run((ctx) => ctx.db.get(gameId));
+    await t.mutation(internal.games.endGame, { gameId, bidId: storedGame!.activeBidId! });
+    const payouts = await t.run((ctx) => ctx.db.query("payouts").collect());
+    expect(payouts).toHaveLength(1);
+    expect(payouts[0]).toMatchObject({ amount: count * 9500, jackpotAmount: count * 10000, platformFeeAmount: count * 500 });
+    const requests: Array<Record<string, unknown>> = [];
+    vi.stubEnv("PAYMENT_BRIDGE_SECRET", "test-secret");
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => {
+      requests.push(JSON.parse(String(init?.body)));
+      return Response.json({ status: "succeeded", paymentId: "test-payment" });
+    });
+    try {
+      await t.action(internal.payoutActions.execute, { payoutId: payouts[0]._id });
+      expect(requests).toHaveLength(1);
+      expect(requests[0]).toMatchObject({ operation: "payout", amount: count * 9500 });
+    } finally { fetchMock.mockRestore(); }
+  });
+
+  test("cannot change the fee on a round after a bid is accepted", async () => {
+    const t = setup();
+    const { gameId, invoiceId } = await fixture(t);
+    await t.mutation(internal.invoices.update, confirmed(invoiceId));
+    await expect(t.mutation(internal.games.applyFeeToEmptyRound, { gameId })).rejects.toThrow("empty waiting round");
+    expect((await t.query(api.games.getCurrent)).platformFeeBps).toBe(0);
+  });
+});

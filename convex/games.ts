@@ -143,6 +143,16 @@ export const endGame = internalMutation({
   },
 });
 
+export const applyFeeToEmptyRound = internalMutation({
+  args: { gameId: v.id("game") },
+  handler: async (ctx, args) => {
+    const game = await ctx.db.get(args.gameId);
+    if (!game || game.status !== "WAITING" || game.jackpot !== 0 || game.activeBidId)
+      throw new Error("Platform fee can only be updated on an empty waiting round");
+    await ctx.db.patch(game._id, { platformFeeBps: PLATFORM_FEE_BPS });
+  },
+});
+
 export async function recordPaidBid(
   ctx: MutationCtx,
   invoice: Doc<"invoices">,
