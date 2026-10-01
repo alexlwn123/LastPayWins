@@ -1,3 +1,12 @@
+export const PLATFORM_FEE_BPS = 500;
+
+export function jackpotPayout(jackpot: number, feeBps: number) {
+  if (!Number.isSafeInteger(jackpot) || jackpot < 0 || !Number.isInteger(feeBps) || feeBps < 0 || feeBps > 10000)
+    throw new Error("Invalid jackpot or platform fee");
+  const platformFeeAmount = Number(BigInt(jackpot) * BigInt(feeBps) / BigInt(10000));
+  return { winnerAmount: jackpot - platformFeeAmount, platformFeeAmount };
+}
+
 export const invoiceAmount = () => positiveInteger("INVOICE_AMOUNT", 100);
 export function bidQuote() {
   const bidAmount = invoiceAmount();

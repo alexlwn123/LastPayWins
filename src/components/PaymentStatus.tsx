@@ -3,6 +3,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 export default function PaymentStatus() {
   const payout = useQuery(api.payouts.latest);
+  const game = useQuery(api.games.getCurrent);
   const settings = useQuery(api.invoices.settings);
   return (
     <output>
@@ -16,6 +17,13 @@ export default function PaymentStatus() {
         <p>
           Each bid adds {settings.creditedAmount.toLocaleString()} sats to the
           jackpot.
+        </p>
+      )}
+      {game?.platformFeeBps !== undefined && (
+        <p>
+          {game.platformFeeBps > 0
+            ? `${game.platformFeeBps / 100}% platform fee is deducted from the jackpot. Winner receives ${game.status === "LIVE" ? `${game.winnerAmount.toLocaleString()} sats if the timer ends now` : `${100 - game.platformFeeBps / 100}% of the jackpot`}.`
+            : `This round has no platform fee. New rounds have a ${(settings?.newRoundPlatformFeeBps ?? 500) / 100}% platform fee.`}
         </p>
       )}
       {payout && (

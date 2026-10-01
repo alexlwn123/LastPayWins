@@ -7,7 +7,7 @@ import {
   query,
 } from "./_generated/server";
 import { ensureGame, recordPaidBid } from "./games";
-import { acceptsSimulation, bidQuote, contribution } from "./paymentRules";
+import { acceptsSimulation, bidQuote, contribution, PLATFORM_FEE_BPS } from "./paymentRules";
 
 export const settings = query({
   args: {},
@@ -16,6 +16,7 @@ export const settings = query({
     enabled: process.env.PAYMENTS_ENABLED === "true",
     amount: bidQuote().amount,
     creditedAmount: bidQuote().bidAmount,
+    newRoundPlatformFeeBps: PLATFORM_FEE_BPS,
   }),
 });
 

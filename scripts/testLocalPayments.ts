@@ -76,7 +76,7 @@ async function main() {
     (value) => value?.destination === address && value.status === "succeeded",
     90000,
   );
-  assert.equal(payout?.amount, settings.creditedAmount);
+  assert.equal(payout?.amount, game.winnerAmount);
   const provider = await (await fetch(`${origin}/api/local/payments`)).json();
   const transfers = Object.values(provider.payouts) as Array<{
     destination: string;

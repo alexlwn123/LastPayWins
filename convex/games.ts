@@ -8,7 +8,7 @@ import {
   type QueryCtx,
   type MutationCtx,
 } from "./_generated/server";
-import { acceptsSimulation, clockDuration } from "./paymentRules";
+import { acceptsSimulation, clockDuration, jackpotPayout, PLATFORM_FEE_BPS } from "./paymentRules";
 
 export async function activeGame(ctx: QueryCtx) {
   return (
@@ -26,11 +26,13 @@ export async function activeGame(ctx: QueryCtx) {
 export async function finishGame(ctx: MutationCtx, game: Doc<"game">) {
   if (game.status !== "LIVE" || game.timestamp + clockDuration() > Date.now())
     return;
+  const feeBps = game.platformFeeBps ?? 0;
+  const { winnerAmount, platformFeeAmount } = jackpotPayout(game.jackpot, feeBps);
   await ctx.db.patch(game._id, { status: "FINISHED" });
   if (game.activeBidId)
     await ctx.db.patch(game.activeBidId, {
       isWinner: true,
-      jackpotWon: game.jackpot,
+      jackpotWon: winnerAmount,
     });
   // Legacy obligations require explicit reconciliation during cutover.
   if (game.paymentVersion === 2 && game.jackpot > 0) {
@@ -38,8 +40,10 @@ export async function finishGame(ctx: MutationCtx, game: Doc<"game">) {
       gameId: game._id,
       kind: "prize",
       destination: game.lnAddress,
-      amount: game.jackpot,
-      comment: payoutMemo("prize", game.jackpot),
+      amount: winnerAmount,
+      jackpotAmount: game.jackpot,
+      platformFeeAmount,
+      comment: payoutMemo("prize", winnerAmount, { jackpot: game.jackpot, feeBps }),
       status: "pending",
       createdAt: Date.now(),
       nextCheckAt: Date.now(),
@@ -92,6 +96,7 @@ export async function ensureGame(ctx: MutationCtx) {
     jackpot: 0,
     timestamp: Date.now(),
     paymentVersion: 2,
+    platformFeeBps: PLATFORM_FEE_BPS,
     simulation: acceptsSimulation(),
   });
   return (await ctx.db.get(id))!;
@@ -105,6 +110,7 @@ export const getCurrent = query({
       lnAddress: "",
       jackpot: 0,
       timestamp: 0,
+      platformFeeBps: PLATFORM_FEE_BPS,
     };
     const previous =
       game.status === "WAITING"
@@ -116,8 +122,11 @@ export const getCurrent = query({
         : null;
     return {
       ...game,
+      platformFeeBps: game.platformFeeBps ?? 0,
+      ...jackpotPayout(game.jackpot, game.platformFeeBps ?? 0),
       previousWinner: previous
-        ? { lnAddress: previous.lnAddress, jackpot: previous.jackpot }
+        ? { lnAddress: previous.lnAddress, jackpot: previous.jackpot,
+            ...jackpotPayout(previous.jackpot, previous.platformFeeBps ?? 0) }
         : null,
     };
   },

@@ -109,7 +109,7 @@ describe("payment settlement", () => {
     expect(await t.query(api.invoices.settings)).toMatchObject({ amount: 10200, creditedAmount: 10000 });
   });
 
-  test("fee-inclusive invoices add the promised bid once and pay the full jackpot", async () => {
+  test("existing rounds retain their full jackpot promise when the platform fee is introduced", async () => {
     const t = setup();
     const { invoiceId, gameId } = await fixture(t);
     await t.run((ctx) => ctx.db.patch(invoiceId, {
@@ -130,7 +130,8 @@ describe("payment settlement", () => {
     await t.mutation(internal.games.endGame, { gameId, bidId: bids[0]._id });
     const payouts = await t.run((ctx) => ctx.db.query("payouts").collect());
     expect(payouts).toHaveLength(1);
-    expect(payouts[0]).toMatchObject({ kind: "prize", amount: 10000 });
+    expect(payouts[0]).toMatchObject({ kind: "prize", amount: 10000, platformFeeAmount: 0 });
+    expect((await t.query(api.games.getCurrent)).platformFeeBps).toBe(500);
   });
 
   test("a late fee-inclusive invoice refunds the fixed bid without adding its fees to the prize", async () => {
@@ -448,4 +449,48 @@ test("payout execution persists the commented invoice before dispatch and reuses
     expect(requests[1]).toMatchObject({ payoutId: `${payoutId}-0`, destination: "lnbc123abc", amount: 10000 });
     expect((await t.run((ctx) => ctx.db.get(payoutId)))?.status).toBe("succeeded");
   } finally { fetchMock.mockRestore(); }
+});
+
+test("new rounds keep full bid contributions and deduct the platform fee once at payout", async () => {
+  const t = setup();
+  vi.stubEnv("INVOICE_AMOUNT", "10000");
+  for (const name of ["alice", "bob"]) {
+    const invoiceId = await t.mutation(api.invoices.requestInvoice, {
+      uuid: `fee-test-session-${name}`, lnAddress: `${name}@example.com`,
+    });
+    await t.run((ctx) => ctx.db.patch(invoiceId, { checkoutId: "checkout-a", generation: 1 }));
+    const receipt = { ...confirmed(invoiceId), amount: 10200, netAmount: 9996 };
+    await t.mutation(internal.invoices.update, receipt);
+    await t.mutation(internal.invoices.update, receipt);
+  }
+  const game = await t.query(api.games.getCurrent);
+  expect(game).toMatchObject({ jackpot: 20000, winnerAmount: 19000, platformFeeAmount: 1000, platformFeeBps: 500 });
+  const bids = await t.run((ctx) => ctx.db.query("bids").collect());
+  expect(bids.map((bid) => bid.creditedAmount)).toEqual([10000, 10000]);
+  const winner = bids.find((bid) => bid.lnAddress === "bob@example.com")!;
+  vi.setSystemTime(Date.now() + 60000);
+  const args = { gameId: winner.gameId!, bidId: winner._id };
+  await t.mutation(internal.games.endGame, args);
+  await t.mutation(internal.games.endGame, args);
+  const payouts = await t.run((ctx) => ctx.db.query("payouts").collect());
+  expect(payouts).toHaveLength(1);
+  const payout = payouts[0];
+  expect(payout).toMatchObject({ amount: 19000, jackpotAmount: 20000, platformFeeAmount: 1000 });
+  expect(payout.comment).toBe("Congratulations! You've won the 20000 satoshi jackpot from LastPayWins! (5% deducted for platform fees; 19000 sats paid)");
+  expect((await t.run((ctx) => ctx.db.get(winner._id)))?.jackpotWon).toBe(19000);
+  expect((await t.query(api.games.getCurrent)).previousWinner).toMatchObject({ jackpot: 20000, winnerAmount: 19000 });
+  await t.mutation(internal.payouts.update, { payoutId: payout._id, status: "failed", terminalFailure: true });
+  await t.mutation(internal.payouts.retry, { payoutId: payout._id });
+  expect(await t.run((ctx) => ctx.db.get(payout._id))).toMatchObject({ amount: 19000, platformFeeAmount: 1000, comment: payout.comment });
+});
+
+test("late bids are refunded without a platform cut even in fee-paying rounds", async () => {
+  const t = setup();
+  const { invoiceId, gameId } = await fixture(t);
+  await t.run(async (ctx) => {
+    await ctx.db.patch(gameId, { platformFeeBps: 500, status: "FINISHED" });
+    await ctx.db.patch(invoiceId, { amount: 10200, bidAmount: 10000 });
+  });
+  await t.mutation(internal.invoices.update, { ...confirmed(invoiceId), amount: 10200, netAmount: 9996 });
+  expect(await t.query(api.payouts.latest)).toMatchObject({ kind: "refund", amount: 10000 });
 });

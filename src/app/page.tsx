@@ -26,14 +26,15 @@ export default function Home() {
   const [countdownKey, setCountdownKey] = useState<number>(0);
   const [existingStatus, setExistingStatus] = useState<GameStatus>("LOADING");
   const initialRender = useRef(true);
-  const prevGameRef = useRef<{ jackpot: number; lnAddress: string } | null>(
-    null,
-  );
+  const prevGameRef = useRef<{
+    winnerAmount: number;
+    lnAddress: string;
+  } | null>(null);
 
   const { userAddress, setUserAddress, isValidatingAddress, isValidAddress } =
     useLnurl();
 
-  const { lnAddress, timestamp, jackpot, status, memberCount } =
+  const { lnAddress, timestamp, jackpot, winnerAmount, status, memberCount } =
     useConvexGame();
 
   // Presence is independent of payment processing.
@@ -48,11 +49,11 @@ export default function Home() {
   useEffect(() => {
     if (initialRender.current) {
       initialRender.current = false;
-      prevGameRef.current = { jackpot, lnAddress };
+      prevGameRef.current = { winnerAmount, lnAddress };
       return;
     }
     if (existingStatus === status) {
-      prevGameRef.current = { jackpot, lnAddress };
+      prevGameRef.current = { winnerAmount, lnAddress };
       return;
     }
 
@@ -64,7 +65,11 @@ export default function Home() {
       status,
       lnAddress,
       userAddress,
-      gameEnded && prevGame ? prevGame.jackpot : jackpot,
+      gameEnded && prevGame
+        ? prevGame.winnerAmount
+        : gameEnded
+          ? winnerAmount
+          : jackpot,
       timestamp,
       gameEnded && prevGame
         ? Boolean(userAddress && prevGame.lnAddress === userAddress)
@@ -73,10 +78,11 @@ export default function Home() {
     );
     setTimeout(() => setCountdownKey((prevKey) => prevKey + 1), 0);
 
-    prevGameRef.current = { jackpot, lnAddress };
+    prevGameRef.current = { winnerAmount, lnAddress };
   }, [
     status,
     jackpot,
+    winnerAmount,
     lnAddress,
     timestamp,
     userAddress,
@@ -114,7 +120,7 @@ export default function Home() {
             <CurrentWinner
               currentWinner={lnAddress ?? "Anon"}
               isActive={status === "LIVE"}
-              jackpot={jackpot}
+              jackpot={winnerAmount}
             />
             <Input
               placeholder={"example@lightningaddress.com"}

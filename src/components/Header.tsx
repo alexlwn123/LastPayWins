@@ -12,7 +12,8 @@ const Header = ({ status }: HeaderProps) => (
       Pay the invoice to {status === "LIVE" ? "reset" : "start"} the timer.{" "}
     </h2>
     <h2>
-      If the timer hits zero before someone else pays, you win the jackpot.
+      If the timer hits zero before someone else pays, you win the jackpot, less
+      the platform fee.
     </h2>
   </header>
 );

@@ -91,7 +91,7 @@ export const retry = internalMutation({
       terminalFailure: undefined,
       paymentId: payout.terminalFailure ? undefined : payout.paymentId,
       paymentRequest: payout.terminalFailure ? undefined : payout.paymentRequest,
-      comment: payout.terminalFailure ? payoutMemo(payout.kind, payout.amount) : payout.comment,
+      comment: payout.terminalFailure ? (payout.comment ?? payoutMemo(payout.kind, payout.amount)) : payout.comment,
     });
     await ctx.scheduler.runAfter(0, internal.payoutActions.execute, args);
   },

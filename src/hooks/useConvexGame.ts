@@ -13,6 +13,7 @@ const useConvexGame = () => {
       lnAddress: "",
       timestamp: 0,
       jackpot: 0,
+      winnerAmount: 0,
       status: "LOADING" as GameStatus,
       memberCount: onlineCount ?? 0,
     };
@@ -22,6 +23,8 @@ const useConvexGame = () => {
     lnAddress: game.previousWinner?.lnAddress ?? game.lnAddress,
     timestamp: game.timestamp,
     jackpot: game.previousWinner?.jackpot ?? game.jackpot,
+    winnerAmount:
+      game.previousWinner?.winnerAmount ?? game.winnerAmount ?? game.jackpot,
     status: game.status as GameStatus,
     memberCount: onlineCount ?? 0,
   };

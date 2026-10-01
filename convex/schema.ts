@@ -14,6 +14,7 @@ export default defineSchema({
     ),
     activeBidId: v.optional(v.id("bids")),
     paymentVersion: v.optional(v.number()),
+    platformFeeBps: v.optional(v.number()),
     simulation: v.optional(v.boolean()),
   }).index("by_status", ["status"]),
 
@@ -109,6 +110,8 @@ export default defineSchema({
     leaseUntil: v.optional(v.number()),
     attempt: v.optional(v.number()),
     terminalFailure: v.optional(v.boolean()),
+    jackpotAmount: v.optional(v.number()),
+    platformFeeAmount: v.optional(v.number()),
     comment: v.optional(v.string()),
     paymentRequest: v.optional(v.string()),
   })
