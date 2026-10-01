@@ -1,9 +1,9 @@
 import { payoutMemo } from "../src/lib/payments/payoutMemo";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 
-export const latest = query({
+export const latest = internalQuery({
   args: {},
   handler: async (ctx) => {
     const payout = await ctx.db.query("payouts").order("desc").first();

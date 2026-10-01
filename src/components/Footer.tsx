@@ -32,20 +32,6 @@ const Footer = () => (
         @chdwlch
       </Link>
     </footer>
-    <p className={styles.fees}>
-      Bids count when the server confirms payment. Late payments return the bid
-      amount; payment fees are not refundable.
-    </p>
-    <p className={styles.bug}>
-      If it bugs out and you don&apos;t get paid, DM{" "}
-      <Link
-        href="https://twitter.com/_alexlewin"
-        target="_blank"
-        rel="noreferrer"
-      >
-        @_alexlewin
-      </Link>
-    </p>
   </div>
 );
 export default Footer;

@@ -42,7 +42,7 @@ export const useConvexInvoice = ({
   useEffect(() => {
     if (!state?.lastSettledAt) return;
     if (lastSeen.current !== null && state.lastSettledAt > lastSeen.current)
-      toast("Payment confirmed. Check the game and payout status below.", {
+      toast("Payment confirmed.", {
         type: "success",
       });
     lastSeen.current = state.lastSettledAt;

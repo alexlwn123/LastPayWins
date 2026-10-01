@@ -71,17 +71,23 @@ async function main() {
   console.log(
     "PASS: invoice creation, server settlement without presence, and duplicate receipt",
   );
+  async function getTransfers() {
+    const response = await fetch(`${origin}/api/local/payments`);
+    assert.equal(response.status, 200);
+    const provider = await response.json();
+    return Object.values(provider.payouts) as Array<{
+      destination: string;
+      amount: number;
+      status: string;
+    }>;
+  }
   const payout = await until(
-    () => client.query(api.payouts.latest, {}),
-    (value) => value?.destination === address && value.status === "succeeded",
+    async () => (await getTransfers()).find((value) => value.destination === address),
+    (value) => value?.status === "succeeded",
     90000,
   );
   assert.equal(payout?.amount, game.winnerAmount);
-  const provider = await (await fetch(`${origin}/api/local/payments`)).json();
-  const transfers = Object.values(provider.payouts) as Array<{
-    destination: string;
-    amount: number;
-  }>;
+  const transfers = await getTransfers();
   assert.equal(
     transfers.filter((value) => value.destination === address).length,
     1,

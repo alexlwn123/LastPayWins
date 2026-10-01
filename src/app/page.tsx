@@ -13,7 +13,6 @@ import {
   Jackpot,
   Loading,
 } from "@/components";
-import PaymentStatus from "@/components/PaymentStatus";
 import useConvexGame from "@/hooks/useConvexGame";
 import { useConvexInvoice } from "@/hooks/useConvexInvoice";
 import useConvexPresence from "@/hooks/useConvexPresence";
@@ -136,7 +135,6 @@ export default function Home() {
           {userAddress && isValidAddress && <Invoice payment={payment} />}
         </div>
       </Loading>
-      <PaymentStatus />
       <Footer />
       <Analytics />
     </main>

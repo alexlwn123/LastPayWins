@@ -74,7 +74,7 @@ describe("public payment responses", () => {
       amount: 19590, status: "failed", simulation: true,
       createdAt: Date.now(), error: "private provider diagnostic",
     }));
-    expect(await t.query(api.payouts.latest)).toEqual({
+    expect(await t.query(internal.payouts.latest)).toEqual({
       kind: "prize", destination: "alice@example.com", amount: 19590, status: "failed",
     });
     expect((await t.run((ctx) => ctx.db.get(id)))?.error).toBe("private provider diagnostic");
@@ -180,7 +180,7 @@ describe("payment settlement", () => {
       status: "pending",
       error: "Unknown outcome",
     });
-    expect((await t.query(api.payouts.latest))?.status).toBe("pending");
+    expect((await t.query(internal.payouts.latest))?.status).toBe("pending");
     await t.mutation(internal.payouts.update, {
       payoutId: payouts[0]._id,
       status: "succeeded",
@@ -190,7 +190,7 @@ describe("payment settlement", () => {
       payoutId: payouts[0]._id,
       status: "pending",
     });
-    expect((await t.query(api.payouts.latest))?.status).toBe("succeeded");
+    expect((await t.query(internal.payouts.latest))?.status).toBe("succeeded");
   });
 
   test.each([
@@ -492,5 +492,5 @@ test("late bids are refunded without a platform cut even in fee-paying rounds", 
     await ctx.db.patch(invoiceId, { amount: 10200, bidAmount: 10000 });
   });
   await t.mutation(internal.invoices.update, { ...confirmed(invoiceId), amount: 10200, netAmount: 9996 });
-  expect(await t.query(api.payouts.latest)).toMatchObject({ kind: "refund", amount: 10000 });
+  expect(await t.query(internal.payouts.latest)).toMatchObject({ kind: "refund", amount: 10000 });
 });
