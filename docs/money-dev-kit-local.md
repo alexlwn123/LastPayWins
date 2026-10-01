@@ -1,5 +1,15 @@
 # Money Dev Kit: local development
 
+## Production status — October 1, 2026
+
+The MDK implementation is deployed at `https://lastpaywins.lwn.lol`, backed by the production Convex deployment `bright-butterfly-8`. Production bidding and MDK programmatic payouts are enabled; automatic sweeping remains off. The existing settings are preserved: 10,000-sat bids, a 300-second timer, a 2% payment reserve, and a 5-sat routing reserve per bid (9,795 sats credited).
+
+Code was pushed to `main`, production secrets were configured, and the compatible Convex schema/functions were deployed. The pre-cutover database snapshot is saved locally at `.convex/backups/production-before-mdk-20261001.zip`. The user explicitly waived reconciliation of old LND invoices; existing records were preserved. Vercel uses Node 22 and a hoisted pnpm dependency layout so MDK native binaries package correctly.
+
+Hosted verification passed: MDK dashboard ping, authenticated checkout lookup, signed non-payment webhook acceptance, rejection of invalid signatures/unauthorized bridge requests, and rejection of simulator controls. The prior 100-sat receive/93-sat payout test used the same MDK app with the isolated local backend. It is not a completed payment through the hosted deployment.
+
+To pause new bids, set `PAYMENTS_ENABLED=false` on production Convex. Existing MDK receipt reconciliation and payout processing continue. Production credentials must remain in Vercel/Convex settings, never in Git. Future production deployments must update both the Vercel app and Convex functions when backend code changes.
+
 Run `pnpm install`, then `pnpm dev:local`. The launcher starts an anonymous local Convex backend and Next.js at http://127.0.0.1:3000. It generates an ignored bridge secret, configures local services, and disables external notifications. It does not deploy to a Convex cloud project or change MDK/production settings. Node.js 22 is required.
 
 The launcher allows two minutes for an existing local database to start. Override `CONVEX_LOCAL_BACKEND_STARTUP_TIMEOUT_SECS` if a larger database needs more time.
@@ -57,4 +67,4 @@ Payout timeouts remain pending and retain their idempotency key. After fixing a 
 
 The known MDK receive-reporting gap cannot be repaired by repeatedly reading stale checkout state. An unconfirmed checkout with a signed completion event gets a diagnostic in the event inbox after one minute. Investigate with MDK and reconcile the actual wallet before manually resolving a discrepancy.
 
-Before production: confirm timing and fee rules; configure app credentials, bridge URLs/secrets, webhook delivery, and notifications; pause bidding; reconcile the old LND round/invoices/unpaid prizes; back up data; deploy the compatible schema; then enable new MDK bids with `PAYMENTS_ENABLED=true`. Existing LND records remain readable. A live legacy round is never combined with MDK funds. No production cutover has been performed.
+The October 1 production cutover is recorded above. Existing LND records remain readable, and a live legacy round is never combined with MDK funds. Any future changes to payment economics or timing should be confirmed before deployment.
