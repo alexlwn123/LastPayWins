@@ -1,5 +1,4 @@
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
 import { internalMutation, mutation, query } from "./_generated/server";
 
 // Consider a user offline if no heartbeat for 30 seconds
@@ -28,29 +27,6 @@ export const heartbeat = mutation({
         lastSeen: now,
       });
     }
-    
-    if (args.lnAddress) {
-    // Ensure invoice exists for this session
-      const pendingInvoice = await ctx.db
-        .query("invoices")
-        .withIndex("by_uuid_status", (q) =>
-          q.eq("uuid", args.uuid).eq("status", "pending")
-        )
-        .first();
-        
-      
-
-      if (!pendingInvoice) {
-        await ctx.scheduler.runAfter(0, internal.invoiceActions.createInvoice, {
-          uuid: args.uuid,
-          lnAddress: args.lnAddress,
-        });
-      } else {
-        await ctx.scheduler.runAfter(0, internal.invoiceActions.checkStatus, {
-          invoiceId: pendingInvoice._id,
-        });
-      }
-    }
   },
 });
 
@@ -76,8 +52,8 @@ export const getOnlineCount = query({
     const cutoff = Date.now() - PRESENCE_TIMEOUT_MS;
     const activeUsers = await ctx.db
       .query("presence")
-      .filter((q) => q.gt(q.field("lastSeen"), cutoff))
-      .collect();
+      .withIndex("by_lastSeen", (q) => q.gt("lastSeen", cutoff))
+      .take(1000);
 
     return activeUsers.length;
   },
@@ -90,8 +66,8 @@ export const cleanupStale = internalMutation({
     const cutoff = Date.now() - PRESENCE_TIMEOUT_MS * 2;
     const staleRecords = await ctx.db
       .query("presence")
-      .filter((q) => q.lt(q.field("lastSeen"), cutoff))
-      .collect();
+      .withIndex("by_lastSeen", (q) => q.lt("lastSeen", cutoff))
+      .take(100);
 
     for (const record of staleRecords) {
       await ctx.db.delete(record._id);

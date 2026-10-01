@@ -33,10 +33,11 @@ const Footer = () => (
       </Link>
     </footer>
     <p className={styles.fees}>
-      Fees: 10% goes to @_alexlewin to run the servers.
+      The jackpot uses net receipts after payment and routing reserves.
     </p>
     <p className={styles.fees}>
-      *fees are only applied after the jackpot reaches 20,000 sats
+      Bids count when the server confirms payment. Late payments are returned
+      after reserves.
     </p>
     <p className={styles.bug}>
       If it bugs out and you don&apos;t get paid, DM{" "}

@@ -1,18 +1,4 @@
-"server only";
-
-import { Agent } from "node:https";
-import fetch from "node-fetch";
-import { CERT, LND_HOST, MACAROON } from "./serverEnvs";
-
-type LndInvoice = {
-  payment_request: string;
-  r_hash: string;
-};
-
-type LndLookupInvoice = {
-  settled?: boolean;
-  state?: string;
-};
+import "server-only";
 
 type LnurlPayResponse = {
   callback: string;
@@ -21,12 +7,6 @@ type LnurlPayResponse = {
   metadata: string;
   minSendable: number;
   tag?: string;
-};
-
-type LnurlInvoiceResponse = {
-  pr?: string;
-  reason?: string;
-  status?: string;
 };
 
 export type ScanResult =
@@ -41,101 +21,19 @@ export type ScanResult =
     }
   | { error: string; status: "failed" };
 
-const lndAgent = new Agent(
-  CERT
-    ? {
-        ca: CERT.includes("BEGIN CERTIFICATE")
-          ? CERT
-          : Buffer.from(CERT, "base64"),
-      }
-    : {
-        rejectUnauthorized: false,
-      },
-);
-
-const isLocalhost = (host: string) =>
-  host.startsWith("localhost") ||
-  host.startsWith("127.0.0.1") ||
-  host.startsWith("0.0.0.0") ||
-  host.endsWith(".local");
-
 const getLightningAddressUrl = (address: string) => {
   const [name, host] = address.trim().toLowerCase().split("@");
-  if (!name || !host) {
-    throw new Error("Invalid lightning address");
-  }
-
-  const protocol = isLocalhost(host) ? "http" : "https";
+  if (
+    !name ||
+    !host ||
+    !/^[a-z0-9-]+(?:\.[a-z0-9-]+)+$/.test(host) ||
+    /^\d+\.\d+\.\d+\.\d+$/.test(host) ||
+    host.endsWith(".local")
+  )
+    throw new Error("Invalid Lightning address");
   return {
     domain: host,
-    url: `${protocol}://${host}/.well-known/lnurlp/${encodeURIComponent(name)}`,
-  };
-};
-
-const lndFetch = async <T>(path: string, init?: Parameters<typeof fetch>[1]) => {
-  const response = await fetch(`${LND_HOST}${path}`, {
-    ...init,
-    agent: lndAgent,
-    headers: {
-      "Content-Type": "application/json",
-      "Grpc-Metadata-macaroon": MACAROON,
-      ...init?.headers,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `LND request failed: ${response.status} ${response.statusText} - ${await response.text()}`,
-    );
-  }
-
-  return (await response.json()) as T;
-};
-
-const toBase64PaymentHash = (paymentHash: string) => {
-  if (/^[0-9a-fA-F]{64}$/.test(paymentHash)) {
-    return Buffer.from(paymentHash, "hex").toString("base64");
-  }
-
-  const normalized = paymentHash.replace(/-/g, "+").replace(/_/g, "/");
-  const padded =
-    normalized.length % 4 === 0
-      ? normalized
-      : normalized.padEnd(normalized.length + (4 - (normalized.length % 4)), "=");
-
-  return padded;
-};
-
-export const createLndInvoice = async (
-  amount: number,
-  memo: string,
-  expiry: number,
-) => {
-  const invoice = await lndFetch<LndInvoice>("/v1/invoices", {
-    method: "POST",
-    body: JSON.stringify({
-      expiry,
-      memo,
-      value: amount,
-    }),
-  });
-
-  return {
-    paymentHash: invoice.r_hash,
-    paymentRequest: invoice.payment_request,
-  };
-};
-
-export const checkLndInvoice = async (paymentHash: string) => {
-  const invoice = await lndFetch<LndLookupInvoice>(
-    `/v2/invoices/lookup?payment_hash=${encodeURIComponent(toBase64PaymentHash(paymentHash))}`,
-    {
-      method: "GET",
-    },
-  );
-
-  return {
-    settled: invoice.state === "SETTLED" || invoice.settled === true,
+    url: `https://${host}/.well-known/lnurlp/${encodeURIComponent(name)}`,
   };
 };
 
@@ -144,6 +42,8 @@ export const readLnurl = async (lnurl: string): Promise<ScanResult> => {
     const { domain, url } = getLightningAddressUrl(lnurl);
     const response = await fetch(url, {
       method: "GET",
+      signal: AbortSignal.timeout(5000),
+      redirect: "error",
       headers: {
         Accept: "application/json",
       },
@@ -190,68 +90,4 @@ export const readLnurl = async (lnurl: string): Promise<ScanResult> => {
       status: "failed",
     };
   }
-};
-
-export const getLnurlInvoice = async (
-  lnAddress: string,
-  amountMsats: number,
-  comment?: string,
-) => {
-  const lnurl = await readLnurl(lnAddress);
-  if (lnurl.status === "failed") {
-    throw new Error(lnurl.error);
-  }
-
-  if (amountMsats < lnurl.minSendable || amountMsats > lnurl.maxSendable) {
-    throw new Error("Requested amount is outside the allowed LNURL pay range");
-  }
-
-  const callbackUrl = new URL(lnurl.callback);
-  callbackUrl.searchParams.set("amount", amountMsats.toString());
-
-  if (comment && lnurl.commentAllowed && lnurl.commentAllowed > 0) {
-    callbackUrl.searchParams.set("comment", comment.slice(0, lnurl.commentAllowed));
-  }
-
-  const response = await fetch(callbackUrl, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch LNURL invoice: ${response.status} ${response.statusText}`,
-    );
-  }
-
-  const invoice = (await response.json()) as LnurlInvoiceResponse;
-  if (!invoice.pr) {
-    throw new Error(invoice.reason ?? "LNURL callback did not return an invoice");
-  }
-
-  return invoice.pr;
-};
-
-export const payLndInvoice = async (paymentRequest: string, maxFee: number) => {
-  const result = await lndFetch<{
-    payment_error?: string;
-    payment_hash?: string;
-    payment_preimage?: string;
-  }>("/v1/channels/transactions", {
-    method: "POST",
-    body: JSON.stringify({
-      fee_limit: {
-        fixed: maxFee.toString(),
-      },
-      payment_request: paymentRequest,
-    }),
-  });
-
-  if (result.payment_error) {
-    throw new Error(result.payment_error);
-  }
-
-  return result;
 };

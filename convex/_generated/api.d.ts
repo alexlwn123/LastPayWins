@@ -14,7 +14,11 @@ import type * as games from "../games.js";
 import type * as http from "../http.js";
 import type * as invoiceActions from "../invoiceActions.js";
 import type * as invoices from "../invoices.js";
-import type * as lightning from "../lightning.js";
+import type * as paymentBridge from "../paymentBridge.js";
+import type * as paymentEvents from "../paymentEvents.js";
+import type * as paymentRules from "../paymentRules.js";
+import type * as payoutActions from "../payoutActions.js";
+import type * as payouts from "../payouts.js";
 import type * as presence from "../presence.js";
 import type * as telegram from "../telegram.js";
 
@@ -31,7 +35,11 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   invoiceActions: typeof invoiceActions;
   invoices: typeof invoices;
-  lightning: typeof lightning;
+  paymentBridge: typeof paymentBridge;
+  paymentEvents: typeof paymentEvents;
+  paymentRules: typeof paymentRules;
+  payoutActions: typeof payoutActions;
+  payouts: typeof payouts;
   presence: typeof presence;
   telegram: typeof telegram;
 }>;

@@ -1,42 +1,59 @@
 "use client";
-
-import { useQuery } from "convex/react";
-import { useEffect, useRef } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { useUuid } from "@/components/UuidProvider";
 import { api } from "../../convex/_generated/api";
 
-type UseConvexInvoiceProps = {
+export const useConvexInvoice = ({
+  isValidAddress,
+  lnAddress,
+}: {
   isValidAddress: boolean;
-};
-
-export const useConvexInvoice = ({ isValidAddress }: UseConvexInvoiceProps) => {
+  lnAddress: string;
+}) => {
   const uuid = useUuid();
-  const lastSeenSettledAt = useRef<number | null>(null);
-
-  // Subscribe by session (uuid) - invoice creation handled by presence heartbeat
-  const invoiceState = useQuery(
+  const requestInvoice = useMutation(api.invoices.requestInvoice);
+  const state = useQuery(
     api.invoices.getInvoiceState,
     uuid && isValidAddress ? { uuid } : "skip",
   );
-
-  // Detect new settlements and show toast
+  const [error, setError] = useState<string | null>(null);
+  const lastSeen = useRef<number | null>(null);
   useEffect(() => {
-    if (!invoiceState?.lastSettledAt) return;
-
-    const isNewSettlement =
-      lastSeenSettledAt.current !== null &&
-      invoiceState.lastSettledAt > lastSeenSettledAt.current;
-
-    if (isNewSettlement) {
-      toast("Bid Received! You're in the lead!", { type: "success" });
-    }
-
-    lastSeenSettledAt.current = invoiceState.lastSettledAt;
-  }, [invoiceState?.lastSettledAt]);
-
+    if (!uuid || !isValidAddress) return;
+    let active = true;
+    const refresh = async () => {
+      try {
+        await requestInvoice({ uuid, lnAddress });
+        if (active) setError(null);
+      } catch {
+        if (active)
+          setError("Unable to create an invoice. Payments may be paused.");
+      }
+    };
+    void refresh();
+    const timer = setInterval(refresh, 5000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [uuid, isValidAddress, lnAddress, requestInvoice]);
+  useEffect(() => {
+    if (!state?.lastSettledAt) return;
+    if (lastSeen.current !== null && state.lastSettledAt > lastSeen.current)
+      toast("Payment confirmed. Check the game and payout status below.", {
+        type: "success",
+      });
+    lastSeen.current = state.lastSettledAt;
+  }, [state?.lastSettledAt]);
+  const matching = state?.lnAddress === lnAddress.trim().toLowerCase();
   return {
-    invoice: invoiceState?.paymentRequest ?? null,
-    isLoading: uuid && isValidAddress && invoiceState === undefined,
+    invoice: matching ? (state?.paymentRequest ?? null) : null,
+    checkoutId: matching ? (state?.checkoutId ?? null) : null,
+    simulation: state?.simulation ?? false,
+    error: error ?? state?.error ?? null,
+    expiresAt: state?.expiresAt ?? null,
+    status: state?.status ?? null,
   };
 };

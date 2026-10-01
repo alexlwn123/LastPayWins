@@ -1,137 +1,254 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery, query } from "./_generated/server";
 import { internal } from "./_generated/api";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
+import { ensureGame, recordPaidBid } from "./games";
+import { acceptsSimulation, contribution, invoiceAmount } from "./paymentRules";
 
-// Get invoice state with pending invoice and last settlement time (by uuid)
+export const settings = query({
+  args: {},
+  handler: async () => ({
+    simulation: acceptsSimulation(),
+    enabled: process.env.PAYMENTS_ENABLED === "true",
+    amount: invoiceAmount(),
+    creditedAmount: contribution(invoiceAmount(), invoiceAmount()).credited,
+  }),
+});
+
+export const requestInvoice = mutation({
+  args: { uuid: v.string(), lnAddress: v.string() },
+  handler: async (ctx, args) => {
+    if (process.env.PAYMENTS_ENABLED !== "true")
+      throw new Error("Payments are paused");
+    if (
+      args.uuid.length < 16 ||
+      args.uuid.length > 100 ||
+      !/^[^\s@]{1,128}@[^\s@]{1,253}\.[^\s@]+$/.test(args.lnAddress)
+    )
+      throw new Error("Invalid payment session or Lightning address");
+    const address = args.lnAddress.trim().toLowerCase();
+    const game = await ensureGame(ctx);
+    const latest = await ctx.db
+      .query("invoices")
+      .withIndex("by_uuid_and_createdAt", (q) => q.eq("uuid", args.uuid))
+      .order("desc")
+      .first();
+    if (latest && latest.lnAddress === address && latest.gameId === game._id) {
+      if (
+        latest.status === "creating" ||
+        latest.status === "review" ||
+        (latest.status === "pending" && (latest.expiresAt ?? 0) > Date.now())
+      )
+        return latest._id;
+    }
+    if (latest && Date.now() - latest.createdAt < 2000) return latest._id;
+    const amount = invoiceAmount();
+    if (contribution(amount, amount).credited <= 0)
+      throw new Error("Bid amount must cover payment reserves");
+    const id = await ctx.db.insert("invoices", {
+      uuid: args.uuid,
+      lnAddress: address,
+      gameId: game._id,
+      amount,
+      provider: "mdk",
+      status: "creating",
+      createdAt: Date.now(),
+      nextCheckAt: Date.now(),
+    });
+    await ctx.scheduler.runAfter(0, internal.invoiceActions.process, {
+      invoiceId: id,
+    });
+    return id;
+  },
+});
+
 export const getInvoiceState = query({
   args: { uuid: v.string() },
   handler: async (ctx, args) => {
-    const pending = await ctx.db
+    const latest = await ctx.db
       .query("invoices")
-      .withIndex("by_uuid_status", (q) =>
-        q.eq("uuid", args.uuid).eq("status", "pending")
-      )
+      .withIndex("by_uuid_and_createdAt", (q) => q.eq("uuid", args.uuid))
+      .order("desc")
       .first();
-
-    // Get most recent settled invoice for this session
-    const lastSettled = await ctx.db
+    const paid = await ctx.db
       .query("invoices")
       .withIndex("by_uuid_status", (q) =>
-        q.eq("uuid", args.uuid).eq("status", "settled")
+        q.eq("uuid", args.uuid).eq("status", "settled"),
       )
       .order("desc")
       .first();
-
+    const refund = latest
+      ? await ctx.db
+          .query("payouts")
+          .withIndex("by_invoiceId", (q) => q.eq("invoiceId", latest._id))
+          .first()
+      : null;
     return {
-      paymentRequest: pending?.paymentRequest ?? null,
-      lastSettledAt: lastSettled?.settledAt ?? null,
+      invoiceId: latest?._id ?? null,
+      checkoutId: latest?.checkoutId ?? null,
+      paymentRequest:
+        latest?.status === "pending" ? (latest.paymentRequest ?? null) : null,
+      status: latest?.status ?? null,
+      lnAddress: latest?.lnAddress ?? null,
+      expiresAt: latest?.expiresAt ?? null,
+      lastSettledAt: paid?.settledAt ?? null,
+      error: latest?.error ?? null,
+      refundStatus: refund?.status ?? null,
+      simulation: acceptsSimulation(),
     };
   },
 });
 
-// Get pending invoice by uuid (internal)
-export const getPendingByOduc = internalQuery({
-  args: { uuid: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("invoices")
-      .withIndex("by_uuid_status", (q) =>
-        q.eq("uuid", args.uuid).eq("status", "pending")
-      )
-      .first();
-  },
-});
-
-// Get invoice by payment hash
-export const getByHash = query({
-  args: { paymentHash: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("invoices")
-      .withIndex("by_hash", (q) => q.eq("paymentHash", args.paymentHash))
-      .first();
-  },
-});
-
-// Get invoice by ID (internal)
 export const getById = internalQuery({
   args: { invoiceId: v.id("invoices") },
+  handler: (ctx, args) => ctx.db.get(args.invoiceId),
+});
+
+export const claim = internalMutation({
+  args: { invoiceId: v.id("invoices") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.invoiceId);
+    const invoice = await ctx.db.get(args.invoiceId);
+    if (
+      !invoice ||
+      invoice.provider !== "mdk" ||
+      invoice.status === "settled" ||
+      (invoice.leaseUntil ?? 0) > Date.now()
+    )
+      return null;
+    const generation = (invoice.generation ?? 0) + 1;
+    await ctx.db.patch(invoice._id, {
+      leaseUntil: Date.now() + 90_000,
+      generation,
+      nextCheckAt: Date.now() + 90_000,
+    });
+    return { ...invoice, generation };
   },
 });
 
-// Store a new invoice
-export const store = internalMutation({
+export const bind = internalMutation({
   args: {
-    paymentHash: v.string(),
-    paymentRequest: v.string(),
-    uuid: v.string(),
-    lnAddress: v.string(),
+    invoiceId: v.id("invoices"),
+    checkoutId: v.string(),
+    generation: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const inv = await ctx.db.get(args.invoiceId);
+    if (!inv || inv.generation !== args.generation) return false;
+    if (inv.checkoutId && inv.checkoutId !== args.checkoutId)
+      throw new Error("Checkout already bound");
+    await ctx.db.patch(inv._id, { checkoutId: args.checkoutId });
+    return true;
+  },
+});
+
+export const update = internalMutation({
+  args: {
+    invoiceId: v.id("invoices"),
+    generation: v.number(),
+    checkoutId: v.string(),
+    attemptId: v.string(),
+    status: v.string(),
     amount: v.number(),
+    netAmount: v.number(),
+    currency: v.string(),
+    sandbox: v.boolean(),
+    paymentRequest: v.optional(v.string()),
+    paymentHash: v.optional(v.string()),
+    expiresAt: v.number(),
   },
   handler: async (ctx, args) => {
-    // Mark any existing pending invoices for this session as expired
-    const existingPending = await ctx.db
+    const inv = await ctx.db.get(args.invoiceId);
+    if (!inv || inv.status === "settled" || inv.generation !== args.generation)
+      return;
+    if (
+      inv.checkoutId !== args.checkoutId ||
+      inv._id !== args.attemptId ||
+      inv.amount !== args.amount ||
+      args.currency !== "SAT" ||
+      !Number.isSafeInteger(args.netAmount) ||
+      args.netAmount < 0 ||
+      args.netAmount > args.amount ||
+      args.sandbox !== acceptsSimulation()
+    ) {
+      await ctx.db.patch(inv._id, {
+        status: "review",
+        error: "Provider payment details do not match the reserved bid",
+        leaseUntil: 0,
+        nextCheckAt: undefined,
+      });
+      return;
+    }
+    const fields = {
+      expiresAt: args.expiresAt,
+      sandbox: args.sandbox,
+      paymentHash: args.paymentHash ?? inv.paymentHash,
+      paymentRequest: args.paymentRequest ?? inv.paymentRequest,
+      leaseUntil: 0,
+      error: undefined,
+    };
+    if (args.status === "paid") {
+      const { net, credited } = contribution(inv.amount, args.netAmount);
+      await ctx.db.patch(inv._id, {
+        ...fields,
+        status: "settled",
+        settledAt: Date.now(),
+        netAmount: net,
+        creditedAmount: credited,
+        nextCheckAt: undefined,
+      });
+      await recordPaidBid(ctx, inv, credited);
+    } else {
+      const expired = args.status === "expired" || args.expiresAt <= Date.now();
+      await ctx.db.patch(inv._id, {
+        ...fields,
+        status: expired
+          ? "expired"
+          : args.status === "pending"
+            ? "pending"
+            : "creating",
+        // Expired records still reconcile: delayed confirmations may require a refund.
+        nextCheckAt: Date.now() + (expired ? 300_000 : 5000),
+      });
+    }
+  },
+});
+
+export const fail = internalMutation({
+  args: {
+    invoiceId: v.id("invoices"),
+    generation: v.number(),
+    error: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const inv = await ctx.db.get(args.invoiceId);
+    if (!inv || inv.generation !== args.generation || inv.status === "settled")
+      return;
+    await ctx.db.patch(inv._id, {
+      error: args.error.slice(0, 300),
+      leaseUntil: 0,
+      nextCheckAt: Date.now() + 30_000,
+    });
+  },
+});
+
+export const reconcile = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const due = await ctx.db
       .query("invoices")
-      .withIndex("by_uuid_status", (q) =>
-        q.eq("uuid", args.uuid).eq("status", "pending")
+      .withIndex("by_nextCheckAt", (q) =>
+        q.gt("nextCheckAt", 0).lte("nextCheckAt", Date.now()),
       )
-      .collect();
-
-    for (const inv of existingPending) {
-      await ctx.db.patch(inv._id, { status: "expired" });
+      .take(50);
+    for (const inv of due) {
+      await ctx.db.patch(inv._id, { nextCheckAt: Date.now() + 90_000 });
+      await ctx.scheduler.runAfter(0, internal.invoiceActions.process, {
+        invoiceId: inv._id,
+      });
     }
-
-    // Create new invoice
-    return await ctx.db.insert("invoices", {
-      paymentHash: args.paymentHash,
-      paymentRequest: args.paymentRequest,
-      uuid: args.uuid,
-      lnAddress: args.lnAddress,
-      amount: args.amount,
-      status: "pending",
-      createdAt: Date.now(),
-    });
-  },
-});
-
-// Mark invoice as settled and record the bid
-export const settle = internalMutation({
-  args: { invoiceId: v.id("invoices") },
-  handler: async (ctx, args) => {
-    const invoice = await ctx.db.get(args.invoiceId);
-    if (!invoice || invoice.status !== "pending") {
-      return;
-    }
-
-    // Mark invoice as settled
-    await ctx.db.patch(args.invoiceId, {
-      status: "settled",
-      settledAt: Date.now(),
-    });
-
-    // Record the bid via internal mutation
-    await ctx.scheduler.runAfter(0, internal.games.recordBid, {
-      lnAddress: invoice.lnAddress,
-    });
-
-    // Auto-create next invoice for same session
-    await ctx.scheduler.runAfter(0, internal.invoiceActions.createInvoice, {
-      uuid: invoice.uuid,
-      lnAddress: invoice.lnAddress,
-    });
-  },
-});
-
-// Mark invoice as expired
-export const markExpired = internalMutation({
-  args: { invoiceId: v.id("invoices") },
-  handler: async (ctx, args) => {
-    const invoice = await ctx.db.get(args.invoiceId);
-    if (!invoice || invoice.status !== "pending") {
-      return;
-    }
-    await ctx.db.patch(args.invoiceId, { status: "expired" });
   },
 });

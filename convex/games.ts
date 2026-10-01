@@ -1,125 +1,192 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { internalMutation, query, QueryCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
+import {
+  internalMutation,
+  query,
+  type QueryCtx,
+  type MutationCtx,
+} from "./_generated/server";
+import { acceptsSimulation, clockDuration } from "./paymentRules";
 
-const CLOCK_DURATION_MS =
-  (parseInt(process.env.NEXT_PUBLIC_CLOCK_DURATION ?? "60") || 60) * 1000;
-const INVOICE_AMOUNT = parseInt(process.env.INVOICE_AMOUNT ?? "100") || 100;
+export async function activeGame(ctx: QueryCtx) {
+  return (
+    (await ctx.db
+      .query("game")
+      .withIndex("by_status", (q) => q.eq("status", "LIVE"))
+      .first()) ??
+    (await ctx.db
+      .query("game")
+      .withIndex("by_status", (q) => q.eq("status", "WAITING"))
+      .first())
+  );
+}
 
-const getActiveGame = async (ctx: QueryCtx) => {
-  const liveGame = await ctx.db
-    .query("game")
-    .withIndex("by_status", (q) => q.eq("status", "LIVE"))
-    .first();
-  if (liveGame) return liveGame;
+export async function finishGame(ctx: MutationCtx, game: Doc<"game">) {
+  if (game.status !== "LIVE" || game.timestamp + clockDuration() > Date.now())
+    return;
+  await ctx.db.patch(game._id, { status: "FINISHED" });
+  if (game.activeBidId)
+    await ctx.db.patch(game.activeBidId, {
+      isWinner: true,
+      jackpotWon: game.jackpot,
+    });
+  // Legacy obligations require explicit reconciliation during cutover.
+  if (game.paymentVersion === 2 && game.jackpot > 0) {
+    const payoutId = await ctx.db.insert("payouts", {
+      gameId: game._id,
+      kind: "prize",
+      destination: game.lnAddress,
+      amount: game.jackpot,
+      status: "pending",
+      createdAt: Date.now(),
+      nextCheckAt: Date.now(),
+      simulation: game.simulation ?? false,
+    });
+    await ctx.scheduler.runAfter(0, internal.payoutActions.execute, {
+      payoutId,
+    });
+  }
+}
 
-  const waitingGame = await ctx.db
-    .query("game")
-    .withIndex("by_status", (q) => q.eq("status", "WAITING"))
-    .first();
-  if (waitingGame) return waitingGame;
-
-  throw new Error("No active game found");
-};
+export async function ensureGame(ctx: MutationCtx) {
+  let game = await activeGame(ctx);
+  if (
+    game?.status === "LIVE" &&
+    game.timestamp + clockDuration() <= Date.now()
+  ) {
+    await finishGame(ctx, game);
+    game = await activeGame(ctx);
+  }
+  if (game) {
+    if (game.status === "WAITING" && !game.paymentVersion) {
+      await ctx.db.patch(game._id, {
+        paymentVersion: 2,
+        simulation: acceptsSimulation(),
+      });
+      return { ...game, paymentVersion: 2, simulation: acceptsSimulation() };
+    }
+    if (game.paymentVersion !== 2)
+      throw new Error(
+        "Resolve the existing LND round before enabling MDK bids",
+      );
+    if (
+      game.status === "WAITING" &&
+      game.jackpot === 0 &&
+      game.simulation === undefined
+    ) {
+      await ctx.db.patch(game._id, { simulation: acceptsSimulation() });
+      return { ...game, simulation: acceptsSimulation() };
+    }
+    if (game.simulation !== acceptsSimulation())
+      throw new Error(
+        "Use a separate local database when switching between simulation and real payments",
+      );
+    return game;
+  }
+  const id = await ctx.db.insert("game", {
+    status: "WAITING",
+    lnAddress: "",
+    jackpot: 0,
+    timestamp: Date.now(),
+    paymentVersion: 2,
+    simulation: acceptsSimulation(),
+  });
+  return (await ctx.db.get(id))!;
+}
 
 export const getCurrent = query({
   args: {},
-  handler: getActiveGame,
-});
-
-export const recordBid = internalMutation({
-  args: {
-    lnAddress: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const activeGame = await getActiveGame(ctx);
-    const now = Date.now();
-
-    let previousJackpot = 0;
-    if (activeGame.status === "LIVE") {
-      const timeLeft = activeGame.timestamp + CLOCK_DURATION_MS - now;
-      if (timeLeft > 0) {
-        previousJackpot = activeGame.jackpot;
-      }
-    }
-
-    const newJackpot = previousJackpot + INVOICE_AMOUNT;
-
-    // Record the bid in history
-    const bid = await ctx.db.insert("bids", {
-      lnAddress: args.lnAddress,
-      amount: INVOICE_AMOUNT,
-      timestamp: now,
-      isWinner: false,
-    });
-
-    // Update active game to LIVE
-    await ctx.db.patch(activeGame._id, {
-      lnAddress: args.lnAddress,
-      activeBidId: bid,
-      jackpot: newJackpot,
-      timestamp: now,
-      status: "LIVE",
-    });
-
-    await ctx.scheduler.runAfter(0, internal.actions.sendBidNotification, {
-      jackpot: newJackpot,
-      lnAddress: args.lnAddress,
-    });
-
-    // Schedule game end when timer expires
-    await ctx.scheduler.runAfter(CLOCK_DURATION_MS, internal.games.endGame, {
-      gameId: activeGame._id,
-      bidId: bid,
-    });
-
+  handler: async (ctx) => {
+    const game = (await activeGame(ctx)) ?? {
+      status: "WAITING" as const,
+      lnAddress: "",
+      jackpot: 0,
+      timestamp: 0,
+    };
+    const previous =
+      game.status === "WAITING"
+        ? await ctx.db
+            .query("game")
+            .withIndex("by_status", (q) => q.eq("status", "FINISHED"))
+            .order("desc")
+            .first()
+        : null;
     return {
-      lnAddress: args.lnAddress,
-      jackpot: newJackpot,
-      timestamp: now,
+      ...game,
+      previousWinner: previous
+        ? { lnAddress: previous.lnAddress, jackpot: previous.jackpot }
+        : null,
     };
   },
 });
 
 export const endGame = internalMutation({
-  args: {
-    gameId: v.id("game"),
-    bidId: v.id("bids"),
-  },
+  args: { gameId: v.id("game"), bidId: v.id("bids") },
   handler: async (ctx, args) => {
-    const bid = await ctx.db.get("bids",args.bidId);
-    const game = await ctx.db.get("game", args.gameId);
-    if (!game || game.status !== "LIVE") {
-      console.warn("Game end cancelled - game not live");
-      return
-    } else if (!bid || bid._id !== game.activeBidId) {
-      console.warn("Game end cancelled - bid not active");
-      return
-    }
-
-    const { lnAddress, jackpot } = game;
-
-    await ctx.db.patch("bids", args.bidId, {
-      isWinner: true,
-      jackpotWon: jackpot,
-    });
-
-    await ctx.db.patch("game", args.gameId, {
-      status: "FINISHED",
-    });
-
-    await ctx.db.insert("game", {
-      lnAddress,
-      jackpot: 0,
-      timestamp: Date.now(),
-      status: "WAITING",
-    });
-
-    ctx.scheduler.runAfter(0, internal.actions.payWinner, {
-      lnAddress,
-      jackpot,
-    });
-
-    return { success: true, winner: lnAddress, jackpot };
+    const game = await ctx.db.get(args.gameId);
+    if (!game || game.activeBidId !== args.bidId || game.status !== "LIVE")
+      return;
+    await finishGame(ctx, game);
+    await ensureGame(ctx);
   },
 });
+
+export async function recordPaidBid(
+  ctx: MutationCtx,
+  invoice: Doc<"invoices">,
+  creditedAmount: number,
+) {
+  const game = invoice.gameId ? await ctx.db.get(invoice.gameId) : null;
+  const now = Date.now();
+  if (
+    !game ||
+    game.status === "FINISHED" ||
+    (game.status === "LIVE" && game.timestamp + clockDuration() <= now)
+  ) {
+    if (game?.status === "LIVE") await finishGame(ctx, game);
+    if (creditedAmount > 0) {
+      const payoutId = await ctx.db.insert("payouts", {
+        invoiceId: invoice._id,
+        kind: "refund",
+        destination: invoice.lnAddress,
+        amount: creditedAmount,
+        status: "pending",
+        createdAt: now,
+        nextCheckAt: now,
+        simulation: invoice.sandbox ?? acceptsSimulation(),
+      });
+      await ctx.scheduler.runAfter(0, internal.payoutActions.execute, {
+        payoutId,
+      });
+    }
+    await ensureGame(ctx);
+    return false;
+  }
+  const bidId = await ctx.db.insert("bids", {
+    invoiceId: invoice._id,
+    gameId: game._id,
+    lnAddress: invoice.lnAddress,
+    amount: invoice.amount,
+    creditedAmount,
+    timestamp: now,
+    isWinner: false,
+  });
+  const jackpot = game.jackpot + creditedAmount;
+  await ctx.db.patch(game._id, {
+    status: "LIVE",
+    lnAddress: invoice.lnAddress,
+    activeBidId: bidId,
+    jackpot,
+    timestamp: now,
+  });
+  await ctx.scheduler.runAfter(clockDuration(), internal.games.endGame, {
+    gameId: game._id,
+    bidId,
+  });
+  await ctx.scheduler.runAfter(0, internal.actions.sendBidNotification, {
+    lnAddress: invoice.lnAddress,
+    jackpot,
+  });
+  return true;
+}

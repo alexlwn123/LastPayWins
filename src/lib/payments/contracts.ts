@@ -1,0 +1,40 @@
+import { z } from "zod";
+
+export const checkoutSchema = z.object({
+  checkoutId: z.string(),
+  attemptId: z.string(),
+  status: z.enum(["unconfirmed", "confirmed", "pending", "paid", "expired"]),
+  currency: z.literal("SAT"),
+  amount: z.number().int().positive(),
+  netAmount: z.number().int().nonnegative(),
+  sandbox: z.boolean(),
+  paymentRequest: z.string().optional(),
+  paymentHash: z.string().optional(),
+  expiresAt: z.number(),
+});
+export type PaymentCheckout = z.infer<typeof checkoutSchema>;
+
+export const payoutResultSchema = z.object({
+  status: z.enum(["pending", "succeeded", "failed"]),
+  paymentId: z.string().optional(),
+  error: z.string().optional(),
+  terminalFailure: z.boolean().optional(),
+});
+export type PaymentPayoutResult = z.infer<typeof payoutResultSchema>;
+
+export const bridgeRequestSchema = z.discriminatedUnion("operation", [
+  z.object({
+    operation: z.literal("create"),
+    attemptId: z.string(),
+    amount: z.number().int().positive(),
+  }),
+  z.object({ operation: z.literal("prepare"), checkoutId: z.string() }),
+  z.object({ operation: z.literal("lookup"), checkoutId: z.string() }),
+  z.object({
+    operation: z.literal("payout"),
+    payoutId: z.string(),
+    destination: z.string(),
+    amount: z.number().int().positive(),
+  }),
+]);
+export type BridgeRequest = z.infer<typeof bridgeRequestSchema>;

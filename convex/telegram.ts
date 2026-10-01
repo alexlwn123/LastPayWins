@@ -26,7 +26,7 @@ export const sendTelegramWinnerNotification = async (args: {
   ];
 
   lines.push("");
-  lines.push("🎮 Start a new game: https://lastpaywins.com");
+  lines.push("🎮 Start a new game: https://lastpaywins.lwn.lol");
 
   return await sendTelegramMessage(lines.join("\n"));
 };
@@ -39,7 +39,7 @@ export const sendTelegramBidNotification = async (args: {
     "🔥 New bid placed!",
     `⚡ Don't let ${args.lnAddress} win the current jackpot of ${args.jackpot} sats.`,
     "",
-    "🎮 Join the fun at https://lastpaywins.com/",
+    "🎮 Join the fun at https://lastpaywins.lwn.lol/",
   ];
 
   return await sendTelegramMessage(lines.join("\n"));

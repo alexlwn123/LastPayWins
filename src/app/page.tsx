@@ -13,6 +13,7 @@ import {
   Jackpot,
   Loading,
 } from "@/components";
+import PaymentStatus from "@/components/PaymentStatus";
 import useConvexGame from "@/hooks/useConvexGame";
 import { useConvexInvoice } from "@/hooks/useConvexInvoice";
 import useConvexPresence from "@/hooks/useConvexPresence";
@@ -35,12 +36,12 @@ export default function Home() {
   const { lnAddress, timestamp, jackpot, status, memberCount } =
     useConvexGame();
 
-  // Pass lnAddress to presence - this triggers invoice creation on heartbeat
+  // Presence is independent of payment processing.
   useConvexPresence({
     lnAddress: isValidAddress ? userAddress : null,
   });
 
-  const { invoice } = useConvexInvoice({ isValidAddress });
+  const payment = useConvexInvoice({ isValidAddress, lnAddress: userAddress });
 
   const isWinner = Boolean(userAddress && lnAddress === userAddress);
 
@@ -126,9 +127,10 @@ export default function Home() {
               Players Online: <b>{memberCount}</b>
             </div>
           </div>
-          {userAddress && isValidAddress && <Invoice invoice={invoice} />}
+          {userAddress && isValidAddress && <Invoice payment={payment} />}
         </div>
       </Loading>
+      <PaymentStatus />
       <Footer />
       <Analytics />
     </main>

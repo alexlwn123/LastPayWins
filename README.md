@@ -4,7 +4,7 @@
 
 This was created for the Pleb.fi Miami 2023 Hackathon. (Won 2nd Place)
 
-Try it at [lastpaywins.com](https://lastpaywins.com)
+Try it at [lastpaywins.lwn.lol](https://lastpaywins.lwn.lol)
 
 It's Reddit's r/thebutton but with sats... Last one to pay when the timer hits zero wins. Paying the invoice resets the timer.
 
@@ -19,7 +19,13 @@ Similar to FOMO3D, but with sats.
 
 ## Getting Started
 
-First, run the development server:
+For the Money Dev Kit payment flow, see [local development and production handoff](docs/money-dev-kit-local.md). Start the isolated local backend and payment simulator with:
+
+```bash
+pnpm dev:local
+```
+
+To run Next.js against an already-configured backend:
 
 ```bash
 npm run dev

@@ -39,7 +39,7 @@ const Countdown = ({
         (duration * 1000 + lastPayerTimestamp - Date.now()) / 1000;
       console.log("TIME REMAINING", timeRemaining);
       if (timeRemaining < 0) {
-        timeRemaining = duration;
+        timeRemaining = 0;
       }
       setInitialTimeRemaining(timeRemaining);
       setCountdownKey((prev) => prev + 1);

@@ -19,9 +19,9 @@ const useConvexGame = () => {
   }
 
   return {
-    lnAddress: game.lnAddress,
+    lnAddress: game.previousWinner?.lnAddress ?? game.lnAddress,
     timestamp: game.timestamp,
-    jackpot: game.jackpot,
+    jackpot: game.previousWinner?.jackpot ?? game.jackpot,
     status: game.status as GameStatus,
     memberCount: onlineCount ?? 0,
   };
