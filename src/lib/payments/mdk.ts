@@ -27,13 +27,13 @@ export function normalizeCheckout(checkout: Checkout) {
   } as const;
   const amount = checkoutSchema.shape.amount.parse(
     checkout.invoice?.amountSats ??
-    checkout.providedAmount ??
-    checkout.invoiceAmountSats,
+      checkout.providedAmount ??
+      checkout.invoiceAmountSats,
   );
   let netAmount = checkout.netAmount ?? amount;
   if (checkout.status === "PAYMENT_RECEIVED") {
     // MDK reports the gross invoice amount separately from sats received after
-    // its fee. The paid status confirms payment; only actual receipts fund prizes.
+    // its fee. Keep the actual receipt separate from the promised bid amount.
     const received = checkout.invoice.amountSatsReceived;
     if (
       received === null ||
@@ -117,7 +117,8 @@ export async function handleMdk(request: BridgeRequest) {
           amount: request.amount,
           metadata: {
             attemptId: request.attemptId,
-            title: "Last Pay Wins bid",
+            title: "Bid - Last Pay Wins",
+            description: request.memo ?? "Bid - Last Pay Wins",
           },
           sandbox: false,
         },

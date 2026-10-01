@@ -27,6 +27,7 @@ export const bridgeRequestSchema = z.discriminatedUnion("operation", [
     operation: z.literal("create"),
     attemptId: z.string(),
     amount: z.number().int().positive(),
+    memo: z.string().max(500).optional(),
   }),
   z.object({ operation: z.literal("prepare"), checkoutId: z.string() }),
   z.object({ operation: z.literal("lookup"), checkoutId: z.string() }),

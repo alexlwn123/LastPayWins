@@ -7,15 +7,15 @@ import {
   query,
 } from "./_generated/server";
 import { ensureGame, recordPaidBid } from "./games";
-import { acceptsSimulation, contribution, invoiceAmount } from "./paymentRules";
+import { acceptsSimulation, bidQuote, contribution } from "./paymentRules";
 
 export const settings = query({
   args: {},
   handler: async () => ({
     simulation: acceptsSimulation(),
     enabled: process.env.PAYMENTS_ENABLED === "true",
-    amount: invoiceAmount(),
-    creditedAmount: contribution(invoiceAmount(), invoiceAmount()).credited,
+    amount: bidQuote().amount,
+    creditedAmount: bidQuote().bidAmount,
   }),
 });
 
@@ -46,14 +46,12 @@ export const requestInvoice = mutation({
         return latest._id;
     }
     if (latest && Date.now() - latest.createdAt < 2000) return latest._id;
-    const amount = invoiceAmount();
-    if (contribution(amount, amount).credited <= 0)
-      throw new Error("Bid amount must cover payment reserves");
+    const quote = bidQuote();
     const id = await ctx.db.insert("invoices", {
       uuid: args.uuid,
       lnAddress: address,
       gameId: game._id,
-      amount,
+      ...quote,
       provider: "mdk",
       status: "creating",
       createdAt: Date.now(),
@@ -96,9 +94,13 @@ export const getInvoiceState = query({
       lnAddress: latest?.lnAddress ?? null,
       expiresAt: latest?.expiresAt ?? null,
       lastSettledAt: paid?.settledAt ?? null,
-      error: latest?.error ?? null,
+      error: latest?.error
+        ? "Payment processing is temporarily unavailable. Please try again later."
+        : null,
       refundStatus: refund?.status ?? null,
       simulation: acceptsSimulation(),
+      amount: latest?.amount ?? null,
+      bidAmount: latest?.bidAmount ?? null,
     };
   },
 });
@@ -191,7 +193,10 @@ export const update = internalMutation({
       error: undefined,
     };
     if (args.status === "paid") {
-      const { net, credited } = contribution(inv.amount, args.netAmount);
+      // Old invoices retain their original pricing. New invoices promise a fixed bid.
+      const { net, credited } = inv.bidAmount === undefined
+        ? contribution(inv.amount, args.netAmount)
+        : { net: args.netAmount, credited: inv.bidAmount };
       await ctx.db.patch(inv._id, {
         ...fields,
         status: "settled",

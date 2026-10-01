@@ -167,7 +167,7 @@ export async function recordPaidBid(
     invoiceId: invoice._id,
     gameId: game._id,
     lnAddress: invoice.lnAddress,
-    amount: invoice.amount,
+    amount: invoice.bidAmount ?? invoice.amount,
     creditedAmount,
     timestamp: now,
     isWinner: false,

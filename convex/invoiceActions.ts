@@ -18,6 +18,7 @@ export const process = internalAction({
             operation: "create",
             attemptId: inv._id,
             amount: inv.amount,
+            memo: inv.memo,
           }),
         );
         const bound = await ctx.runMutation(internal.invoices.bind, {

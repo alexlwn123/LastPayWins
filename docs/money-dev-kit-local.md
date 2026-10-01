@@ -2,7 +2,7 @@
 
 ## Production status — October 1, 2026
 
-The MDK implementation is deployed at `https://lastpaywins.lwn.lol`, backed by the production Convex deployment `bright-butterfly-8`. Production bidding and MDK programmatic payouts are enabled; automatic sweeping remains off. The existing settings are preserved: 10,000-sat bids, a 300-second timer, a 2% payment reserve, and a 5-sat routing reserve per bid (9,795 sats credited).
+The MDK implementation is deployed at `https://lastpaywins.lwn.lol`, backed by the production Convex deployment `bright-butterfly-8`. Production bidding and MDK programmatic payouts are enabled; automatic sweeping remains off. New invoices charge 10,200 sats for a fixed 10,000-sat jackpot contribution and retain the 300-second timer. The memo is "Bid - Last Pay Wins — +2% for MDK routing fee". Previously issued invoices retain their original contribution rules.
 
 Code was pushed to `main`, production secrets were configured, and the compatible Convex schema/functions were deployed. The pre-cutover database snapshot is saved locally at `.convex/backups/production-before-mdk-20261001.zip`. The user explicitly waived reconciliation of old LND invoices; existing records were preserved. Vercel uses Node 22 and a hoisted pnpm dependency layout so MDK native binaries package correctly.
 
@@ -24,7 +24,10 @@ If port 3000 is occupied, use `LOCAL_PAYMENTS_PORT=3002 pnpm dev:local` and the 
 
 - The server orders bids by the transaction that confirms them. The deadline is exclusive: a confirmation at or after it is late. Provider webhook timestamps are not treated as Lightning settlement timestamps.
 - Each invoice belongs to the round for which it was issued. A late confirmation creates a return obligation to its stored Lightning address; it never changes a later round.
-- Default bids are 100 sats. Reserve the greater of the reported deduction or 2% (`MDK_FEE_RESERVE_BPS=200`), plus 5 sats per bid for routing (`PAYOUT_RESERVE_SATS_PER_BID=5`). The default jackpot contribution is 93 sats. Late-payment returns use the same net amount after reserves. These are conservative reserves, not a claim about the actual routing fee.
+- `INVOICE_AMOUNT` is the fixed bid contribution (100 sats locally, 10,000 in production). New invoices add a 2% surcharge rounded up to whole sats. Store the bid amount and memo on each invoice so later configuration changes cannot change the promise. Late-payment returns repay the bid amount; fees are not refunded. Legacy invoices without a stored bid amount keep their original net-minus-reserves calculation.
+- A 2% surcharge does not fully cover a 2% deduction from the gross invoice: 10,200 gross leaves 9,996 sats. The operator must fund the 4-sat difference plus outgoing routing fees from a separate wallet buffer. The surcharge is not a guarantee that bids are self-funding.
+- Public queries return payout status and sanitized invoice messages only. Provider diagnostics stay in backend records and server logs.
+- The October 1 production prize of 19,590 sats to `southkorealn@coinos.io` remains failed and owed. At investigation, the wallet held 19,603 sats and MDK estimated 19,525 sats withdrawable. The failure was generic; insufficient outgoing fee headroom is the leading explanation. Fund an operating buffer before retrying the full prize through the existing payout record; do not reduce the promised prize or create a duplicate obligation.
 - Winner payouts use the displayed jackpot; the old threshold-based 10% deduction is removed. Confirm these economics and timing rules before production.
 - Invoices are created in two steps: persist the unminted checkout ID, then mint a five-minute invoice. The actual provider expiry governs display and reconciliation.
 

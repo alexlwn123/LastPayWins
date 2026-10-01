@@ -66,6 +66,7 @@ test("creates an unminted checkout, leaving a durable binding boundary before mi
     operation: "create",
     attemptId: "attempt-1",
     amount: 100,
+    memo: "Bid - Last Pay Wins — +2% for MDK routing fee",
   });
   expect(result).toMatchObject({
     checkoutId: "checkout-1",
@@ -78,7 +79,11 @@ test("creates an unminted checkout, leaving a durable binding boundary before mi
       amount: 100,
       currency: "SAT",
       sandbox: false,
-      metadata: expect.objectContaining({ attemptId: "attempt-1" }),
+      metadata: expect.objectContaining({
+        attemptId: "attempt-1",
+        title: "Bid - Last Pay Wins",
+        description: "Bid - Last Pay Wins — +2% for MDK routing fee",
+      }),
     }),
     "node-id",
   );
@@ -124,8 +129,9 @@ test("credits actual sats received after MDK fees while retaining the gross invo
   if (!paid.invoice) throw new Error("Paid fixture must have an invoice");
   paid.invoice.amountSatsReceived = 98;
   mock.get.mockResolvedValue(paid);
-  expect(await handleMdk({ operation: "lookup", checkoutId: "checkout-1" }))
-    .toMatchObject({ status: "paid", amount: 100, netAmount: 98 });
+  expect(
+    await handleMdk({ operation: "lookup", checkoutId: "checkout-1" }),
+  ).toMatchObject({ status: "paid", amount: 100, netAmount: 98 });
 });
 test.each([null, -1, 101, 98.5, Number.NaN])(
   "rejects an invalid actual receipt (%s) instead of crediting the gross amount",
@@ -134,8 +140,9 @@ test.each([null, -1, 101, 98.5, Number.NaN])(
     if (!paid.invoice) throw new Error("Paid fixture must have an invoice");
     paid.invoice.amountSatsReceived = received;
     mock.get.mockResolvedValue(paid);
-    await expect(handleMdk({ operation: "lookup", checkoutId: "checkout-1" }))
-      .rejects.toThrow("Invalid received amount");
+    await expect(
+      handleMdk({ operation: "lookup", checkoutId: "checkout-1" }),
+    ).rejects.toThrow("Invalid received amount");
   },
 );
 test("recovers a successful payout after a lost dispatch response without sending again", async () => {

@@ -12,7 +12,6 @@ export const latest = query({
           destination: payout.destination,
           amount: payout.amount,
           status: payout.status,
-          error: payout.error ?? null,
         }
       : null;
   },

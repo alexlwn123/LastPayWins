@@ -1,4 +1,15 @@
 export const invoiceAmount = () => positiveInteger("INVOICE_AMOUNT", 100);
+export function bidQuote() {
+  const bidAmount = invoiceAmount();
+  const amount = bidAmount + Math.ceil(bidAmount / 50);
+  if (!Number.isSafeInteger(amount)) throw new Error("Invalid invoice amount");
+  return {
+    bidAmount,
+    amount,
+    memo: "Bid - Last Pay Wins — +2% for MDK routing fee",
+  };
+}
+
 export const clockDuration = () =>
   positiveInteger("NEXT_PUBLIC_CLOCK_DURATION", 60) * 1000;
 

@@ -55,5 +55,7 @@ export const useConvexInvoice = ({
     error: error ?? state?.error ?? null,
     expiresAt: state?.expiresAt ?? null,
     status: state?.status ?? null,
+    amount: matching ? (state?.amount ?? null) : null,
+    bidAmount: matching ? (state?.bidAmount ?? null) : null,
   };
 };

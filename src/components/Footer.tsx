@@ -33,11 +33,8 @@ const Footer = () => (
       </Link>
     </footer>
     <p className={styles.fees}>
-      The jackpot uses net receipts after payment and routing reserves.
-    </p>
-    <p className={styles.fees}>
-      Bids count when the server confirms payment. Late payments are returned
-      after reserves.
+      Bids count when the server confirms payment. Late payments return the bid
+      amount; payment fees are not refundable.
     </p>
     <p className={styles.bug}>
       If it bugs out and you don&apos;t get paid, DM{" "}

@@ -65,7 +65,90 @@ function confirmed(
   };
 }
 
+describe("public payment responses", () => {
+  test("keeps payout diagnostics on the server", async () => {
+    const t = setup();
+    const { gameId } = await fixture(t);
+    const id = await t.run((ctx) => ctx.db.insert("payouts", {
+      gameId, kind: "prize", destination: "alice@example.com",
+      amount: 19590, status: "failed", simulation: true,
+      createdAt: Date.now(), error: "private provider diagnostic",
+    }));
+    expect(await t.query(api.payouts.latest)).toEqual({
+      kind: "prize", destination: "alice@example.com", amount: 19590, status: "failed",
+    });
+    expect((await t.run((ctx) => ctx.db.get(id)))?.error).toBe("private provider diagnostic");
+  });
+
+  test("replaces stored invoice diagnostics with a safe public message", async () => {
+    const t = setup();
+    const { invoiceId } = await fixture(t);
+    await t.mutation(internal.invoices.fail, {
+      invoiceId, generation: 1, error: "private provider diagnostic",
+    });
+    const state = await t.query(api.invoices.getInvoiceState, {
+      uuid: "a-session-with-enough-entropy",
+    });
+    expect(state.error).toBe("Payment processing is temporarily unavailable. Please try again later.");
+    expect(JSON.stringify(state)).not.toContain("private provider diagnostic");
+    expect((await t.query(internal.invoices.getById, { invoiceId }))?.error).toBe("private provider diagnostic");
+  });
+});
+
 describe("payment settlement", () => {
+  test("quotes a 2% surcharge and snapshots the bid and memo", async () => {
+    const t = setup();
+    vi.stubEnv("INVOICE_AMOUNT", "10000");
+    const id = await t.mutation(api.invoices.requestInvoice, {
+      uuid: "a-session-with-enough-entropy", lnAddress: "alice@example.com",
+    });
+    expect(await t.query(internal.invoices.getById, { invoiceId: id })).toMatchObject({
+      amount: 10200, bidAmount: 10000,
+      memo: "Bid - Last Pay Wins — +2% for MDK routing fee",
+    });
+    expect(await t.query(api.invoices.settings)).toMatchObject({ amount: 10200, creditedAmount: 10000 });
+  });
+
+  test("fee-inclusive invoices add the promised bid once and pay the full jackpot", async () => {
+    const t = setup();
+    const { invoiceId, gameId } = await fixture(t);
+    await t.run((ctx) => ctx.db.patch(invoiceId, {
+      amount: 10200,
+      bidAmount: 10000,
+    }));
+    // Settlement uses the quote stored on the invoice, even after settings change.
+    vi.stubEnv("INVOICE_AMOUNT", "20000");
+    const receipt = { ...confirmed(invoiceId), amount: 10200, netAmount: 9996 };
+    await t.mutation(internal.invoices.update, receipt);
+    await t.mutation(internal.invoices.update, receipt);
+    expect((await t.query(api.games.getCurrent)).jackpot).toBe(10000);
+    const bids = await t.run((ctx) => ctx.db.query("bids").collect());
+    expect(bids).toHaveLength(1);
+    expect(bids[0]).toMatchObject({ amount: 10000, creditedAmount: 10000 });
+    vi.setSystemTime(Date.now() + 60000);
+    await t.mutation(internal.games.endGame, { gameId, bidId: bids[0]._id });
+    await t.mutation(internal.games.endGame, { gameId, bidId: bids[0]._id });
+    const payouts = await t.run((ctx) => ctx.db.query("payouts").collect());
+    expect(payouts).toHaveLength(1);
+    expect(payouts[0]).toMatchObject({ kind: "prize", amount: 10000 });
+  });
+
+  test("a late fee-inclusive invoice refunds the fixed bid without adding its fees to the prize", async () => {
+    const t = setup();
+    const { invoiceId, gameId } = await fixture(t);
+    await t.run(async (ctx) => {
+      await ctx.db.patch(invoiceId, { amount: 10200, bidAmount: 10000 });
+      await ctx.db.patch(gameId, { status: "FINISHED" });
+    });
+    await t.mutation(internal.invoices.update, {
+      ...confirmed(invoiceId), amount: 10200, netAmount: 9996,
+    });
+    const payouts = await t.run((ctx) => ctx.db.query("payouts").collect());
+    expect(payouts).toHaveLength(1);
+    expect(payouts[0]).toMatchObject({ kind: "refund", amount: 10000 });
+    expect(await t.run((ctx) => ctx.db.query("bids").collect())).toHaveLength(0);
+  });
+
   test("duplicate confirmations record one bid and fund one winner payout without browser presence", async () => {
     const t = setup();
     const { invoiceId, gameId } = await fixture(t);

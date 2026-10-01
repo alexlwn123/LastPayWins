@@ -14,15 +14,14 @@ export default function PaymentStatus() {
       )}
       {settings && (
         <p>
-          Each {settings.amount}-sat bid contributes up to{" "}
-          {settings.creditedAmount} sats after reserves.
+          Each bid adds {settings.creditedAmount.toLocaleString()} sats to the
+          jackpot.
         </p>
       )}
       {payout && (
         <p>
           {payout.kind === "prize" ? "Winner payout" : "Late-payment return"}:{" "}
-          {payout.amount} sats to {payout.destination} — {payout.status}.{" "}
-          {payout.error}
+          {payout.amount} sats to {payout.destination} — {payout.status}.
         </p>
       )}
     </output>

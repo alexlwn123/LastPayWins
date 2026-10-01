@@ -40,6 +40,15 @@ const Invoice = ({
   };
   return (
     <div className={styles.payment}>
+      {payment.invoice &&
+        payment.bidAmount !== null &&
+        payment.amount !== null && (
+          <p>
+            {payment.bidAmount.toLocaleString()} sats to the jackpot +{" "}
+            {(payment.amount - payment.bidAmount).toLocaleString()} sats fees ={" "}
+            {payment.amount.toLocaleString()} sats total.
+          </p>
+        )}
       {payment.error ? (
         <p role="alert">{payment.error}</p>
       ) : payment.invoice ? (

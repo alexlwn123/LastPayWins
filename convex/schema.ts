@@ -64,6 +64,8 @@ export default defineSchema({
     nextCheckAt: v.optional(v.number()),
     leaseUntil: v.optional(v.number()),
     generation: v.optional(v.number()),
+    bidAmount: v.optional(v.number()),
+    memo: v.optional(v.string()),
   })
     .index("by_hash", ["paymentHash"])
     .index("by_checkoutId", ["checkoutId"])
