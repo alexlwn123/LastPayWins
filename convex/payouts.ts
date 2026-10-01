@@ -97,6 +97,29 @@ export const retry = internalMutation({
   },
 });
 
+export const markPaidExternally = internalMutation({
+  args: { payoutId: v.id("payouts"), note: v.string() },
+  handler: async (ctx, args) => {
+    const payout = await ctx.db.get(args.payoutId);
+    if (!payout) throw new Error("Payout not found");
+    if (payout.status === "succeeded" && payout.externalSettlement) return;
+    if (payout.status !== "failed" || !payout.terminalFailure || (payout.leaseUntil ?? 0) > Date.now())
+      throw new Error("Only a terminally failed payout can be settled externally");
+    const note = args.note.trim();
+    if (!note || note.length > 1000) throw new Error("A settlement note of 1–1000 characters is required");
+    const recordedAt = Date.now();
+    await ctx.db.patch(payout._id, {
+      status: "succeeded",
+      completedAt: recordedAt,
+      externalSettlement: { recordedAt, note },
+      error: undefined,
+      terminalFailure: undefined,
+      leaseUntil: 0,
+      nextCheckAt: undefined,
+    });
+  },
+});
+
 export const reconcile = internalMutation({
   args: {},
   handler: async (ctx) => {

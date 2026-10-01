@@ -106,6 +106,10 @@ export default defineSchema({
     error: v.optional(v.string()),
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
+    externalSettlement: v.optional(v.object({
+      recordedAt: v.number(),
+      note: v.string(),
+    })),
     nextCheckAt: v.optional(v.number()),
     leaseUntil: v.optional(v.number()),
     attempt: v.optional(v.number()),

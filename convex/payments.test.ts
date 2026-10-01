@@ -494,3 +494,41 @@ test("late bids are refunded without a platform cut even in fee-paying rounds", 
   await t.mutation(internal.invoices.update, { ...confirmed(invoiceId), amount: 10200, netAmount: 9996 });
   expect(await t.query(internal.payouts.latest)).toMatchObject({ kind: "refund", amount: 10000 });
 });
+
+describe("external payout settlement", () => {
+  test("records operator confirmation and prevents retries or stale updates", async () => {
+    const t = setup();
+    const payoutId = await t.run((ctx) => ctx.db.insert("payouts", {
+      kind: "prize", destination: "winner@example.com", amount: 19590,
+      status: "failed", terminalFailure: true, createdAt: Date.now(),
+      error: "Provider failure", nextCheckAt: Date.now(),
+    }));
+    const args = { payoutId, note: "Operator confirmed direct payment to winner" };
+    await t.mutation(internal.payouts.markPaidExternally, args);
+    const settled = await t.run((ctx) => ctx.db.get(payoutId));
+    expect(settled).toMatchObject({
+      status: "succeeded", amount: 19590, completedAt: Date.now(),
+      externalSettlement: { recordedAt: Date.now(), note: args.note },
+    });
+    expect(settled?.nextCheckAt).toBeUndefined();
+    expect(settled?.error).toBeUndefined();
+    await t.mutation(internal.payouts.markPaidExternally, args);
+    await t.mutation(internal.payouts.retry, { payoutId });
+    await t.mutation(internal.payouts.update, { payoutId, status: "pending" });
+    expect(await t.mutation(internal.payouts.claim, { payoutId })).toBeNull();
+    expect(await t.run((ctx) => ctx.db.get(payoutId))).toEqual(settled);
+    expect(await t.run((ctx) => ctx.db.system.query("_scheduled_functions").collect())).toHaveLength(0);
+  });
+
+  test.each(["pending", "failed", "succeeded"] as const)("rejects %s payouts without a terminal failure", async (status) => {
+    const t = setup();
+    const payoutId = await t.run((ctx) => ctx.db.insert("payouts", {
+      kind: "prize", destination: "winner@example.com", amount: 19590,
+      status, createdAt: Date.now(),
+    }));
+    await expect(t.mutation(internal.payouts.markPaidExternally, {
+      payoutId, note: "Operator confirmation",
+    })).rejects.toThrow("Only a terminally failed payout");
+    expect((await t.run((ctx) => ctx.db.get(payoutId)))?.status).toBe(status);
+  });
+});
