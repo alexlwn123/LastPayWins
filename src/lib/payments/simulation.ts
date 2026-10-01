@@ -53,6 +53,8 @@ export function simulateReceipt(checkoutId: string) {
   return checkout;
 }
 export function handleSimulation(request: BridgeRequest) {
+  if (request.operation === "preparePayout")
+    throw new Error("Simulation does not request recipient invoices");
   const state = read();
   if (request.operation === "create") {
     const existing = Object.values(state.checkouts).find(

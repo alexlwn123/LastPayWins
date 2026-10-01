@@ -14,6 +14,13 @@ export const checkoutSchema = z.object({
 });
 export type PaymentCheckout = z.infer<typeof checkoutSchema>;
 
+export const payoutInvoiceSchema = z.object({
+  paymentRequest: z
+    .string()
+    .max(4096)
+    .regex(/^lnbc[0-9a-z]+$/i),
+});
+
 export const payoutResultSchema = z.object({
   status: z.enum(["pending", "succeeded", "failed"]),
   paymentId: z.string().optional(),
@@ -31,6 +38,12 @@ export const bridgeRequestSchema = z.discriminatedUnion("operation", [
   }),
   z.object({ operation: z.literal("prepare"), checkoutId: z.string() }),
   z.object({ operation: z.literal("lookup"), checkoutId: z.string() }),
+  z.object({
+    operation: z.literal("preparePayout"),
+    destination: z.string(),
+    amount: z.number().int().positive(),
+    comment: z.string().max(500),
+  }),
   z.object({
     operation: z.literal("payout"),
     payoutId: z.string(),

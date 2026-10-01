@@ -400,3 +400,52 @@ test("a live round cannot mix simulated and real receipts", async () => {
     }),
   ).rejects.toThrow("separate local database");
 });
+
+test("payout invoice binding is immutable per attempt and survives uncertain retries", async () => {
+  const t = setup();
+  const payoutId = await t.run((ctx) => ctx.db.insert("payouts", {
+    kind: "prize", destination: "alice@example.com", amount: 10000,
+    status: "pending", createdAt: Date.now(), simulation: true,
+  }));
+  const bind = (paymentRequest: string, attempt = 0) => t.mutation(internal.payouts.bindInvoice, { payoutId, attempt, paymentRequest });
+  expect(await bind("lnbcfirst")).toBe("lnbcfirst");
+  expect(await bind("lnbcsecond")).toBe("lnbcfirst");
+  expect(await bind("lnbcstale", 1)).toBeNull();
+  await t.mutation(internal.payouts.update, { payoutId, status: "failed", terminalFailure: false });
+  await t.mutation(internal.payouts.retry, { payoutId });
+  expect(await bind("lnbcsecond")).toBe("lnbcfirst");
+  await t.mutation(internal.payouts.update, { payoutId, status: "failed", terminalFailure: true });
+  await t.mutation(internal.payouts.retry, { payoutId });
+  expect(await bind("lnbcstale")).toBeNull();
+  expect(await bind("lnbcnewattempt", 1)).toBe("lnbcnewattempt");
+  expect((await t.run((ctx) => ctx.db.get(payoutId)))?.comment).toBe("Congratulations! You've won the 10000 satoshi jackpot from LastPayWins!");
+});
+
+test("payout execution persists the commented invoice before dispatch and reuses it after a lost response", async () => {
+  const t = setup();
+  vi.stubEnv("PAYMENT_MODE", "mdk");
+  vi.stubEnv("PAYMENT_BRIDGE_SECRET", "test-secret");
+  const comment = "Congratulations! You've won the 10000 satoshi jackpot from LastPayWins!";
+  const payoutId = await t.run((ctx) => ctx.db.insert("payouts", {
+    kind: "prize", destination: "alice@example.com", amount: 10000,
+    status: "pending", createdAt: Date.now(), simulation: false, comment,
+  }));
+  const requests: Array<Record<string, unknown>> = [];
+  const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => {
+    const request = JSON.parse(String(init?.body));
+    requests.push(request);
+    if (request.operation === "preparePayout") return Response.json({ paymentRequest: "lnbc123abc" });
+    expect((await t.run((ctx) => ctx.db.get(payoutId)))?.paymentRequest).toBe("lnbc123abc");
+    if (requests.length === 2) throw new Error("Lost response");
+    return Response.json({ status: "succeeded", paymentId: "payment-1" });
+  });
+  try {
+    await t.action(internal.payoutActions.execute, { payoutId });
+    await t.action(internal.payoutActions.execute, { payoutId });
+    expect(requests.map((request) => request.operation)).toEqual(["preparePayout", "payout", "payout"]);
+    expect(requests[0]).toMatchObject({ destination: "alice@example.com", amount: 10000, comment });
+    expect(requests[1]).toEqual(requests[2]);
+    expect(requests[1]).toMatchObject({ payoutId: `${payoutId}-0`, destination: "lnbc123abc", amount: 10000 });
+    expect((await t.run((ctx) => ctx.db.get(payoutId)))?.status).toBe("succeeded");
+  } finally { fetchMock.mockRestore(); }
+});

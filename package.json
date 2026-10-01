@@ -22,6 +22,7 @@
     "@moneydevkit/nextjs": "0.22.0",
     "@vercel/analytics": "^1.6.1",
     "convex": "^1.45.0",
+    "ipaddr.js": "^2.5.0",
     "next": "16.0.10",
     "next-qrcode": "^2.5.1",
     "react": "19.2.3",

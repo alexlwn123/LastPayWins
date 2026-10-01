@@ -1,3 +1,4 @@
+import { payoutMemo } from "../src/lib/payments/payoutMemo";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation, query } from "./_generated/server";
@@ -89,6 +90,8 @@ export const retry = internalMutation({
       attempt: (payout.attempt ?? 0) + (payout.terminalFailure ? 1 : 0),
       terminalFailure: undefined,
       paymentId: payout.terminalFailure ? undefined : payout.paymentId,
+      paymentRequest: payout.terminalFailure ? undefined : payout.paymentRequest,
+      comment: payout.terminalFailure ? payoutMemo(payout.kind, payout.amount) : payout.comment,
     });
     await ctx.scheduler.runAfter(0, internal.payoutActions.execute, args);
   },
@@ -109,5 +112,16 @@ export const reconcile = internalMutation({
         payoutId: payout._id,
       });
     }
+  },
+});
+
+export const bindInvoice = internalMutation({
+  args: { payoutId: v.id("payouts"), attempt: v.number(), paymentRequest: v.string() },
+  handler: async (ctx, args) => {
+    const payout = await ctx.db.get(args.payoutId);
+    if (!payout || payout.status !== "pending" || (payout.attempt ?? 0) !== args.attempt) return null;
+    if (payout.paymentRequest) return payout.paymentRequest;
+    await ctx.db.patch(payout._id, { paymentRequest: args.paymentRequest });
+    return args.paymentRequest;
   },
 });

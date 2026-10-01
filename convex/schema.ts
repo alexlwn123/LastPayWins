@@ -109,6 +109,8 @@ export default defineSchema({
     leaseUntil: v.optional(v.number()),
     attempt: v.optional(v.number()),
     terminalFailure: v.optional(v.boolean()),
+    comment: v.optional(v.string()),
+    paymentRequest: v.optional(v.string()),
   })
     .index("by_gameId", ["gameId"])
     .index("by_invoiceId", ["invoiceId"])

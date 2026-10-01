@@ -21,7 +21,7 @@ export type ScanResult =
     }
   | { error: string; status: "failed" };
 
-const getLightningAddressUrl = (address: string) => {
+export const getLightningAddressUrl = (address: string) => {
   const [name, host] = address.trim().toLowerCase().split("@");
   if (
     !name ||

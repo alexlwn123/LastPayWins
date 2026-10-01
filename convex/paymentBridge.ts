@@ -2,6 +2,7 @@ import {
   bridgeRequestSchema,
   checkoutSchema,
   payoutResultSchema,
+  payoutInvoiceSchema,
   type BridgeRequest,
 } from "../src/lib/payments/contracts";
 
@@ -21,6 +22,7 @@ export async function paymentBridge(request: BridgeRequest) {
   if (!response.ok)
     throw new Error(`Payment server unavailable (${response.status})`);
   const body: unknown = await response.json();
+  if (request.operation === "preparePayout") return payoutInvoiceSchema.parse(body);
   return request.operation === "payout"
     ? payoutResultSchema.parse(body)
     : checkoutSchema.parse(body);

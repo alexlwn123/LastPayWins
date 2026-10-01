@@ -15,6 +15,8 @@ import {
   type PaymentPayoutResult,
 } from "./contracts";
 
+import { payoutInvoice } from "./payoutInvoice";
+
 type Checkout = Awaited<ReturnType<typeof getCheckout>>;
 
 export function normalizeCheckout(checkout: Checkout) {
@@ -104,6 +106,8 @@ async function payout(
 
 export async function handleMdk(request: BridgeRequest) {
   requireLiveConfig();
+  if (request.operation === "preparePayout")
+    return payoutInvoice(request.destination, request.amount, request.comment);
   if (request.operation === "payout") return payout(request);
   if (request.operation === "lookup")
     return normalizeCheckout(await getCheckout(request.checkoutId));

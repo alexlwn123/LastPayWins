@@ -1,3 +1,4 @@
+import { payoutMemo } from "../src/lib/payments/payoutMemo";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Doc } from "./_generated/dataModel";
@@ -38,6 +39,7 @@ export async function finishGame(ctx: MutationCtx, game: Doc<"game">) {
       kind: "prize",
       destination: game.lnAddress,
       amount: game.jackpot,
+      comment: payoutMemo("prize", game.jackpot),
       status: "pending",
       createdAt: Date.now(),
       nextCheckAt: Date.now(),
@@ -151,6 +153,7 @@ export async function recordPaidBid(
         kind: "refund",
         destination: invoice.lnAddress,
         amount: creditedAmount,
+        comment: payoutMemo("refund", creditedAmount),
         status: "pending",
         createdAt: now,
         nextCheckAt: now,

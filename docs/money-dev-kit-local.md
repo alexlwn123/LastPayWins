@@ -49,6 +49,12 @@ After the test, Manual only was restored, the app domain returned to `https://la
 
 The old simulator database had 14,600 pending scheduled jobs after the long offline interval and timed out on new invoices. Its backend and provider state were preserved at `.convex/backups/simulator-20261001-171209/`, then the simulator was restarted with a fresh database. This reset is only for disposable simulated funds; never reset a real-payment database to clear a backlog. The fresh simulator passed the full smoke test: invoice creation, settlement without presence, duplicate receipt handling, timer expiry, and exactly one confirmed payout. All 31 automated tests, lint/type-checking, and the production build passed on October 1. The simulator is available on port 3002. Stop local development services when finished to avoid leaving reconciliation running indefinitely.
 
+## Payout comments
+
+Winner LNURL payments carry `Congratulations! You've won the {amount} satoshi jackpot from LastPayWins!`. The old 10% deduction suffix is removed; no payout amount is reduced. Late returns use a distinct refund message. Recipient `commentAllowed` limits are respected, and comments are omitted when unsupported.
+
+MDK's programmatic payout API has no comment argument. The server requests a recipient BOLT11 with the LNURL comment, persists that invoice on the payout attempt, then sends it through MDK with the existing idempotency key and exact amount. Lost responses reuse the same invoice. Only an explicit retry after authoritative terminal failure clears the invoice and advances the attempt. Legacy in-flight payouts keep their original destination until such a retry. Recipient requests require public HTTPS destinations, validate DNS at connection time, reject redirects, and enforce time/response-size limits.
+
 ## Invoice memo compatibility patch
 
 The pinned `@moneydevkit/core@0.22.0` patch in `patches/` lets `createInvoiceNow` use the server-only `MDK_INVOICE_DESCRIPTION` setting. Production and the local launcher set it to `Bid - Last Pay Wins — +2% for MDK routing fee`. This affects BOLT11 invoices minted by this app's node. It does not change payment amounts, routing, or signing.
