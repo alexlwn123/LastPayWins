@@ -8,6 +8,15 @@
   font-size: 1rem;
 }
 
+.fees {
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+.bug {
+  font-size: 0.5rem;
+}
+
 .footerContainer {
   display: flex;
   flex-direction: column;

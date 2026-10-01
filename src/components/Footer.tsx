@@ -32,6 +32,19 @@ const Footer = () => (
         @chdwlch
       </Link>
     </footer>
+    <p className={styles.fees}>
+      Fees: 5% of the jackpot goes to @_alexlewin to run the servers.
+    </p>
+    <p className={styles.bug}>
+      If it bugs out and you don&apos;t get paid, DM{" "}
+      <Link
+        href="https://twitter.com/_alexlewin"
+        target="_blank"
+        rel="noreferrer"
+      >
+        @_alexlewin
+      </Link>
+    </p>
   </div>
 );
 export default Footer;
