@@ -55,6 +55,9 @@
     "overrides": {
       "@types/react": "19.2.7",
       "@types/react-dom": "19.2.3"
+    },
+    "patchedDependencies": {
+      "@moneydevkit/core@0.22.0": "patches/@moneydevkit__core@0.22.0.patch"
     }
   }
 }

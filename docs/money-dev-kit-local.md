@@ -49,6 +49,12 @@ After the test, Manual only was restored, the app domain returned to `https://la
 
 The old simulator database had 14,600 pending scheduled jobs after the long offline interval and timed out on new invoices. Its backend and provider state were preserved at `.convex/backups/simulator-20261001-171209/`, then the simulator was restarted with a fresh database. This reset is only for disposable simulated funds; never reset a real-payment database to clear a backlog. The fresh simulator passed the full smoke test: invoice creation, settlement without presence, duplicate receipt handling, timer expiry, and exactly one confirmed payout. All 31 automated tests, lint/type-checking, and the production build passed on October 1. The simulator is available on port 3002. Stop local development services when finished to avoid leaving reconciliation running indefinitely.
 
+## Invoice memo compatibility patch
+
+The pinned `@moneydevkit/core@0.22.0` patch in `patches/` lets `createInvoiceNow` use the server-only `MDK_INVOICE_DESCRIPTION` setting. Production and the local launcher set it to `Bid - Last Pay Wins — +2% for MDK routing fee`. This affects BOLT11 invoices minted by this app's node. It does not change payment amounts, routing, or signing.
+
+The hosted minting path returned `mdk invoice` despite the checkout's description metadata; the override applies the memo before the native node signs the invoice. Keep the patch until MDK's hosted path honors checkout descriptions, and verify decoded invoices before removing it or upgrading the SDK. The installed SDK adapter is covered by a regression test.
+
 ## Recovery and production handoff
 
 The public app domain is `https://lastpaywins.lwn.lol`. Configure these values for the hosted MDK deployment:

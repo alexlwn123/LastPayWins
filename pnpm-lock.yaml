@@ -8,13 +8,18 @@ overrides:
   '@types/react': 19.2.7
   '@types/react-dom': 19.2.3
 
+patchedDependencies:
+  '@moneydevkit/core@0.22.0':
+    hash: 41dd1b6297035f17eaadde10e3d0b14f256584e2d06251c4102a1d531f031190
+    path: patches/@moneydevkit__core@0.22.0.patch
+
 importers:
 
   .:
     dependencies:
       '@moneydevkit/core':
         specifier: 0.22.0
-        version: 0.22.0(@liquid-js/qrcode-generator@1.1.6)(@opentelemetry/api@1.9.0)(@standard-schema/spec@1.1.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(@xmldom/xmldom@0.9.12)(file-type@22.0.2)(ical-generator@10.2.0(@types/node@22.20.1))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sharp@0.34.5)(vcards-js@2.11.1)(vcf@2.1.2)
+        version: 0.22.0(patch_hash=41dd1b6297035f17eaadde10e3d0b14f256584e2d06251c4102a1d531f031190)(@liquid-js/qrcode-generator@1.1.6)(@opentelemetry/api@1.9.0)(@standard-schema/spec@1.1.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(@xmldom/xmldom@0.9.12)(file-type@22.0.2)(ical-generator@10.2.0(@types/node@22.20.1))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sharp@0.34.5)(vcards-js@2.11.1)(vcf@2.1.2)
       '@moneydevkit/lightning-js':
         specifier: 0.1.87
         version: 0.1.87
@@ -5495,7 +5500,7 @@ snapshots:
       '@orpc/contract': 1.3.0
       zod: 3.25.76
 
-  '@moneydevkit/core@0.22.0(@liquid-js/qrcode-generator@1.1.6)(@opentelemetry/api@1.9.0)(@standard-schema/spec@1.1.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(@xmldom/xmldom@0.9.12)(file-type@22.0.2)(ical-generator@10.2.0(@types/node@22.20.1))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sharp@0.34.5)(vcards-js@2.11.1)(vcf@2.1.2)':
+  '@moneydevkit/core@0.22.0(patch_hash=41dd1b6297035f17eaadde10e3d0b14f256584e2d06251c4102a1d531f031190)(@liquid-js/qrcode-generator@1.1.6)(@opentelemetry/api@1.9.0)(@standard-schema/spec@1.1.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(@xmldom/xmldom@0.9.12)(file-type@22.0.2)(ical-generator@10.2.0(@types/node@22.20.1))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sharp@0.34.5)(vcards-js@2.11.1)(vcf@2.1.2)':
     dependencies:
       '@fontsource-variable/geist': 5.3.0
       '@fontsource-variable/geist-mono': 5.3.0
@@ -5609,7 +5614,7 @@ snapshots:
     dependencies:
       '@hookform/resolvers': 5.9.1(@standard-schema/spec@1.1.0)(react-hook-form@7.87.0(react@19.2.3))(zod@3.25.76)
       '@moneydevkit/api-contract': 0.1.36
-      '@moneydevkit/core': 0.22.0(@liquid-js/qrcode-generator@1.1.6)(@opentelemetry/api@1.9.0)(@standard-schema/spec@1.1.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(@xmldom/xmldom@0.9.12)(file-type@22.0.2)(ical-generator@10.2.0(@types/node@22.20.1))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sharp@0.34.5)(vcards-js@2.11.1)(vcf@2.1.2)
+      '@moneydevkit/core': 0.22.0(patch_hash=41dd1b6297035f17eaadde10e3d0b14f256584e2d06251c4102a1d531f031190)(@liquid-js/qrcode-generator@1.1.6)(@opentelemetry/api@1.9.0)(@standard-schema/spec@1.1.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(@xmldom/xmldom@0.9.12)(file-type@22.0.2)(ical-generator@10.2.0(@types/node@22.20.1))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sharp@0.34.5)(vcards-js@2.11.1)(vcf@2.1.2)
       '@moneydevkit/lightning-js': 0.1.87
       '@orpc/client': 1.13.6(@opentelemetry/api@1.9.0)
       '@orpc/contract': 1.3.0

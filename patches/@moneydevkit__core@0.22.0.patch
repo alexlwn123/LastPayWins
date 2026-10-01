@@ -1,0 +1,12 @@
+diff --git a/dist/lightning-node.js b/dist/lightning-node.js
+index 8e65b0c6d7005d2301c94e7e4c50e4cfe1ac8532..e6d9d1c00b4a026cf39b98dbf3dc099bd7a12262 100644
+--- a/dist/lightning-node.js
++++ b/dist/lightning-node.js
+@@ -147,6 +147,7 @@ export class MoneyDevKitNode {
+      * variable-amount JIT invoice. Takes msats directly.
+      */
+     createInvoiceNow(amountMsat, description, expirySecs) {
++        description = process.env.MDK_INVOICE_DESCRIPTION || description;
+         const invoice = amountMsat === null
+             ? this.node.getVariableAmountJitInvoiceWhileRunning(description, expirySecs)
+             : this.node.getInvoiceWhileRunning(amountMsat, description, expirySecs);

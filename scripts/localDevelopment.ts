@@ -63,6 +63,7 @@ const env = {
   NEXT_PUBLIC_CLOCK_DURATION: "60",
   MDK_FEE_RESERVE_BPS: "200",
   PAYOUT_RESERVE_SATS_PER_BID: "5",
+  MDK_INVOICE_DESCRIPTION: "Bid - Last Pay Wins — +2% for MDK routing fee",
   MDK_PREVIEW: "",
   NEXT_PUBLIC_MDK_PREVIEW: "",
 };
